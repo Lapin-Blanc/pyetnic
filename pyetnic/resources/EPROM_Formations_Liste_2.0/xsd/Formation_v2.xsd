@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:org="http://enseignement.cfwb.be/types/formation/organisation/v2" xmlns:tns="http://enseignement.cfwb.be/types/formation/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/v2" version="2.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/formation/organisation/v2" schemaLocation="FormationOrganisation_v2.xsd"></xs:import>
+<xs:complexType name="FormationCT">
+<xs:sequence>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="libelleFormation" type="xs:string"></xs:element>
+<xs:element name="codeFormation" type="xs:string"></xs:element>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="organisation" type="org:OrganisationApercuCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationEpsocCT">
+<xs:sequence>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="libelleFormation" type="xs:string"></xs:element>
+<xs:element name="codeFormation" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="dateFemeture" type="xs:date"></xs:element>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="organisation" type="org:OrganisationApercuCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

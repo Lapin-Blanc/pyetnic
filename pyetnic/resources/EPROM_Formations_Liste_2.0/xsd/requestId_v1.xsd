@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://etnic.be/types/technical/requestId/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://etnic.be/types/technical/requestId/v1" version="1.0">
+<xs:element name="requestId" type="tns:UUIDType"></xs:element>
+<xs:simpleType name="UUIDType">
+<xs:restriction base="xs:string">
+<xs:pattern value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}"></xs:pattern>
+</xs:restriction>
+</xs:simpleType>
+</xs:schema>

@@ -1,0 +1,54 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/formation/v2" xmlns:tns="http://services-web.etnic.be/eprom/formations/liste/messages/v2" xmlns:common="http://etnic.be/types/technical/common/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formations/liste/messages/v2" version="2.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/formation/v2" schemaLocation="Formation_v2.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/common/v1" schemaLocation="Common_v1.xsd"></xs:import>
+<xs:element name="ListerFormations" type="tns:ListerFormationsRequeteCT"></xs:element>
+<xs:element name="ListerFormationsReponse" type="tns:ListerFormationsReponseCT"></xs:element>
+<xs:element name="ListerFormationsOrganisables" type="tns:ListerFormationsOrganisablesRequeteCT"></xs:element>
+<xs:element name="ListerFormationsOrganisablesReponse" type="tns:ListerFormationsOrganisablesReponseCT"></xs:element>
+<xs:complexType name="ListerFormationsRequeteCT">
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element minOccurs="0" name="implId" type="etab:ImplIdST"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ListerFormationsReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element maxOccurs="unbounded" name="formation" type="org:FormationCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="ListerFormationsOrganisablesRequeteCT">
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element minOccurs="0" name="implId" type="etab:ImplIdST"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ListerFormationsOrganisablesReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element maxOccurs="unbounded" name="formation" type="org:FormationCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+</xs:schema>

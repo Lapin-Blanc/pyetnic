@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://etnic.be/types/technical/addressing/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://etnic.be/types/technical/addressing/v2" version="2.1">
+<xs:element name="addressing" type="tns:AddressingCT"></xs:element>
+<xs:complexType name="AddressingCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="messageId" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="routingFrom" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="routingTo" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="action" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

@@ -1,0 +1,81 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/organisation/v1" xmlns:tns="http://enseignement.cfwb.be/types/formation/document1/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/document1/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/organisation/v1" schemaLocation="Organisation_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:complexType name="Document1ReponseMetierCT">
+<xs:sequence>
+<xs:element name="document1" type="tns:FormationDocument1CT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1CT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationResIdCT"></xs:element>
+<xs:element name="populationListe" type="tns:PopDocument1AnneeEtudeLstCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="PopDocument1AnneeEtudeLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" name="population" type="tns:PopDocument1AnneeEtudeLineCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="PopDocument1AnneeEtudeLineCT">
+<xs:sequence>
+<xs:element name="coAnnEtude" type="xs:int"></xs:element>
+<xs:element name="nbEleveA" type="xs:int"></xs:element>
+<xs:element name="nbEleveEhr" type="xs:int"></xs:element>
+<xs:element name="nbEleveFse" type="xs:int"></xs:element>
+<xs:element name="nbElevePi" type="xs:int"></xs:element>
+<xs:element name="nbEleveB" type="xs:int"></xs:element>
+<xs:element name="nbEleveTot2a5" type="xs:int"></xs:element>
+<xs:element name="nbEleveDem" type="xs:int"></xs:element>
+<xs:element name="nbEleveMin" type="xs:int"></xs:element>
+<xs:element name="nbEleveExm" type="xs:int"></xs:element>
+<xs:element name="nbElevePl" type="xs:int"></xs:element>
+<xs:element name="nbEleveTot6et8" type="xs:int"></xs:element>
+<xs:element name="nbEleveTotFse" type="xs:int"></xs:element>
+<xs:element name="nbEleveTotPi" type="xs:int"></xs:element>
+<xs:element name="nbEleveTotHom" type="xs:int"></xs:element>
+<xs:element name="nbEleveTotFem" type="xs:int"></xs:element>
+<xs:element name="swAppPopD1" type="xs:boolean"></xs:element>
+<xs:element name="swAppD1" type="xs:boolean"></xs:element>
+<xs:element name="tsMaj" type="xs:string"></xs:element>
+<xs:element name="teUserMaj" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1LireReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1ModifReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+<xs:element minOccurs="0" name="populationListe" type="tns:PopDocument1AnneeEtudeLstSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1ApprReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+<xs:element minOccurs="0" name="populationListe" type="tns:PopDocument1AnneeEtudeLstSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="PopDocument1AnneeEtudeLstSaveCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="population" type="tns:PopDocument1AnneeEtudeLineSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="PopDocument1AnneeEtudeLineSaveCT">
+<xs:sequence>
+<xs:element name="coAnnEtude" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveA" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveEhr" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveB" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveDem" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveMin" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveExm" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbElevePl" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveTotHom" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveTotFem" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

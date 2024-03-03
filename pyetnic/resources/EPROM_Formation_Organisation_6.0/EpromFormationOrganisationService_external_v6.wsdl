@@ -1,0 +1,130 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:req="http://etnic.be/types/technical/requestId/v1" xmlns:tns="http://services-web.etnic.be/eprom/formation/organisation/v6" xmlns:eprom="http://services-web.etnic.be/eprom/formation/organisation/messages/v6" name="EPROMFormationOrganisationV6ExternalService" targetNamespace="http://services-web.etnic.be/eprom/formation/organisation/v6">
+  <wsdl:types>
+    <xs:schema>
+			<xs:import namespace="http://services-web.etnic.be/eprom/formation/organisation/messages/v6" schemaLocation="xsd/EpromFormationOrganisationMessages_external_v6.xsd"></xs:import>
+			<xs:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="xsd/requestId_v1.xsd"></xs:import>
+		</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="CreerOrganisationReponseMessage">
+    <wsdl:part name="parameter" element="eprom:CreerOrganisationReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ModifierOrganisationRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:ModifierOrganisation">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SupprimerOrganisationReponseMessage">
+    <wsdl:part name="parameter" element="eprom:SupprimerOrganisationReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="RequestIdHeader">
+    <wsdl:part name="requestId" element="req:requestId">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ModifierOrganisationReponseMessage">
+    <wsdl:part name="parameter" element="eprom:ModifierOrganisationReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SupprimerOrganisationRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:SupprimerOrganisation">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="CreerOrganisationRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:CreerOrganisation">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="LireOrganisationReponseMessage">
+    <wsdl:part name="parameter" element="eprom:LireOrganisationReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="LireOrganisationRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:LireOrganisation">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="EPROMFormationOrganisationExternalV6PortType">
+    <wsdl:operation name="CreerOrganisation">
+      <wsdl:input message="tns:CreerOrganisationRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:CreerOrganisationReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ModifierOrganisation">
+      <wsdl:input message="tns:ModifierOrganisationRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:ModifierOrganisationReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LireOrganisation">
+      <wsdl:input message="tns:LireOrganisationRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:LireOrganisationReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SupprimerOrganisation">
+      <wsdl:input message="tns:SupprimerOrganisationRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:SupprimerOrganisationReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="EPROMFormationOrganisationExternalV6Binding" type="tns:EPROMFormationOrganisationExternalV6PortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="CreerOrganisation">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/organisation/v6/CreerOrganisation"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ModifierOrganisation">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/organisation/v6/ModifierOrganisation"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="LireOrganisation">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/organisation/v6/LireOrganisation"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SupprimerOrganisation">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/organisation/v6/SupprimerOrganisation"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="service_eprom_formation_organisation_external_v6">
+    <wsdl:port name="EPROMFormationOrganisationExternalV6Port" binding="tns:EPROMFormationOrganisationExternalV6Binding">
+      <soap:address location="https://services-web.tq.etnic.be:11443/eprom/formation/organisation/v6"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,51 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:tns="http://enseignement.cfwb.be/types/formation/organisation/v6" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/organisation/v6" version="6.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:complexType name="FormationOrganisationCT">
+<xs:sequence>
+<xs:element name="id" type="tns:OrganisationIdCT"></xs:element>
+<xs:element name="dateDebutOrganisation" type="xs:date"></xs:element>
+<xs:element name="dateFinOrganisation" type="xs:date"></xs:element>
+<xs:element name="nombreSemaineFormation" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="organisationPeriodesSupplOuEPT" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="eLearning" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="partiellementDistance" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="enseignementHybride" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="numOrganisation2AnneesScolaires" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="typeInterventionExterieure" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="interventionExterieure50p" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="statut" type="tns:StatutCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="OrganisationIdCT">
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element minOccurs="0" name="implId" type="etab:ImplIdST"></xs:element>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="numOrganisation" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="OrganisationApercuCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="implId" type="etab:ImplIdST"></xs:element>
+<xs:element name="numOrganisation" type="xs:int"></xs:element>
+<xs:element name="dateDebutOrganisation" type="xs:date"></xs:element>
+<xs:element name="dateFinOrganisation" type="xs:date"></xs:element>
+<xs:element minOccurs="0" name="statutDocumentOrganisation" type="tns:StatutCT"></xs:element>
+<xs:element minOccurs="0" name="statutDocumentPopulationPeriodes" type="tns:StatutCT"></xs:element>
+<xs:element minOccurs="0" name="statutDocumentDroitsInscription" type="tns:StatutCT"></xs:element>
+<xs:element minOccurs="0" name="statutDocumentAttributions" type="tns:StatutCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="StatutCT">
+<xs:sequence>
+<xs:element name="statut" type="xs:string"></xs:element>
+<xs:element name="dateStatut" type="xs:date"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

@@ -1,0 +1,76 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:req="http://etnic.be/types/technical/requestId/v1" xmlns:tns="http://services-web.etnic.be/eprom/formations/liste/v2" xmlns:eprom="http://services-web.etnic.be/eprom/formations/liste/messages/v2" name="EPROMFormationListeV2ExternalService" targetNamespace="http://services-web.etnic.be/eprom/formations/liste/v2">
+  <wsdl:types>
+    <xs:schema>
+			<xs:import namespace="http://services-web.etnic.be/eprom/formations/liste/messages/v2" schemaLocation="xsd/EpromFormationsListeMessages_external_v2.xsd"></xs:import>
+			<xs:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="xsd/requestId_v1.xsd"></xs:import>
+		</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="RequestIdHeader">
+    <wsdl:part name="requestId" element="req:requestId">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ListerFormationsOrganisablesReponseMessage">
+    <wsdl:part name="parameter" element="eprom:ListerFormationsOrganisablesReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ListerFormationsOrganisablesRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:ListerFormationsOrganisables">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ListerFormationsReponseMessage">
+    <wsdl:part name="parameter" element="eprom:ListerFormationsReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ListerFormationsRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:ListerFormations">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="EPROMFormationsListeExternalV2PortType">
+    <wsdl:operation name="ListerFormations">
+      <wsdl:input message="tns:ListerFormationsRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:ListerFormationsReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ListerFormationsOrganisables">
+      <wsdl:input message="tns:ListerFormationsOrganisablesRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:ListerFormationsOrganisablesReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="EPROMFormationsListeExternalV2Binding" type="tns:EPROMFormationsListeExternalV2PortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="ListerFormations">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formations/liste/v2/ListerFormations"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ListerFormationsOrganisables">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formations/liste/v2/ListerFormationsOrganisables"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="service_eprom_formations_liste_external_v2">
+    <wsdl:port name="EPROMFormationsListeExternalV2Port" binding="tns:EPROMFormationsListeExternalV2Binding">
+      <soap:address location="https://services-web.tq.etnic.be:11443/eprom/formations/liste/v2"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
