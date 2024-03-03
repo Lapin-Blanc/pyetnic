@@ -1,0 +1,140 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/organisation/v1" xmlns:tns="http://enseignement.cfwb.be/types/formation/document2/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/document2/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/organisation/v1" schemaLocation="Organisation_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:complexType name="Document2ReponseMetierCT">
+<xs:sequence>
+<xs:element name="document2" type="tns:FormationDocument2CT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument2CT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationResIdCT"></xs:element>
+<xs:element minOccurs="0" name="activiteEnseignementDetail" type="tns:Doc2ActiviteEnseignementDetailCT"></xs:element>
+<xs:element minOccurs="0" name="interventionExterieureListe" type="tns:Doc2InterventionExtLstCT"></xs:element>
+<xs:element name="swAppD2" type="xs:boolean"></xs:element>
+<xs:element name="tsMaj" type="xs:string"></xs:element>
+<xs:element name="teUserMaj" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2ActiviteEnseignementDetailCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="activiteEnseignementListe" type="tns:Doc2ActiviteEnseignementLstCT"></xs:element>
+<xs:element name="nbTotPeriodePrevueAn1" type="xs:float"></xs:element>
+<xs:element name="nbTotPeriodePrevueAn2" type="xs:float"></xs:element>
+<xs:element name="nbTotPeriodeReelleAn1" type="xs:float"></xs:element>
+<xs:element name="nbTotPeriodeReelleAn2" type="xs:float"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2ActiviteEnseignementLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="activiteEnseignement" type="tns:Doc2ActiviteEnseignementLineCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2ActiviteEnseignementLineCT">
+<xs:sequence>
+<xs:element name="coNumBranche" type="xs:int"></xs:element>
+<xs:element name="coCategorie" type="xs:string"></xs:element>
+<xs:element name="teNomBranche" type="xs:string"></xs:element>
+<xs:element name="coAnnEtude" type="xs:string"></xs:element>
+<xs:element name="nbEleveC1" type="xs:int"></xs:element>
+<xs:element name="nbPeriodeBranche" type="xs:float"></xs:element>
+<xs:element name="nbPeriodePrevueAn1" type="xs:float"></xs:element>
+<xs:element name="nbPeriodePrevueAn2" type="xs:float"></xs:element>
+<xs:element name="nbPeriodeReelleAn1" type="xs:float"></xs:element>
+<xs:element name="nbPeriodeReelleAn2" type="xs:float"></xs:element>
+<xs:element name="coAdmReg" type="xs:int"></xs:element>
+<xs:element name="coOrgReg" type="xs:int"></xs:element>
+<xs:element name="coBraReg" type="xs:int"></xs:element>
+<xs:element name="coEtuReg" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2InterventionExtLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="interventionExterieure" type="tns:Doc2InterventionExtLineCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2InterventionExtLineCT">
+<xs:sequence>
+<xs:element name="coNumIex" type="xs:int"></xs:element>
+<xs:element name="coCatCol" type="xs:string"></xs:element>
+<xs:element name="teTypeInterventionExt" type="xs:string"></xs:element>
+<xs:element name="coObjFse" type="xs:string"></xs:element>
+<xs:element name="teSousTypeInterventionExt" type="xs:string"></xs:element>
+<xs:element name="coRefPro" type="xs:string"></xs:element>
+<xs:element name="coCriCee" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="periodeListe" type="tns:Doc2PeriodeExtLstCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2PeriodeExtLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="periode" type="tns:Doc2PeriodeExtLineCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2PeriodeExtLineCT">
+<xs:sequence>
+<xs:element name="coCodePar" type="xs:string"></xs:element>
+<xs:element name="teLibPeriode" type="xs:string"></xs:element>
+<xs:element name="nbPerAn1" type="xs:float"></xs:element>
+<xs:element name="nbPerAn2" type="xs:float"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument2LireReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument2ModifReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+<xs:element minOccurs="0" name="activiteEnseignementListe" type="tns:Doc2ActiviteEnseignementLstSaveCT"></xs:element>
+<xs:element minOccurs="0" name="interventionExterieureListe" type="tns:Doc2InterventionExtLstSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2ActiviteEnseignementLstSaveCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="activiteEnseignement" type="tns:Doc2ActiviteEnseignementLineSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2ActiviteEnseignementLineSaveCT">
+<xs:sequence>
+<xs:element name="coNumBranche" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbEleveC1" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodePrevueAn1" type="xs:float"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodePrevueAn2" type="xs:float"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodeReelleAn1" type="xs:float"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodeReelleAn2" type="xs:float"></xs:element>
+<xs:element minOccurs="0" name="coAdmReg" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="coOrgReg" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="coBraReg" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="coEtuReg" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2InterventionExtLstSaveCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="interventionExterieure" type="tns:Doc2InterventionExtLineSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2InterventionExtLineSaveCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="coNumIex" type="xs:int"></xs:element>
+<xs:element name="coCatCol" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="coObjFse" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="coRefPro" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="coCriCee" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="periodeListe" type="tns:Doc2PeriodeExtLstSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2PeriodeExtLstSaveCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="periode" type="tns:Doc2PeriodeExtLineSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc2PeriodeExtLineSaveCT">
+<xs:sequence>
+<xs:element name="coCodePar" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="nbPerAn1" type="xs:float"></xs:element>
+<xs:element minOccurs="0" name="nbPerAn2" type="xs:float"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

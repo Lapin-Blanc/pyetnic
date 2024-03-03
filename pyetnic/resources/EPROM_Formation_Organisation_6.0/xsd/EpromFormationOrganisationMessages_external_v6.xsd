@@ -1,0 +1,142 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/formation/organisation/v6" xmlns:tns="http://services-web.etnic.be/eprom/formation/organisation/messages/v6" xmlns:common="http://etnic.be/types/technical/common/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formation/organisation/messages/v6" version="6.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/formation/organisation/v6" schemaLocation="FormationOrganisation_v6.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/common/v1" schemaLocation="Common_v1.xsd"></xs:import>
+<xs:element name="CreerOrganisation" type="tns:CreerOrganisationRequeteCT"></xs:element>
+<xs:element name="CreerOrganisationReponse" type="tns:CreerOrganisationReponseCT"></xs:element>
+<xs:element name="LireOrganisation" type="tns:LireOrganisationRequeteCT"></xs:element>
+<xs:element name="LireOrganisationReponse" type="tns:LireOrganisationReponseCT"></xs:element>
+<xs:element name="ModifierOrganisation" type="tns:ModifierOrganisationRequeteCT"></xs:element>
+<xs:element name="ModifierOrganisationReponse" type="tns:ModifierOrganisationReponseCT"></xs:element>
+<xs:element name="SupprimerOrganisation" type="tns:SupprimerOrganisationRequeteCT"></xs:element>
+<xs:element name="SupprimerOrganisationReponse" type="tns:SupprimerOrganisationReponseCT"></xs:element>
+<xs:complexType name="CreerOrganisationRequeteCT">
+<xs:sequence>
+<xs:element name="id">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element name="implId" type="etab:ImplIdST"></xs:element>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="dateDebutOrganisation" type="xs:date"></xs:element>
+<xs:element name="dateFinOrganisation" type="xs:date"></xs:element>
+<xs:element minOccurs="0" name="organisationPeriodesSupplOuEPT" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="enseignementHybride" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="numOrganisation2AnneesScolaires" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="typeInterventionExterieure" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="interventionExterieure50p" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="CreerOrganisationReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="organisation" type="org:FormationOrganisationCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="LireOrganisationRequeteCT">
+<xs:sequence>
+<xs:element name="id">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="numOrganisation" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="LireOrganisationReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="organisation" type="org:FormationOrganisationCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="ModifierOrganisationRequeteCT">
+<xs:sequence>
+<xs:element name="id">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="numOrganisation" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="dateDebutOrganisation" type="xs:date"></xs:element>
+<xs:element name="dateFinOrganisation" type="xs:date"></xs:element>
+<xs:element minOccurs="0" name="organisationPeriodesSupplOuEPT" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="enseignementHybride" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="numOrganisation2AnneesScolaires" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="typeInterventionExterieure" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="interventionExterieure50p" type="xs:boolean"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ModifierOrganisationReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="organisation" type="org:FormationOrganisationCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="SupprimerOrganisationRequeteCT">
+<xs:sequence>
+<xs:element name="id">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="numOrganisation" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="SupprimerOrganisationReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType"></xs:extension>
+</xs:complexContent>
+</xs:complexType>
+</xs:schema>

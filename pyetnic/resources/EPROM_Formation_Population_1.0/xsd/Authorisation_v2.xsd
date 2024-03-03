@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://etnic.be/types/technical/authorisation/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://etnic.be/types/technical/authorisation/v2" version="2.0">
+<xs:element name="authorisation" type="tns:AuthorisationCT"></xs:element>
+<xs:complexType name="AuthorisationCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="id" type="xs:string"></xs:element>
+<xs:element name="userId" type="xs:string"></xs:element>
+<xs:element name="name" type="xs:string"></xs:element>
+<xs:element name="firstName" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="BCENumber" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="eMail" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="mimesisId" type="xs:int"></xs:element>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="profile" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

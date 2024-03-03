@@ -1,0 +1,28 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:org="http://enseignement.cfwb.be/types/organisation/v1" xmlns:doc2="http://enseignement.cfwb.be/types/formation/document2/v1" xmlns:tns="http://services-web.etnic.be/eprom/formation/document2/messages/v1" xmlns:common="http://etnic.be/types/technical/common/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formation/document2/messages/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/formation/document2/v1" schemaLocation="FormationDocument2_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/organisation/v1" schemaLocation="Organisation_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/common/v1" schemaLocation="Common_v1.xsd"></xs:import>
+<xs:element name="LireDocument2" type="tns:LireDocument2RequeteCT"></xs:element>
+<xs:element name="LireDocument2Reponse" type="tns:Document2ReponseCT"></xs:element>
+<xs:element name="ModifierDocument2" type="tns:ModifierDocument2RequeteCT"></xs:element>
+<xs:element name="ModifierDocument2Reponse" type="tns:Document2ReponseCT"></xs:element>
+<xs:complexType name="LireDocument2RequeteCT">
+<xs:complexContent>
+<xs:extension base="doc2:FormationDocument2LireReqCT"></xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="ModifierDocument2RequeteCT">
+<xs:complexContent>
+<xs:extension base="doc2:FormationDocument2ModifReqCT"></xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="Document2ReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response" type="doc2:Document2ReponseMetierCT"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+</xs:schema>
