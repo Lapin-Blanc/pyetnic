@@ -24,7 +24,7 @@ def get_wsdl_path(package, resource):
 # PROD = serveur en production de l'ETNIC
 PROD = False
 
-load_dotenv()
+load_dotenv("pyetnic.env")
 if PROD:
     username = os.environ.get("USERNAME_PROD")
     password = os.environ.get("PASSWORD_PROD")
