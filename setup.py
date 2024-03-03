@@ -5,6 +5,12 @@ setup(
     version='0.1.0',
     packages=find_packages(),  # Détecte automatiquement tous les packages à inclure
     include_package_data=True,  # Inclut les données non-code spécifiées dans MANIFEST.in
+    include_package_data=True,  # Cela permet d'inclure les fichiers définis dans MANIFEST.in
+    package_data={
+        'pyetnic': [
+            'resources/*',
+        ],
+    },
     install_requires=[
         # Liste des dépendances nécessaires à installer
         'zeep',
