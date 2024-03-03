@@ -1,7 +1,0 @@
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://enseignement.cfwb.be/types/AnneeScolaire/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" version="1.0">
-<xs:simpleType name="AnneeScolaireST">
-<xs:restriction base="xs:string">
-<xs:pattern value="\d{4}-\d{4}"></xs:pattern>
-</xs:restriction>
-</xs:simpleType>
-</xs:schema>
