@@ -21,17 +21,9 @@ def get_wsdl_path(package, resource):
     with resources.path(package, resource) as wsdl_path:
         return str(wsdl_path)
 
-# PROD = serveur en production de l'ETNIC
-PROD = False
-
-load_dotenv("pyetnic.env")
-if PROD:
-    username = os.environ.get("USERNAME_PROD")
-    password = os.environ.get("PASSWORD_PROD")
-else:
-    username = os.environ.get("USERNAME_DEV")
-    password = os.environ.get("PASSWORD_DEV")
-
+load_dotenv()
+username = os.environ.get("USERNAME")
+password = os.environ.get("PASSWORD")
 etabId = os.environ.get("DEFAULT_ETAB_ID")
 implId = os.environ.get("DEFAULT_IMPL_ID")
 anneeScolaire = os.environ.get("DEFAULT_SCHOOL_YEAR")
@@ -67,7 +59,7 @@ def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None
     )
     return result['body']['response']['formation']
 
-def lire_organisation(num_adm_formation, num_organisation, annee_scolaire, etab_id=etabId):
+def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationOrganisationService_external_v6.wsdl"
     manager = SoapClientManager(wsdl_subpath)
     client = manager.get_client()
@@ -80,7 +72,7 @@ def lire_organisation(num_adm_formation, num_organisation, annee_scolaire, etab_
         }
     )
 
-def lire_document_1(num_adm_formation, num_organisation, annee_scolaire, etab_id=etabId):
+def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument1Service_external_v1.wsdl"
     manager = SoapClientManager(wsdl_subpath)
     client = manager.get_client()
@@ -93,7 +85,7 @@ def lire_document_1(num_adm_formation, num_organisation, annee_scolaire, etab_id
         }
     )
 
-def lire_document_2(num_adm_formation, num_organisation, annee_scolaire, etab_id=etabId):
+def lire_document_2(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument2Service_external_v1.wsdl"
     manager = SoapClientManager(wsdl_subpath)
     client = manager.get_client()
