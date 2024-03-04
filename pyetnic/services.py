@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 from zeep import Client
 from zeep.wsse.username import UsernameToken
+from zeep.helpers import serialize_object
 from importlib import resources
 
 
@@ -48,7 +49,8 @@ def lister_formations_organisables(annee_scolaire=anneeScolaire, etab_id=etabId,
     result = client.service.ListerFormationsOrganisables(
         anneeScolaire=annee_scolaire, etabId=etab_id, implId=impl_id
     )
-    return result['body']['response']['formation']
+    return serialize_object(result['body']['response']['formation'], dict)
+
 
 def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None):
     wsdl_subpath = "EpromFormationsListeService_external_v2.wsdl"
@@ -57,13 +59,14 @@ def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None
     result = client.service.ListerFormations(
         anneeScolaire=annee_scolaire, etabId=etab_id, implId=impl_id
     )
-    return result['body']['response']['formation']
+    return serialize_object(result['body']['response']['formation'])
+
 
 def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationOrganisationService_external_v6.wsdl"
     manager = SoapClientManager(wsdl_subpath)
     client = manager.get_client()
-    return client.service.LireOrganisation(
+    result = client.service.LireOrganisation(
         id={
             "anneeScolaire": annee_scolaire,
             "etabId": etab_id,
@@ -71,6 +74,7 @@ def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeS
             "numOrganisation": num_organisation,
         }
     )
+    return serialize_object(result['body']['response'])
 
 def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument1Service_external_v1.wsdl"
