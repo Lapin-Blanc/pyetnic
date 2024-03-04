@@ -24,9 +24,9 @@ def get_wsdl_path(package, resource):
 load_dotenv()
 username = os.environ.get("USERNAME")
 password = os.environ.get("PASSWORD")
-etabId = os.environ.get("DEFAULT_ETAB_ID")
-implId = os.environ.get("DEFAULT_IMPL_ID")
-anneeScolaire = os.environ.get("DEFAULT_SCHOOL_YEAR")
+etabId = os.environ.get("DEFAULT_ETABID")
+implId = os.environ.get("DEFAULT_IMPLID")
+anneeScolaire = os.environ.get("DEFAULT_SCHOOLYEAR")
 
 
 class SoapClientManager:
