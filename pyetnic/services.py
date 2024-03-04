@@ -59,7 +59,7 @@ def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None
     result = client.service.ListerFormations(
         anneeScolaire=annee_scolaire, etabId=etab_id, implId=impl_id
     )
-    return serialize_object(result['body']['response']['formation'])
+    return serialize_object(result['body']['response']['formation'], dict)
 
 
 def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
@@ -74,13 +74,13 @@ def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeS
             "numOrganisation": num_organisation,
         }
     )
-    return serialize_object(result['body']['response'])
+    return serialize_object(result['body']['response'], dict)
 
 def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument1Service_external_v1.wsdl"
     manager = SoapClientManager(wsdl_subpath)
     client = manager.get_client()
-    return client.service.LireDocument1(
+    result = client.service.LireDocument1(
         id={
             "anneeScolaire": annee_scolaire,
             "etabId": etab_id,
@@ -88,12 +88,13 @@ def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeSco
             "numOrganisation": num_organisation,
         }
     )
+    return serialize_object(result['body']['response'], dict)
 
 def lire_document_2(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument2Service_external_v1.wsdl"
     manager = SoapClientManager(wsdl_subpath)
     client = manager.get_client()
-    return client.service.LireDocument2(
+    result = client.service.LireDocument2(
         id={
             "anneeScolaire": annee_scolaire,
             "etabId": etab_id,
@@ -101,3 +102,4 @@ def lire_document_2(num_adm_formation, num_organisation, annee_scolaire=anneeSco
             "numOrganisation": num_organisation,
         }
     )
+    return serialize_object(result['body']['response'], dict)
