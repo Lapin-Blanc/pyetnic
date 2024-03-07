@@ -102,4 +102,4 @@ def lire_document_2(num_adm_formation, num_organisation, annee_scolaire=anneeSco
             "numOrganisation": num_organisation,
         }
     )
-    return serialize_object(result['body']['response'], dict)
+    return serialize_object(result['body']['response']['document2'], dict)
