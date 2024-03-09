@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyetnic',
-    version='0.0.2',
+    version='0.0.3',
     packages=find_packages(),  # Détecte automatiquement tous les packages à inclure
     include_package_data=True,  # Inclut les données non-code spécifiées dans MANIFEST.in
     package_data={
