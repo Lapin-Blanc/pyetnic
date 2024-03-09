@@ -15,20 +15,20 @@ PROD_PASSWORD=
 
 # Endpoints pour chaque service en développement
 LISTE_FORMATIONS_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formations/liste/v2
-ORGANISATION_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/organisation/v6
-DOCUMENT1_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/document1/v1
-DOCUMENT2_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/document2/v1
+ORGANISATION_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formation/organisation/v6
+DOCUMENT1_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formation/document1/v1
+DOCUMENT2_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formation/document2/v1
 
 # Endpoints pour chaque service en production
 LISTE_FORMATIONS_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formations/liste/v2
-ORGANISATION_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/organisation/v6
-DOCUMENT1_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/document1/v1
-DOCUMENT2_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/document2/v1
+ORGANISATION_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formation/organisation/v6
+DOCUMENT1_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formation/document1/v1
+DOCUMENT2_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formation/document2/v1
 
 DEFAULT_ETABID=3052
 DEFAULT_IMPLID=6050
 DEFAULT_SCHOOLYEAR=2023-2024
-    """
+"""
 
 
     with open(".env.example", "w") as f:
