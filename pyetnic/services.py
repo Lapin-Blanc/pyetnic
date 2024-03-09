@@ -7,6 +7,15 @@ from zeep.wsse.username import UsernameToken
 from zeep.helpers import serialize_object
 from importlib import resources
 
+load_dotenv()
+
+env = os.getenv('ENV', 'dev')
+username = os.getenv(f"{env.upper()}_USERNAME")
+password = os.getenv(f"{env.upper()}_PASSWORD")
+etabId = os.getenv("DEFAULT_ETABID")
+implId = os.getenv("DEFAULT_IMPLID")
+anneeScolaire = os.getenv("DEFAULT_SCHOOLYEAR")
+
 
 def get_wsdl_path(package, resource):
     """
@@ -22,31 +31,25 @@ def get_wsdl_path(package, resource):
     with resources.path(package, resource) as wsdl_path:
         return str(wsdl_path)
 
-load_dotenv()
-username = os.environ.get("USERNAME")
-password = os.environ.get("PASSWORD")
-etabId = os.environ.get("DEFAULT_ETABID")
-implId = os.environ.get("DEFAULT_IMPLID")
-anneeScolaire = os.environ.get("DEFAULT_SCHOOLYEAR")
-
 
 class SoapClientManager:
-    def __init__(self, wsdl_subpath):
+    def __init__(self, wsdl_subpath, service_name):
         package = 'pyetnic.resources'
         self.wsdl_path = get_wsdl_path(package, wsdl_subpath)
-        self.client = None
+        endpoint = os.getenv(f"{service_name.upper()}_{env.upper()}_ENDPOINT")
+        self.client = Client(self.wsdl_path, wsse=UsernameToken(username, password))
+        binding_name = next(iter(self.client.wsdl.bindings))
+        self.service = self.client.create_service(binding_name, endpoint)
 
-    def get_client(self):
-        if not self.client:
-            self.client = Client(self.wsdl_path, wsse=UsernameToken(username, password))
-        return self.client
+    def get_service(self):
+        return self.service
 
 
 def lister_formations_organisables(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None):
     wsdl_subpath = "EpromFormationsListeService_external_v2.wsdl"
-    manager = SoapClientManager(wsdl_subpath)
-    client = manager.get_client()
-    result = client.service.ListerFormationsOrganisables(
+    manager = SoapClientManager(wsdl_subpath, "LISTE_FORMATIONS")
+    service = manager.get_service()
+    result = service.ListerFormationsOrganisables(
         anneeScolaire=annee_scolaire, etabId=etab_id, implId=impl_id
     )
     return serialize_object(result['body']['response']['formation'], dict)
@@ -54,9 +57,9 @@ def lister_formations_organisables(annee_scolaire=anneeScolaire, etab_id=etabId,
 
 def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None):
     wsdl_subpath = "EpromFormationsListeService_external_v2.wsdl"
-    manager = SoapClientManager(wsdl_subpath)
-    client = manager.get_client()
-    result = client.service.ListerFormations(
+    manager = SoapClientManager(wsdl_subpath, "LISTE_FORMATIONS")
+    service = manager.get_service()
+    result = service.ListerFormations(
         anneeScolaire=annee_scolaire, etabId=etab_id, implId=impl_id
     )
     return serialize_object(result['body']['response']['formation'], dict)
@@ -64,9 +67,9 @@ def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None
 
 def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationOrganisationService_external_v6.wsdl"
-    manager = SoapClientManager(wsdl_subpath)
-    client = manager.get_client()
-    result = client.service.LireOrganisation(
+    manager = SoapClientManager(wsdl_subpath, "ORGANISATION")
+    service = manager.get_service()
+    result = service.LireOrganisation(
         id={
             "anneeScolaire": annee_scolaire,
             "etabId": etab_id,
@@ -78,9 +81,9 @@ def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeS
 
 def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument1Service_external_v1.wsdl"
-    manager = SoapClientManager(wsdl_subpath)
-    client = manager.get_client()
-    result = client.service.LireDocument1(
+    manager = SoapClientManager(wsdl_subpath, "DOCUMENT1")
+    service = manager.get_service()
+    result = service.LireDocument1(
         id={
             "anneeScolaire": annee_scolaire,
             "etabId": etab_id,
@@ -92,9 +95,9 @@ def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeSco
 
 def lire_document_2(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument2Service_external_v1.wsdl"
-    manager = SoapClientManager(wsdl_subpath)
-    client = manager.get_client()
-    result = client.service.LireDocument2(
+    manager = SoapClientManager(wsdl_subpath, "DOCUMENT2")
+    service = manager.get_service()
+    result = service.LireDocument2(
         id={
             "anneeScolaire": annee_scolaire,
             "etabId": etab_id,
