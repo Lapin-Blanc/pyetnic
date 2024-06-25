@@ -79,6 +79,84 @@ def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeS
     )
     return serialize_object(result['body']['response'], dict)
 
+
+def creer_organisation(num_adm_formation, date_debut, date_fin, annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=implId, **kwargs):
+    wsdl_subpath = "EpromFormationOrganisationService_external_v6.wsdl"
+    manager = SoapClientManager(wsdl_subpath, "ORGANISATION")
+    service = manager.get_service()
+    
+    organisation_data = {
+        "id": {
+            "anneeScolaire": annee_scolaire,
+            "etabId": etab_id,
+            "implId": impl_id,
+            "numAdmFormation": num_adm_formation
+        },
+        "dateDebutOrganisation": date_debut,
+        "dateFinOrganisation": date_fin
+    }
+    
+    optional_fields = [
+        "organisationPeriodesSupplOuEPT", "valorisationAcquis", "enPrison", 
+        "activiteFormation", "conseillerPrevention", "enseignementHybride",
+        "numOrganisation2AnneesScolaires", "typeInterventionExterieure",
+        "interventionExterieure50p"
+    ]
+    
+    for field in optional_fields:
+        if field in kwargs:
+            organisation_data[field] = kwargs[field]
+    
+    result = service.CreerOrganisation(**organisation_data)
+    return serialize_object(result['body']['response']['organisation'], dict)
+
+
+def modifier_organisation(num_adm_formation, num_organisation, date_debut, date_fin, annee_scolaire=anneeScolaire, etab_id=etabId, **kwargs):
+    wsdl_subpath = "EpromFormationOrganisationService_external_v6.wsdl"
+    manager = SoapClientManager(wsdl_subpath, "ORGANISATION")
+    service = manager.get_service()
+    
+    organisation_data = {
+        "id": {
+            "anneeScolaire": annee_scolaire,
+            "etabId": etab_id,
+            "numAdmFormation": num_adm_formation,
+            "numOrganisation": num_organisation
+        },
+        "dateDebutOrganisation": date_debut,
+        "dateFinOrganisation": date_fin
+    }
+    
+    optional_fields = [
+        "organisationPeriodesSupplOuEPT", "valorisationAcquis", "enPrison", 
+        "activiteFormation", "conseillerPrevention", "enseignementHybride",
+        "numOrganisation2AnneesScolaires", "typeInterventionExterieure",
+        "interventionExterieure50p"
+    ]
+    
+    for field in optional_fields:
+        if field in kwargs:
+            organisation_data[field] = kwargs[field]
+    
+    result = service.ModifierOrganisation(**organisation_data)
+    return serialize_object(result['body']['response']['organisation'], dict)
+
+def supprimer_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
+    wsdl_subpath = "EpromFormationOrganisationService_external_v6.wsdl"
+    manager = SoapClientManager(wsdl_subpath, "ORGANISATION")
+    service = manager.get_service()
+    
+    organisation_id = {
+        "anneeScolaire": annee_scolaire,
+        "etabId": etab_id,
+        "numAdmFormation": num_adm_formation,
+        "numOrganisation": num_organisation
+    }
+    
+    result = service.SupprimerOrganisation(id=organisation_id)
+    return serialize_object(result['body'], dict)
+
+
 def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     wsdl_subpath = "EpromFormationDocument1Service_external_v1.wsdl"
     manager = SoapClientManager(wsdl_subpath, "DOCUMENT1")
