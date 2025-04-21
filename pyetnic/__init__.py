@@ -32,3 +32,8 @@ from .services import (
 
 # Exposition des constantes de configuration
 # from .services import anneeScolaire, etabId, implId
+
+from .cli import main as cli_main
+
+def run_cli():
+    cli_main()
