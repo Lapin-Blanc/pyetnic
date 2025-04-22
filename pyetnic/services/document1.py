@@ -1,4 +1,4 @@
-from ..services import SoapClientManager, generate_request_id
+from ..soap_client import SoapClientManager, generate_request_id
 from zeep.helpers import serialize_object
 from ..config import anneeScolaire, etabId
 

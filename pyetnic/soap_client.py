@@ -8,6 +8,7 @@ les connexions aux services SOAP d'ETNIC.
 import uuid
 import logging
 import urllib3
+import os
 from importlib.resources import files, as_file
 from functools import lru_cache
 
@@ -71,84 +72,50 @@ class SoapClientManager:
             SoapError: Si la création du client échoue
         """
         self.service_name = service_name
+        self.endpoint = Config.ENDPOINTS.get(service_name)
+        self.wsdl_path = get_wsdl_path('pyetnic.resources', Config.WSDL_PATHS.get(service_name))
+        self.client = None  # Initialize the client attribute
         
-        # Vérification que le service est valide
-        if service_name not in Config.WSDL_PATHS:
-            raise ValueError(f"Service inconnu: {service_name}")
-        
-        # Récupération du chemin WSDL et de l'endpoint
-        wsdl_subpath = Config.WSDL_PATHS[service_name]
-        self.endpoint = Config.ENDPOINTS[service_name]
-        
-        if not self.endpoint:
-            logger.warning(f"Endpoint non défini pour le service {service_name}")
-        
-        # Création ou récupération du client SOAP depuis le cache
-        cache_key = f"{service_name}_{Config.ENV}"
-        
-        if cache_key in self._client_cache:
-            logger.debug(f"Utilisation du client SOAP en cache pour {service_name}")
-            self.client = self._client_cache[cache_key]['client']
-            self.service = self._client_cache[cache_key]['service']
-        else:
-            logger.debug(f"Création d'un nouveau client SOAP pour {service_name}")
-            try:
-                # Configuration de la session HTTP
-                session = Session()
-                session.verify = Config.get_verify_ssl()
-                transport = Transport(session=session)
-                
-                # Chemin vers le fichier WSDL
-                package = 'pyetnic.resources'
-                wsdl_path = get_wsdl_path(package, wsdl_subpath)
-                
-                # Création du client avec authentification
-                self.client = Client(
-                    wsdl_path,
-                    wsse=UsernameToken(Config.USERNAME, Config.PASSWORD),
-                    transport=transport
-                )
-                
-                # Détermination du binding
-                binding_name = self._get_binding_name(wsdl_subpath)
-                
-                # Création du service avec le binding et l'endpoint appropriés
-                self.service = self.client.create_service(binding_name, self.endpoint)
-                
-                # Mise en cache du client et du service
-                self._client_cache[cache_key] = {
-                    'client': self.client,
-                    'service': self.service
-                }
-                
-            except (Fault, TransportError, RequestException) as e:
-                error_msg = f"Erreur lors de la création du client SOAP pour {service_name}: {str(e)}"
-                logger.error(error_msg)
-                raise SoapError(error_msg, soap_fault=e)
-    
-    def _get_binding_name(self, wsdl_subpath):
+        if not self.endpoint or not self.wsdl_path:
+            raise ValueError(f"Configuration manquante pour le service: {service_name}")
+
+    def _initialize_client(self):
+        if self.service_name in self._client_cache:
+            logger.debug(f"Utilisation du client SOAP en cache pour {self.service_name}")
+            return self._client_cache[self.service_name]
+
+        logger.debug(f"Création d'un nouveau client SOAP pour {self.service_name}")
+        session = Session()
+        session.verify = Config.get_verify_ssl()
+        transport = Transport(session=session)
+
+        self.client = Client(self.wsdl_path, wsse=UsernameToken(Config.USERNAME, Config.PASSWORD), transport=transport)
+        binding_name = self._get_binding_name()
+        service = self.client.create_service(binding_name, self.endpoint)
+
+        self._client_cache[self.service_name] = service
+        return service
+
+    def _get_binding_name(self):
         """
         Détermine le nom du binding approprié en fonction du service.
         
-        Args:
-            wsdl_subpath (str): Chemin du fichier WSDL
-            
         Returns:
             str: Nom du binding à utiliser
         """
         # Détermination du binding par analyse du nom du fichier WSDL
-        if 'Document1' in wsdl_subpath:
+        if 'Document1' in self.wsdl_path:
             return "{http://services-web.etnic.be/eprom/formation/document1/v1}EPROMFormationDocument1ExternalV1Binding"
-        elif 'Document2' in wsdl_subpath:
+        elif 'Document2' in self.wsdl_path:
             return "{http://services-web.etnic.be/eprom/formation/document2/v1}EPROMFormationDocument2ExternalV1Binding"
-        elif 'Organisation' in wsdl_subpath:
+        elif 'Organisation' in self.wsdl_path:
             return "{http://services-web.etnic.be/eprom/formation/organisation/v6}EPROMFormationOrganisationExternalV6Binding"
-        elif 'FormationsListe' in wsdl_subpath:
+        elif 'FormationsListe' in self.wsdl_path:
             return "{http://services-web.etnic.be/eprom/formations/liste/v2}EPROMFormationsListeExternalV2Binding"
         else:
             # Fallback: utiliser le premier binding défini dans le WSDL
             return next(iter(self.client.wsdl.bindings))
-    
+
     def call_service(self, method_name, **kwargs):
         """
         Appelle une méthode du service SOAP avec gestion des erreurs.
@@ -163,12 +130,13 @@ class SoapClientManager:
         Raises:
             SoapError: Si l'appel au service échoue
         """
-        # Génération d'un ID de requête pour le traçage
-        request_id = generate_request_id()
-        
+        service = self._initialize_client()
         try:
+            # Génération d'un ID de requête pour le traçage
+            request_id = generate_request_id()
+            
             # Récupération de la méthode à partir du nom
-            method = getattr(self.service, method_name)
+            method = getattr(service, method_name)
             
             # Appel de la méthode avec l'en-tête SOAP
             result = method(_soapheaders={"requestId": request_id}, **kwargs)
@@ -181,7 +149,7 @@ class SoapClientManager:
             error_msg = f"Erreur lors de l'appel à {method_name} sur {self.service_name}: {str(e)}"
             logger.error(f"{error_msg} (request_id: {request_id})")
             raise SoapError(error_msg, soap_fault=e, request_id=request_id)
-    
+
     def get_service(self):
         """Retourne le service SOAP configuré."""
-        return self.service
+        return self._initialize_client()

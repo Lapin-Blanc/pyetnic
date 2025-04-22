@@ -12,6 +12,23 @@ from .formations_liste import (
     FormationsListeService
 )
 
+# Importation et exposition des fonctions pour le service d'organisation
+from .organisation import (
+    creer_organisation,
+    modifier_organisation,
+    lire_organisation,
+    supprimer_organisation
+)
 
-# Note: Les autres services (organisation, document1, document2) seront importés
-# de manière similaire lorsque leurs modules seront implémentés.
+# Importation et exposition des fonctions pour le service document1
+from .document1 import (
+    lire_document_1,
+    modifier_document_1,
+    approuver_document_1
+)
+
+# Importation et exposition des fonctions pour le service document2
+from .document2 import (
+    lire_document_2,
+    modifier_document_2
+)
