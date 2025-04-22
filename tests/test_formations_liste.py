@@ -26,14 +26,18 @@ def test_lister_formations():
     assert isinstance(result['body']['response']['formation'], list)
     assert len(result['body']['response']['formation']) > 0
     
-    formation = result['body']['response']['formation'][0]
-    assert 'numAdmFormation' in formation
-    assert 'libelleFormation' in formation
-    assert 'codeFormation' in formation
-    assert 'organisation' in formation
-    
-    if formation['organisation']:
-        organisation = formation['organisation'][0]
-        assert 'numOrganisation' in organisation
-        assert 'dateDebutOrganisation' in organisation
-        assert 'dateFinOrganisation' in organisation
+    # Iterate over formations to find one with at least one organisation
+    for formation in result['body']['response']['formation']:
+        assert 'numAdmFormation' in formation
+        assert 'libelleFormation' in formation
+        assert 'codeFormation' in formation
+        assert 'organisation' in formation
+        
+        if formation['organisation']:
+            organisation = formation['organisation'][0]
+            assert 'numOrganisation' in organisation
+            assert 'dateDebutOrganisation' in organisation
+            assert 'dateFinOrganisation' in organisation
+            break  # Exit the loop once a formation with an organisation is found
+    else:
+        pytest.fail("No formation with an organisation found.")
