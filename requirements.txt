@@ -1,22 +1,22 @@
 # Dépendances principales
 urllib3
 zeep
-python-dotenv==1.0.0
+python-dotenv
 requests
-cgi-tools  # Support pour remplacer le module cgi déprécié
+# #cgi-tools  # Support pour remplacer le module cgi déprécié
 
-# Dépendances de développement
-pytest==7.4.0
-pytest-cov==4.1.0
-flake8==6.1.0
-black
-isort==5.12.0
-mypy==1.5.1
+# # Dépendances de développement
+# pytest==7.4.0
+# pytest-cov==4.1.0
+# flake8==6.1.0
+# black
+# isort==5.12.0
+# mypy==1.5.1
 
-# Documentation
-Sphinx==7.2.6
-sphinx-rtd-theme==1.3.0
+# # Documentation
+# Sphinx==7.2.6
+# sphinx-rtd-theme==1.3.0
 
-# Outils de packaging
-build==1.0.3
-twine==4.0.2
+# # Outils de packaging
+# build==1.0.3
+# twine==4.0.2
