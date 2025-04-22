@@ -1,6 +1,6 @@
 # Dépendances principales
-urllib3==2.0.0
-zeep==4.1.0  # Dernière version fonctionnant bien avec Python 3.11+
+urllib3
+zeep
 python-dotenv==1.0.0
 requests==2.31.0
 cgi-tools  # Support pour remplacer le module cgi déprécié
