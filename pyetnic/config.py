@@ -18,9 +18,14 @@ load_dotenv()
 class Config:
     """Classe centralisée pour la configuration de l'application."""
     
+    # Environnement (dev, prod, etc.)
     ENV = os.getenv('ENV', 'dev')
+    
+    # Identifiants d'authentification
     USERNAME = os.getenv(f"{ENV.upper()}_USERNAME")
     PASSWORD = os.getenv(f"{ENV.upper()}_PASSWORD")
+    
+    # Paramètres par défaut
     ANNEE_SCOLAIRE = os.getenv("DEFAULT_SCHOOLYEAR")
     ETAB_ID = os.getenv("DEFAULT_ETABID")
     IMPL_ID = os.getenv("DEFAULT_IMPLID")

@@ -7,7 +7,7 @@ et les formations existantes avec leurs organisations.
 
 from typing import Dict, List, Any, Optional
 import logging
-from ..services import SoapClientManager, generate_request_id
+from ..soap_client import SoapClientManager, generate_request_id
 from zeep.helpers import serialize_object
 from ..config import Config, anneeScolaire, etabId, implId
 
@@ -112,7 +112,7 @@ class FormationsListeService:
 # Fonctions compatibles avec l'API originale
 def lister_formations_organisables(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None):
     """Lister les formations organisables."""
-    manager = SoapClientManager("EpromFormationsListeService_external_v2.wsdl", "LISTE_FORMATIONS")
+    manager = SoapClientManager("LISTE_FORMATIONS")
     service = manager.get_service()
     
     request_data = {
@@ -128,7 +128,7 @@ def lister_formations_organisables(annee_scolaire=anneeScolaire, etab_id=etabId,
 
 def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None):
     """Lister les formations avec organisations."""
-    manager = SoapClientManager("EpromFormationsListeService_external_v2.wsdl", "LISTE_FORMATIONS")
+    manager = SoapClientManager("LISTE_FORMATIONS")
     service = manager.get_service()
     
     request_data = {
