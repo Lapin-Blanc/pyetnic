@@ -7,8 +7,8 @@ et les formations existantes avec leurs organisations.
 
 from typing import Dict, List, Any, Optional
 import logging
-
-from ..soap_client import SoapClientManager, SoapError
+from ..services import SoapClientManager, generate_request_id
+from zeep.helpers import serialize_object
 from ..config import Config, anneeScolaire, etabId, implId
 
 # Configuration du logging
@@ -111,17 +111,33 @@ class FormationsListeService:
 
 # Fonctions compatibles avec l'API originale
 def lister_formations_organisables(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None):
-    """
-    Fonction de compatibilité pour lister_formations_organisables.
-    Voir FormationsListeService.lister_formations_organisables pour la documentation complète.
-    """
-    service = FormationsListeService()
-    return service.lister_formations_organisables(annee_scolaire, etab_id, impl_id)
+    """Lister les formations organisables."""
+    manager = SoapClientManager("EpromFormationsListeService_external_v2.wsdl", "LISTE_FORMATIONS")
+    service = manager.get_service()
+    
+    request_data = {
+        "anneeScolaire": annee_scolaire,
+        "etabId": etab_id
+    }
+    if impl_id:
+        request_data["implId"] = impl_id
+    
+    headers = {"requestId": generate_request_id()}
+    result = service.ListerFormationsOrganisables(_soapheaders=headers, **request_data)
+    return serialize_object(result, dict)
 
 def lister_formations(annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=None):
-    """
-    Fonction de compatibilité pour lister_formations.
-    Voir FormationsListeService.lister_formations pour la documentation complète.
-    """
-    service = FormationsListeService()
-    return service.lister_formations(annee_scolaire, etab_id, impl_id)
+    """Lister les formations avec organisations."""
+    manager = SoapClientManager("EpromFormationsListeService_external_v2.wsdl", "LISTE_FORMATIONS")
+    service = manager.get_service()
+    
+    request_data = {
+        "anneeScolaire": annee_scolaire,
+        "etabId": etab_id
+    }
+    if impl_id:
+        request_data["implId"] = impl_id
+    
+    headers = {"requestId": generate_request_id()}
+    result = service.ListerFormations(_soapheaders=headers, **request_data)
+    return serialize_object(result, dict)
