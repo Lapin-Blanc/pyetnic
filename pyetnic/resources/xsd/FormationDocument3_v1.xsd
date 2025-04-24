@@ -1,0 +1,90 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/organisation/v1" xmlns:tns="http://enseignement.cfwb.be/types/formation/document3/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/document3/v1" version="1.1">
+<xs:import namespace="http://enseignement.cfwb.be/types/organisation/v1" schemaLocation="Organisation_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:complexType name="FormationDocument3LireReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument3ModifReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+<xs:element name="activiteListe" type="tns:Doc3ActiviteListeSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3ActiviteListeSaveCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" name="activite" type="tns:Doc3ActiviteDetailSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3ActiviteDetailSaveCT">
+<xs:sequence>
+<xs:element name="coNumBranche" type="xs:int"></xs:element>
+<xs:element name="noAnneeEtude" type="xs:string"></xs:element>
+<xs:element name="enseignantListe" type="tns:Doc3EnseignantLstSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3EnseignantLstSaveCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" name="enseignant" type="tns:Doc3EnseignantDetailSaveCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3EnseignantDetailSaveCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="coNumAttribution" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="noMatEns" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="coDispo" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="teStatut" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodesAttribuees" type="xs:float"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Document3ReponseMetierCT">
+<xs:sequence>
+<xs:element name="document3" type="tns:FormationDocument3CT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument3CT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationResIdCT"></xs:element>
+<xs:element minOccurs="0" name="activiteListe" type="tns:Doc3ActiviteListeCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3ActiviteListeCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="activite" type="tns:Doc3ActiviteDetailCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3ActiviteDetailCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="coNumBranche" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="coCategorie" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="teNomBranche" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="noAnneeEtude" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodesDoc8" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodesPrevuesDoc2" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodesReellesDoc2" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="enseignantListe" type="tns:Doc3EnseignantLstCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3EnseignantLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="enseignant" type="tns:Doc3EnseignantDetailCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc3EnseignantDetailCT">
+<xs:sequence>
+<xs:element minOccurs="0" name="coNumAttribution" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="noMatEns" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="teNomEns" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="tePrenomEns" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="teAbrEns" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="teEnseignant" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="coDispo" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="teStatut" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="nbPeriodesAttribuees" type="xs:float"></xs:element>
+<xs:element minOccurs="0" name="tsMaj" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="teUserMaj" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>
