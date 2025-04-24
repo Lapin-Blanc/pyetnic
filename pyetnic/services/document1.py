@@ -4,7 +4,7 @@ from ..config import anneeScolaire, etabId
 
 def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     """Lire le document 1."""
-    manager = SoapClientManager("EpromFormationDocument1Service_external_v1.wsdl", "DOCUMENT1")
+    manager = SoapClientManager("DOCUMENT1")
     service = manager.get_service()
     
     document_id = {
@@ -20,7 +20,7 @@ def lire_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeSco
 
 def modifier_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId, populations_liste=None):
     """Modifier le document 1."""
-    manager = SoapClientManager("EpromFormationDocument1Service_external_v1.wsdl", "DOCUMENT1")
+    manager = SoapClientManager("DOCUMENT1")
     service = manager.get_service()
     
     document_data = {
@@ -43,7 +43,7 @@ def modifier_document_1(num_adm_formation, num_organisation, annee_scolaire=anne
 
 def approuver_document_1(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
     """Approuver le document 1."""
-    manager = SoapClientManager("EpromFormationDocument1Service_external_v1.wsdl", "DOCUMENT1")
+    manager = SoapClientManager("DOCUMENT1")
     service = manager.get_service()
     
     document_id = {

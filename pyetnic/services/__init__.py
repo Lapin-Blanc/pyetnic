@@ -32,3 +32,8 @@ from .document2 import (
     lire_document_2,
     modifier_document_2
 )
+
+# Importation et exposition des fonctions pour le service document2
+from .document3 import (
+    lire_document_3,
+)

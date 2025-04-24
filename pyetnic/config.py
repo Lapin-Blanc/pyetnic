@@ -35,7 +35,8 @@ class Config:
         "LISTE_FORMATIONS": os.getenv(f"LISTE_FORMATIONS_{ENV.upper()}_ENDPOINT"),
         "ORGANISATION": os.getenv(f"ORGANISATION_{ENV.upper()}_ENDPOINT"),
         "DOCUMENT1": os.getenv(f"DOCUMENT1_{ENV.upper()}_ENDPOINT"),
-        "DOCUMENT2": os.getenv(f"DOCUMENT2_{ENV.upper()}_ENDPOINT")
+        "DOCUMENT2": os.getenv(f"DOCUMENT2_{ENV.upper()}_ENDPOINT"),
+        "DOCUMENT3": os.getenv(f"DOCUMENT3_{ENV.upper()}_ENDPOINT"),
     }
     
     # Mapping des services vers leurs fichiers WSDL
@@ -43,7 +44,8 @@ class Config:
         "LISTE_FORMATIONS": "EpromFormationsListeService_external_v2.wsdl",
         "ORGANISATION": "EpromFormationOrganisationService_external_v6.wsdl",
         "DOCUMENT1": "EpromFormationDocument1Service_external_v1.wsdl",
-        "DOCUMENT2": "EpromFormationDocument2Service_external_v1.wsdl"
+        "DOCUMENT2": "EpromFormationDocument2Service_external_v1.wsdl",
+        "DOCUMENT3": "EpromFormationDocument3Service_external_v1.wsdl",
     }
     
     @classmethod
