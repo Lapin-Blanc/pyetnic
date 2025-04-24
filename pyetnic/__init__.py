@@ -28,6 +28,10 @@ from .services import (
     # Document 2
     lire_document_2,
     modifier_document_2
+
+    # Document 3
+    lire_document_3,
+
 )
 
 # Exposition des constantes de configuration
