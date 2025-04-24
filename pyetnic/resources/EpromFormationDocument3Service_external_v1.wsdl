@@ -1,0 +1,76 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:req="http://etnic.be/types/technical/requestId/v1" xmlns:tns="http://services-web.etnic.be/eprom/formation/document3/v1" xmlns:eprom="http://services-web.etnic.be/eprom/formation/document3/messages/v1" name="EPROMFormationDocument3V1ExternalService" targetNamespace="http://services-web.etnic.be/eprom/formation/document3/v1">
+  <wsdl:types>
+    <xs:schema>
+			<xs:import namespace="http://services-web.etnic.be/eprom/formation/document3/messages/v1" schemaLocation="xsd/EpromFormationDocument3Messages_external_v1.xsd"></xs:import>
+			<xs:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="xsd/requestId_v1.xsd"></xs:import>
+		</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="RequestIdHeader">
+    <wsdl:part name="requestId" element="req:requestId">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="LireDocument3ReponseMessage">
+    <wsdl:part name="parameter" element="eprom:LireDocument3Reponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ModifierDocument3RequeteMessage">
+    <wsdl:part name="parameter" element="eprom:ModifierDocument3">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="LireDocument3RequeteMessage">
+    <wsdl:part name="parameter" element="eprom:LireDocument3">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ModifierDocument3ReponseMessage">
+    <wsdl:part name="parameter" element="eprom:ModifierDocument3Reponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="EPROMFormationDocument3ExternalV1PortType">
+    <wsdl:operation name="LireDocument3">
+      <wsdl:input message="tns:LireDocument3RequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:LireDocument3ReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ModifierDocument3">
+      <wsdl:input message="tns:ModifierDocument3RequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:ModifierDocument3ReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="EPROMFormationDocument3ExternalV1Binding" type="tns:EPROMFormationDocument3ExternalV1PortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="LireDocument3">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/document3/v1/LireDocument3"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ModifierDocument3">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/document3/v1/ModifierDocument3"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="service_eprom_formation_document3_external_v1">
+    <wsdl:port name="EPROMFormationDocument3ExternalV1Port" binding="tns:EPROMFormationDocument3ExternalV1Binding">
+      <soap:address location="https://services-web.tq.etnic.be/eprom/formation/document3/v1"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
