@@ -86,23 +86,60 @@ def test_creer_organisation(organisation_service, organisation_data):
     assert result['body']['success'] is True
     assert result['body']['response']['organisation']['id']['numAdmFormation'] == organisation_data['num_adm_formation']
 
-def test_lire_organisation(organisation_service, organisation_data):
-    """Test reading an existing organisation."""
-    # First, create the organisation
-    organisation_service.creer_organisation(**organisation_data)
-    # Then, read the organisation
-    result = organisation_service.lire_organisation(organisation_data['num_adm_formation'], 8)
-    assert result['body']['success'] is True
-    assert result['body']['response']['organisation']['id']['numOrganisation'] == 8
+@pytest.fixture
+def new_organisation(organisation_service):
+    """Fixture to create a new organization and clean up after the test."""
+    # Define the organization data
+    organisation_data = {
+        "num_adm_formation": 328,
+        "date_debut": "2023-09-01",
+        "date_fin": "2024-06-30",
+        "annee_scolaire": "2023-2024",
+        "etab_id": 3052,
+        "impl_id": 6050
+    }
+    
+    # Create the organization
+    result = organisation_service.creer_organisation(**organisation_data)
+    org_id = result['id']['numOrganisation']
+    
+    # Yield the organization data for use in tests
+    yield result
+    
+    # Clean up: delete the organization after the test
+    organisation_service.supprimer_organisation(
+        num_adm_formation=organisation_data['num_adm_formation'],
+        num_organisation=org_id,
+        annee_scolaire=organisation_data['annee_scolaire'],
+        etab_id=organisation_data['etab_id']
+    )
 
-def test_modifier_organisation(organisation_service, organisation_data):
-    """Test modifying an existing organisation."""
-    # First, create the organisation
-    organisation_service.creer_organisation(**organisation_data)
-    # Modify the organisation
-    result = organisation_service.modifier_organisation(organisation_data['num_adm_formation'], 8, organisation_data['date_debut'], organisation_data['date_fin'], enseignementHybride=True)
+def test_lire_organisation(new_organisation, organisation_service):
+    """Test reading an existing organization."""
+    org_id = new_organisation['id']['numOrganisation']
+    result = organisation_service.lire_organisation(
+        num_adm_formation=new_organisation['id']['numAdmFormation'],
+        num_organisation=org_id,
+        annee_scolaire=new_organisation['id']['anneeScolaire'],
+        etab_id=new_organisation['id']['etabId']
+    )
     assert result['body']['success'] is True
-    assert result['body']['response']['organisation']['enseignementHybride'] is True
+    assert result['body']['response']['organisation']['id']['numOrganisation'] == org_id
+
+def test_modifier_organisation(new_organisation, organisation_service):
+    """Test modifying an existing organization."""
+    org_id = new_organisation['id']['numOrganisation']
+    new_date_fin = "2024-05-31"
+    result = organisation_service.modifier_organisation(
+        num_adm_formation=new_organisation['id']['numAdmFormation'],
+        num_organisation=org_id,
+        date_debut=new_organisation['dateDebutOrganisation'],
+        date_fin=new_date_fin,
+        annee_scolaire=new_organisation['id']['anneeScolaire'],
+        etab_id=new_organisation['id']['etabId']
+    )
+    assert result['body']['success'] is True
+    assert result['body']['response']['organisation']['dateFinOrganisation'] == new_date_fin
 
 def test_supprimer_organisation(organisation_service, organisation_data):
     """Test deleting an existing organisation."""
