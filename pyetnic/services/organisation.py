@@ -56,10 +56,7 @@ class OrganisationService:
         }
         organisation_data.update(kwargs)
         
-        headers = {"requestId": generate_request_id()}
-        service = self.client_manager.get_service()
-        result = service.CreerOrganisation(_soapheaders=headers, **organisation_data)
-        return serialize_object(result, dict)
+        return self.client_manager.call_service("CreerOrganisation", **organisation_data)
 
     def lire_organisation(self, num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
         """Lit les informations d'une organisation de formation existante."""
@@ -70,10 +67,7 @@ class OrganisationService:
             "numOrganisation": num_organisation
         }
         
-        headers = {"requestId": generate_request_id()}
-        service = self.client_manager.get_service()
-        result = service.LireOrganisation(_soapheaders=headers, id=organisation_id)
-        return serialize_object(result, dict)
+        return self.client_manager.call_service("LireOrganisation", id=organisation_id)
 
     def modifier_organisation(self, num_adm_formation, num_organisation, date_debut, date_fin, annee_scolaire=anneeScolaire, etab_id=etabId, **kwargs):
         """Modifie une organisation de formation existante."""
@@ -89,10 +83,7 @@ class OrganisationService:
         }
         organisation_data.update(kwargs)
         
-        headers = {"requestId": generate_request_id()}
-        service = self.client_manager.get_service()
-        result = service.ModifierOrganisation(_soapheaders=headers, **organisation_data)
-        return serialize_object(result, dict)
+        return self.client_manager.call_service("ModifierOrganisation", **organisation_data)
 
     def supprimer_organisation(self, num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
         """Supprime une organisation de formation existante."""
@@ -103,10 +94,7 @@ class OrganisationService:
             "numOrganisation": num_organisation
         }
         
-        headers = {"requestId": generate_request_id()}
-        service = self.client_manager.get_service()
-        result = service.SupprimerOrganisation(_soapheaders=headers, id=organisation_id)
-        return serialize_object(result, dict)
+        return self.client_manager.call_service("SupprimerOrganisation", id=organisation_id)
 
 # Fonctions pour EpromFormationDocument1
 
