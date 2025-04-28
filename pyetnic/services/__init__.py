@@ -19,23 +19,17 @@ lister_formations = formations_service.lister_formations
 # Instanciation du service
 organisation_service = OrganisationService()
 # Exposition des méthodes du service
-creer_organisation = organisation_service.creer_organisation
-modifier_organisation = organisation_service.modifier_organisation
 lire_organisation = organisation_service.lire_organisation
-supprimer_organisation = organisation_service.supprimer_organisation
 
 # instanciation du service
 document2_service = Document2Service()
 # Exposition des méthodes du service
 lire_document_2 = document2_service.lire_document_2
-modifier_document_2 = document2_service.modifier_document_2
 
 # instanciation du service
 document1_service = Document1Service()
 # Exposition des méthodes du service
 lire_document_1 = document1_service.lire_document_1
-modifier_document_1 = document1_service.modifier_document_1
-approuver_document_1 = document1_service.approuver_document_1
 
 __all__ = [
     'FormationsListeService',
@@ -44,13 +38,7 @@ __all__ = [
     'Document2Service',
     'lister_formations_organisables',
     'lister_formations',
-    'creer_organisation',
-    'modifier_organisation',
     'lire_organisation',
-    'supprimer_organisation',
     'lire_document_2',
-    'modifier_document_2',
     'lire_document_1',
-    'modifier_document_1',
-    'approuver_document_1'
 ]
