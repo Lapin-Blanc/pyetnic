@@ -13,7 +13,6 @@ class OrganisationId:
     etabId: int
     numAdmFormation: int
     numOrganisation: int
-    implId: Optional[int] = None
 
 @dataclass
 class Organisation:
@@ -27,6 +26,7 @@ class Organisation:
     enPrison: Optional[bool] = None
     activiteFormation: Optional[str] = None
     conseillerPrevention: Optional[bool] = None
+    partiellementDistance: Optional[bool] = None
     enseignementHybride: Optional[bool] = None
     numOrganisation2AnneesScolaires: Optional[int] = None
     typeInterventionExterieure: Optional[str] = None

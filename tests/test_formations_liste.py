@@ -38,7 +38,7 @@ def test_lister_formations(formations_liste_service):
             formations_with_organisations += 1
             for organisation in formation.organisations:
                 assert isinstance(organisation, Organisation)
-                assert organisation.numOrganisation > 0
+                assert organisation.id.numOrganisation > 0
                 assert organisation.dateDebutOrganisation is not None
                 assert organisation.dateFinOrganisation is not None
     
