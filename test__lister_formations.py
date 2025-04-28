@@ -17,10 +17,8 @@ if result:
                                         etabId=Config.ETAB_ID, 
                                         numAdmFormation=formation.numAdmFormation, 
                                         numOrganisation=org.id.numOrganisation,) 
-                pprint.pprint(org_id)
-                lire_organisation_result = lire_organisation(org_id)
-                # pprint(f"    {lire_organisation_result}")
-                # print(f"    - orga {org.id.numOrganisation} du {org.dateDebutOrganisation} au {org.dateFinOrganisation}")
+                orga = lire_organisation(org_id)
+                print(f"    - orga {orga.id.numOrganisation} du {orga.dateDebutOrganisation} au {orga.dateFinOrganisation}")
                 
 else:
     print("Erreur lors de la récupération des formations:")
