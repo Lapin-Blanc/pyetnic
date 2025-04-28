@@ -80,7 +80,6 @@ class FormationsListeService:
                             etabId=etab_id,
                             numAdmFormation=f['numAdmFormation'],
                             numOrganisation=org_data['numOrganisation'],
-                            implId=org_data.get('implId')
                         )
                         organisation = Organisation(
                             id=org_id,

@@ -1,6 +1,10 @@
-from pyetnic.services import lister_formations
+import pprint
+from pyetnic.services import lister_formations, lire_organisation
+from pyetnic.services.models import OrganisationId
+from pyetnic.config import Config
 
-result = lister_formations()
+
+result = lister_formations(annee_scolaire=Config.ANNEE_SCOLAIRE, etab_id=Config.ETAB_ID, impl_id=Config.IMPL_ID)
 
 if result:
     print(f"Nombre de formations trouvées : {len(result)}")
@@ -9,7 +13,15 @@ if result:
         if formation.organisations:
             print("  Organisations:")
             for org in formation.organisations:
-                print(f"    - orga {org.numOrganisation} du {org.dateDebutOrganisation} au {org.dateFinOrganisation}")
+                org_id = OrganisationId(anneeScolaire=Config.ANNEE_SCOLAIRE,
+                                        etabId=Config.ETAB_ID, 
+                                        numAdmFormation=formation.numAdmFormation, 
+                                        numOrganisation=org.id.numOrganisation,) 
+                pprint.pprint(org_id)
+                lire_organisation_result = lire_organisation(org_id)
+                # pprint(f"    {lire_organisation_result}")
+                # print(f"    - orga {org.id.numOrganisation} du {org.dateDebutOrganisation} au {org.dateFinOrganisation}")
+                
 else:
     print("Erreur lors de la récupération des formations:")
     for message in result.messages:

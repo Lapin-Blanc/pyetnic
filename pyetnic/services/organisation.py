@@ -1,5 +1,6 @@
 from datetime import datetime
-from .models import Organisation
+from dataclasses import asdict
+from .models import Organisation, OrganisationId, StatutDocument
 from ..soap_client import SoapClientManager, generate_request_id
 from zeep.helpers import serialize_object
 from ..config import anneeScolaire, etabId, implId, Config
@@ -12,34 +13,19 @@ class OrganisationService:
         self.client_manager = SoapClientManager("ORGANISATION")
 
     def lire_organisation(self, 
-                          num_adm_formation, 
-                          num_organisation, 
-                          annee_scolaire=Config.ANNEE_SCOLAIRE, 
-                          etab_id=Config.ETAB_ID):
+                          organisation_id: OrganisationId) -> Organisation:
         """Lit les informations d'une organisation de formation existante."""
-        organisation_id = {
-            "anneeScolaire": annee_scolaire,
-            "etabId": etab_id,
-            "numAdmFormation": num_adm_formation,
-            "numOrganisation": num_organisation
-        }
-        
-        result = self.client_manager.call_service("LireOrganisation", id=organisation_id)
+        result = self.client_manager.call_service("LireOrganisation", id=asdict(organisation_id))
         
         if result and 'body' in result and 'response' in result['body'] and 'organisation' in result['body']['response']:
             org_data = result['body']['response']['organisation']
-            print(org_data)
-            return
+            
             return Organisation(
-                anneeScolaire=org_data['id']['anneeScolaire'],
-                etabId=org_data['id']['etabId'],
-                implId=org_data['id']['implId'],
-                numAdmFormation=org_data['id']['numAdmFormation'],
-                numOrganisation=org_data['id']['numOrganisation'],
-                dateDebutOrganisation=datetime.strptime(org_data['dateDebutOrganisation'], '%Y-%m-%d').date(),
-                dateFinOrganisation=datetime.strptime(org_data['dateFinOrganisation'], '%Y-%m-%d').date(),
+                id=organisation_id,
+                dateDebutOrganisation=org_data['dateDebutOrganisation'],
+                dateFinOrganisation=org_data['dateFinOrganisation'],
                 nombreSemaineFormation=org_data['nombreSemaineFormation'],
-                statut=org_data['statut'],
+                statutDocumentOrganisation=StatutDocument(**org_data['statut']) if org_data.get('statut') else None,
                 organisationPeriodesSupplOuEPT=org_data.get('organisationPeriodesSupplOuEPT'),
                 valorisationAcquis=org_data.get('valorisationAcquis'),
                 enPrison=org_data.get('enPrison'),
