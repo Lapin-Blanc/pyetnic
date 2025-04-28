@@ -5,12 +5,11 @@ Ce module fournit des fonctions pour lister les formations organisables
 et les formations existantes avec leurs organisations.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Any, Optional
 import logging
-from ..soap_client import SoapClientManager, generate_request_id, SoapError
-from zeep.helpers import serialize_object
-from ..config import Config, anneeScolaire, etabId, implId
-from .models import Formation, Organisation, FormationsListeResult
+from ..soap_client import SoapClientManager, SoapError
+from ..config import Config
+from .models import Formation, FormationsListeResult, Organisation, OrganisationId, StatutDocument
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
@@ -24,30 +23,86 @@ class FormationsListeService:
     
     def lister_formations_organisables(
         self,
-        annee_scolaire: Optional[str] = anneeScolaire,
-        etab_id: Optional[int] = etabId,
-        impl_id: Optional[int] = None
-    ) -> Dict[str, Any]:
-        request_data = {
-            "anneeScolaire": annee_scolaire,
-            "etabId": etab_id
-        }
-        if impl_id:
-            request_data["implId"] = impl_id
-        
-        return self.client_manager.call_service("ListerFormationsOrganisables", **request_data)
-    
-    def lister_formations(self, annee_scolaire: Optional[str] = anneeScolaire, etab_id: Optional[int] = etabId, impl_id: Optional[int] = None) -> FormationsListeResult:
+        annee_scolaire: str = Config.ANNEE_SCOLAIRE,
+        etab_id: int = Config.ETAB_ID,
+        impl_id: int = Config.IMPL_ID
+    ) -> FormationsListeResult:
         try:
-            result = self.client_manager.call_service("ListerFormations", anneeScolaire=annee_scolaire, etabId=etab_id, implId=impl_id)
+            request_data = {
+                "anneeScolaire": annee_scolaire,
+                "etabId": etab_id,
+                "implId": impl_id,
+            }
+            
+            result = self.client_manager.call_service("ListerFormationsOrganisables", **request_data)
+            
+            if result['body']['success']:
+                formations = []
+                for f in result['body']['response'].get('formation', []):
+                    formations.append(Formation(
+                        numAdmFormation=f['numAdmFormation'],
+                        libelleFormation=f['libelleFormation'],
+                        codeFormation=f['codeFormation'],
+                        organisations=[]  # Liste vide car pas d'organisations pour les formations organisables
+                    ))
+                return FormationsListeResult(True, formations)
+            else:
+                return FormationsListeResult(False, [], messages=result['body'].get('messages', []))
+        
+        except SoapError as e:
+            return FormationsListeResult(False, [], messages=[str(e)])
+        except Exception as e:
+            return FormationsListeResult(False, [], messages=[f"Une erreur inattendue s'est produite : {str(e)}"])
+
+    def lister_formations(
+        self,
+        annee_scolaire: str = Config.ANNEE_SCOLAIRE,
+        etab_id: int = Config.ETAB_ID,
+        impl_id: int = Config.IMPL_ID
+    ) -> FormationsListeResult:
+        try:
+            request_data = {
+                "anneeScolaire": annee_scolaire,
+                "etabId": etab_id,
+                "implId": impl_id,
+            }
+            
+            result = self.client_manager.call_service("ListerFormations", **request_data)
             
             if result['body']['success']:
                 formations = []
                 for f in result['body']['response']['formation']:
-                    organisations = [
-                        Organisation(**org) 
-                        for org in f.get('organisation', [])
-                    ]
+                    print(f)
+                    organisations = []
+                    for org_data in f.get('organisation', []):
+                        org_id = OrganisationId(
+                            anneeScolaire=annee_scolaire,
+                            etabId=etab_id,
+                            numAdmFormation=f['numAdmFormation'],
+                            numOrganisation=org_data['numOrganisation'],
+                            implId=org_data.get('implId')
+                        )
+                        organisation = Organisation(
+                            id=org_id,
+                            dateDebutOrganisation=org_data['dateDebutOrganisation'],
+                            dateFinOrganisation=org_data['dateFinOrganisation'],
+                            nombreSemaineFormation=org_data.get('nombreSemaineFormation'),
+                            statut=org_data.get('statut'),
+                            organisationPeriodesSupplOuEPT=org_data.get('organisationPeriodesSupplOuEPT'),
+                            valorisationAcquis=org_data.get('valorisationAcquis'),
+                            enPrison=org_data.get('enPrison'),
+                            activiteFormation=org_data.get('activiteFormation'),
+                            conseillerPrevention=org_data.get('conseillerPrevention'),
+                            enseignementHybride=org_data.get('enseignementHybride'),
+                            numOrganisation2AnneesScolaires=org_data.get('numOrganisation2AnneesScolaires'),
+                            typeInterventionExterieure=org_data.get('typeInterventionExterieure'),
+                            interventionExterieure50p=org_data.get('interventionExterieure50p'),
+                            statutDocumentOrganisation=StatutDocument(**org_data['statutDocumentOrganisation']) if org_data.get('statutDocumentOrganisation') else None,
+                            statutDocumentPopulationPeriodes=StatutDocument(**org_data['statutDocumentPopulationPeriodes']) if org_data.get('statutDocumentPopulationPeriodes') else None,
+                            statutDocumentDroitsInscription=StatutDocument(**org_data['statutDocumentDroitsInscription']) if org_data.get('statutDocumentDroitsInscription') else None,
+                            statutDocumentAttributions=StatutDocument(**org_data['statutDocumentAttributions']) if org_data.get('statutDocumentAttributions') else None
+                        )
+                        organisations.append(organisation)
                     formations.append(Formation(
                         numAdmFormation=f['numAdmFormation'],
                         libelleFormation=f['libelleFormation'],
@@ -60,4 +115,6 @@ class FormationsListeService:
         
         except SoapError as e:
             return FormationsListeResult(False, [], messages=[str(e)])
+        except Exception as e:
+            return FormationsListeResult(False, [], messages=[f"Une erreur inattendue s'est produite : {str(e)}"])
 

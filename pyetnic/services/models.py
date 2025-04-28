@@ -1,30 +1,53 @@
-from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
+from dataclasses import dataclass, field
+from typing import List, Optional
 from datetime import date
 
 @dataclass
-class Organisation:
-    implId: int
+class StatutDocument:
+    statut: str
+    dateStatut: date
+
+@dataclass
+class OrganisationId:
+    anneeScolaire: str
+    etabId: int
+    numAdmFormation: int
     numOrganisation: int
+    implId: Optional[int] = None
+
+@dataclass
+class Organisation:
     dateDebutOrganisation: date
     dateFinOrganisation: date
-    statutDocumentOrganisation: Dict[str, Any]
-    statutDocumentPopulationPeriodes: Optional[Dict[str, Any]]
-    statutDocumentDroitsInscription: Optional[Dict[str, Any]]
-    statutDocumentAttributions: Optional[Dict[str, Any]]
+    id: OrganisationId = field(default_factory=OrganisationId)
+    nombreSemaineFormation: Optional[int] = None
+    statut: Optional[str] = None
+    organisationPeriodesSupplOuEPT: Optional[bool] = None
+    valorisationAcquis: Optional[bool] = None
+    enPrison: Optional[bool] = None
+    activiteFormation: Optional[str] = None
+    conseillerPrevention: Optional[bool] = None
+    enseignementHybride: Optional[bool] = None
+    numOrganisation2AnneesScolaires: Optional[int] = None
+    typeInterventionExterieure: Optional[str] = None
+    interventionExterieure50p: Optional[bool] = None
+    statutDocumentOrganisation: Optional[StatutDocument] = None
+    statutDocumentPopulationPeriodes: Optional[StatutDocument] = None
+    statutDocumentDroitsInscription: Optional[StatutDocument] = None
+    statutDocumentAttributions: Optional[StatutDocument] = None
 
 @dataclass
 class Formation:
     numAdmFormation: int
     libelleFormation: str
     codeFormation: str
-    organisations: List[Organisation]
+    organisations: List[Organisation] = field(default_factory=list)
 
+@dataclass
 class FormationsListeResult:
-    def __init__(self, success: bool, formations: List[Formation], messages: Optional[List[str]] = None):
-        self.success = success
-        self.formations = formations
-        self.messages = messages or []
+    success: bool
+    formations: List[Formation]
+    messages: List[str] = field(default_factory=list)
 
     def __bool__(self):
         return self.success
