@@ -20,7 +20,6 @@ class Organisation:
     dateFinOrganisation: date
     id: OrganisationId = field(default_factory=OrganisationId)
     nombreSemaineFormation: Optional[int] = None
-    statut: Optional[str] = None
     organisationPeriodesSupplOuEPT: Optional[bool] = None
     valorisationAcquis: Optional[bool] = None
     enPrison: Optional[bool] = None

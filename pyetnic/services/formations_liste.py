@@ -86,7 +86,6 @@ class FormationsListeService:
                             dateDebutOrganisation=org_data['dateDebutOrganisation'],
                             dateFinOrganisation=org_data['dateFinOrganisation'],
                             nombreSemaineFormation=org_data.get('nombreSemaineFormation'),
-                            statut=org_data.get('statut'),
                             organisationPeriodesSupplOuEPT=org_data.get('organisationPeriodesSupplOuEPT'),
                             valorisationAcquis=org_data.get('valorisationAcquis'),
                             enPrison=org_data.get('enPrison'),
