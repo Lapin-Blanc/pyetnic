@@ -1,9 +1,14 @@
 from datetime import datetime
 from dataclasses import asdict
+from pprint import pformat
 from .models import Organisation, OrganisationId, StatutDocument
 from ..soap_client import SoapClientManager, generate_request_id
 from zeep.helpers import serialize_object
 from ..config import anneeScolaire, etabId, implId, Config
+import logging
+
+# Configuration du logging
+logger = logging.getLogger(__name__)
 
 class OrganisationService:
     """Service pour gérer les organisations de formation."""
@@ -15,11 +20,11 @@ class OrganisationService:
     def lire_organisation(self, 
                           organisation_id: OrganisationId) -> Organisation:
         """Lit les informations d'une organisation de formation existante."""
+        logger.info("Appel de lire_organisation")
         result = self.client_manager.call_service("LireOrganisation", id=asdict(organisation_id))
-        
         if result and 'body' in result and 'response' in result['body'] and 'organisation' in result['body']['response']:
-            org_data = result['body']['response']['organisation']
-            
+            org_data = result['body']['response']['organisation']    
+            logger.debug(f"Organisation : {pformat(org_data)}")        
             return Organisation(
                 id=organisation_id,
                 dateDebutOrganisation=org_data['dateDebutOrganisation'],

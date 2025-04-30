@@ -6,13 +6,15 @@ et les formations existantes avec leurs organisations.
 """
 
 from typing import Any, Optional
-import logging
 from ..soap_client import SoapClientManager, SoapError
 from ..config import Config
 from .models import Formation, FormationsListeResult, Organisation, OrganisationId, StatutDocument
+import logging
+from pprint import pprint, pformat
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
+
 
 class FormationsListeService:
     """Service pour gérer les listes de formations."""
@@ -60,6 +62,7 @@ class FormationsListeService:
         etab_id: int = Config.ETAB_ID,
         impl_id: int = Config.IMPL_ID
     ) -> FormationsListeResult:
+        logger.info("Appel de lister_formations")
         try:
             request_data = {
                 "anneeScolaire": annee_scolaire,
@@ -68,13 +71,14 @@ class FormationsListeService:
             }
             
             result = self.client_manager.call_service("ListerFormations", **request_data)
-            
             if result['body']['success']:
+                logger.debug(f"Résultat : {pformat(result)}")
                 formations = []
                 for f in result['body']['response']['formation']:
-                    print(f)
+                    logger.debug(f"Formation : {pformat(f)}")
                     organisations = []
                     for org_data in f.get('organisation', []):
+                        logger.debug(f"Organisation : {pformat(org_data)}")
                         org_id = OrganisationId(
                             anneeScolaire=annee_scolaire,
                             etabId=etab_id,
