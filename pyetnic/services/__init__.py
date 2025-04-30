@@ -4,6 +4,10 @@ Package de services ETNIC.
 Ce package contient les classes et fonctions pour interagir avec les
 différents services SOAP d'ETNIC.
 """
+import logging
+logger = logging.getLogger(__name__)
+logger.debug("Initialisation du package services")
+
 from .formations_liste import FormationsListeService
 from .organisation import OrganisationService
 from .document1 import Document1Service
