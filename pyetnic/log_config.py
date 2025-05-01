@@ -8,5 +8,6 @@ def configure_logging():
     # Configuration spécifique pour chaque module
     logging.getLogger('pyetnic.services.formations_liste').setLevel(logging.WARNING)
     logging.getLogger('pyetnic.services.organisation').setLevel(logging.WARNING)
+    logging.getLogger('pyetnic.services.document2').setLevel(logging.WARNING)
 
     # Vous pouvez ajouter d'autres configurations spécifiques ici
