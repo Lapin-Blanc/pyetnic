@@ -8,9 +8,7 @@ les connexions aux services SOAP d'ETNIC.
 import uuid
 import logging
 import urllib3
-import os
 from importlib.resources import files, as_file
-from functools import lru_cache
 
 from zeep import Client
 from zeep.wsse.username import UsernameToken
@@ -36,9 +34,7 @@ def get_wsdl_path(package, resource):
 
 def generate_request_id():
     """Génère un identifiant unique pour les requêtes SOAP."""
-    request_id = str(uuid.uuid4())
-    logger.debug(f"ID de requête généré: {request_id}")
-    return request_id
+    return str(uuid.uuid4())
 
 class SoapError(Exception):
     """Exception personnalisée pour les erreurs SOAP."""
@@ -57,7 +53,6 @@ class SoapClientManager:
     en gérant l'authentification, le transport et les bindings.
     """
     
-    # Cache pour les clients SOAP (évite de recréer des instances pour les mêmes services)
     _client_cache = {}
     
     def __init__(self, service_name):
@@ -69,19 +64,15 @@ class SoapClientManager:
         
         Raises:
             ValueError: Si le service n'est pas reconnu
-            SoapError: Si la création du client échoue
         """
         self.service_name = service_name
-        self.endpoint = Config.ENDPOINTS.get(service_name)
-        self.wsdl_path = get_wsdl_path('pyetnic.resources', Config.WSDL_PATHS.get(service_name))
-        self.client = None  # Initialize the client attribute
+        self.service_config = Config.SERVICES.get(service_name)
         
-        if not self.endpoint or not self.wsdl_path:
+        if not self.service_config:
             raise ValueError(f"Configuration manquante pour le service: {service_name}")
 
     def _initialize_client(self):
         if self.service_name in self._client_cache:
-            logger.debug(f"Utilisation du client SOAP en cache pour {self.service_name}")
             return self._client_cache[self.service_name]
 
         logger.debug(f"Création d'un nouveau client SOAP pour {self.service_name}")
@@ -89,32 +80,12 @@ class SoapClientManager:
         session.verify = Config.get_verify_ssl()
         transport = Transport(session=session)
 
-        self.client = Client(self.wsdl_path, wsse=UsernameToken(Config.USERNAME, Config.PASSWORD), transport=transport)
-        binding_name = self._get_binding_name()
-        service = self.client.create_service(binding_name, self.endpoint)
+        wsdl_path = get_wsdl_path('pyetnic.resources', self.service_config.wsdl_path)
+        client = Client(wsdl_path, wsse=UsernameToken(Config.USERNAME, Config.PASSWORD), transport=transport)
+        service = client.create_service(self.service_config.binding_name, self.service_config.endpoint)
 
         self._client_cache[self.service_name] = service
         return service
-
-    def _get_binding_name(self):
-        """
-        Détermine le nom du binding approprié en fonction du service.
-        
-        Returns:
-            str: Nom du binding à utiliser
-        """
-        # Détermination du binding par analyse du nom du fichier WSDL
-        if 'Document1' in self.wsdl_path:
-            return "{http://services-web.etnic.be/eprom/formation/document1/v1}EPROMFormationDocument1ExternalV1Binding"
-        elif 'Document2' in self.wsdl_path:
-            return "{http://services-web.etnic.be/eprom/formation/document2/v1}EPROMFormationDocument2ExternalV1Binding"
-        elif 'Organisation' in self.wsdl_path:
-            return "{http://services-web.etnic.be/eprom/formation/organisation/v6}EPROMFormationOrganisationExternalV6Binding"
-        elif 'FormationsListe' in self.wsdl_path:
-            return "{http://services-web.etnic.be/eprom/formations/liste/v2}EPROMFormationsListeExternalV2Binding"
-        else:
-            # Fallback: utiliser le premier binding défini dans le WSDL
-            return next(iter(self.client.wsdl.bindings))
 
     def call_service(self, method_name, **kwargs):
         """
@@ -132,16 +103,10 @@ class SoapClientManager:
         """
         service = self._initialize_client()
         try:
-            # Génération d'un ID de requête pour le traçage
             request_id = generate_request_id()
-            
-            # Récupération de la méthode à partir du nom
             method = getattr(service, method_name)
-            
-            # Appel de la méthode avec l'en-tête SOAP
             result = method(_soapheaders={"requestId": request_id}, **kwargs)
             
-            # Sérialisation du résultat en dictionnaire
             from zeep.helpers import serialize_object
             return serialize_object(result, dict)
             
