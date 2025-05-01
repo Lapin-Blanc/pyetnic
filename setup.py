@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyetnic',
-    version='0.0.3',
+    version='0.0.4',
     packages=find_packages(),  # Automatically find packages in the directory
     include_package_data=True,  # Include non-code files specified in MANIFEST.in
     package_data={

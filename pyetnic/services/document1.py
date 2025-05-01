@@ -12,6 +12,7 @@ class Document1Service:
     def lire_document_1(self, num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
         """Lire le document 1."""
         document_id = {
+
             "anneeScolaire": annee_scolaire,
             "etabId": etab_id,
             "numAdmFormation": num_adm_formation,
