@@ -70,10 +70,10 @@ class Doc2ActiviteEnseignementLine:
     nbPeriodePrevueAn2: float
     nbPeriodeReelleAn1: float
     nbPeriodeReelleAn2: float
+    coEtuReg: str
     coAdmReg: int = 0
     coOrgReg: int = 0
     coBraReg: int = 0
-    coEtuReg: Optional[str] = None
 
 @dataclass
 class Doc2ActiviteEnseignementList:

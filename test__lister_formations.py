@@ -1,6 +1,6 @@
 from pprint import pformat
 from pyetnic.services import *
-from pyetnic.services.models import Organisation, OrganisationId
+from pyetnic.services.models import FormationDocument2, OrganisationId
 from pyetnic.config import Config
 from dataclasses import fields
 
