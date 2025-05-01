@@ -3,6 +3,7 @@ urllib3
 zeep
 python-dotenv
 requests
+openpyxl
 # #cgi-tools  # Support pour remplacer le module cgi déprécié
 
 # # Dépendances de développement

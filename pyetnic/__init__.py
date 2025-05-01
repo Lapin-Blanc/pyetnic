@@ -15,23 +15,13 @@ from .services import (
     lister_formations_organisables,
     
     # Organisation
-    creer_organisation,
-    modifier_organisation, 
     lire_organisation,
-    supprimer_organisation,
     
     # Document 1
     lire_document_1,
-    modifier_document_1,
-    approuver_document_1,
     
     # Document 2
     lire_document_2,
-    modifier_document_2
-
-    # Document 3
-    lire_document_3,
-
 )
 
 # Exposition des constantes de configuration

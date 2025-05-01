@@ -1,79 +1,45 @@
+from datetime import datetime
+from dataclasses import asdict
+from pprint import pformat
+from .models import Organisation, OrganisationId, StatutDocument
 from ..soap_client import SoapClientManager, generate_request_id
 from zeep.helpers import serialize_object
-from ..config import anneeScolaire, etabId, implId
+from ..config import anneeScolaire, etabId, implId, Config
+import logging
 
-def creer_organisation(num_adm_formation, date_debut, date_fin, annee_scolaire=anneeScolaire, etab_id=etabId, impl_id=implId, **kwargs):
-    """Créer une organisation."""
-    manager = SoapClientManager("EpromFormationOrganisationService_external_v6.wsdl", "ORGANISATION")
-    service = manager.get_service()
-    
-    organisation_data = {
-        "id": {
-            "anneeScolaire": annee_scolaire,
-            "etabId": etab_id,
-            "implId": impl_id,
-            "numAdmFormation": num_adm_formation
-        },
-        "dateDebutOrganisation": date_debut,
-        "dateFinOrganisation": date_fin
-    }
-    
-    organisation_data.update(kwargs)
-    
-    headers = {"requestId": generate_request_id()}
-    result = service.CreerOrganisation(_soapheaders=headers, **organisation_data)
-    return serialize_object(result, dict)
+# Configuration du logging
+logger = logging.getLogger(__name__)
 
-def modifier_organisation(num_adm_formation, num_organisation, date_debut, date_fin, annee_scolaire=anneeScolaire, etab_id=etabId, **kwargs):
-    """Modifier une organisation."""
-    manager = SoapClientManager("EpromFormationOrganisationService_external_v6.wsdl", "ORGANISATION")
-    service = manager.get_service()
-    
-    organisation_data = {
-        "id": {
-            "anneeScolaire": annee_scolaire,
-            "etabId": etab_id,
-            "numAdmFormation": num_adm_formation,
-            "numOrganisation": num_organisation
-        },
-        "dateDebutOrganisation": date_debut,
-        "dateFinOrganisation": date_fin
-    }
-    
-    organisation_data.update(kwargs)
-    
-    headers = {"requestId": generate_request_id()}
-    result = service.ModifierOrganisation(_soapheaders=headers, **organisation_data)
-    return serialize_object(result, dict)
+class OrganisationService:
+    """Service pour gérer les organisations de formation."""
 
-def lire_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
-    """Lire une organisation."""
-    manager = SoapClientManager("EpromFormationOrganisationService_external_v6.wsdl", "ORGANISATION")
-    service = manager.get_service()
-    
-    organisation_id = {
-        "anneeScolaire": annee_scolaire,
-        "etabId": etab_id,
-        "numAdmFormation": num_adm_formation,
-        "numOrganisation": num_organisation
-    }
-    
-    headers = {"requestId": generate_request_id()}
-    result = service.LireOrganisation(_soapheaders=headers, id=organisation_id)
-    return serialize_object(result, dict)
+    def __init__(self):
+        """Initialise le service d'organisation."""
+        self.client_manager = SoapClientManager("ORGANISATION")
 
-def supprimer_organisation(num_adm_formation, num_organisation, annee_scolaire=anneeScolaire, etab_id=etabId):
-    """Supprimer une organisation."""
-    manager = SoapClientManager("EpromFormationOrganisationService_external_v6.wsdl", "ORGANISATION")
-    service = manager.get_service()
-    
-    organisation_id = {
-        "anneeScolaire": annee_scolaire,
-        "etabId": etab_id,
-        "numAdmFormation": num_adm_formation,
-        "numOrganisation": num_organisation
-    }
-    
-    headers = {"requestId": generate_request_id()}
-    result = service.SupprimerOrganisation(_soapheaders=headers, id=organisation_id)
-    return serialize_object(result, dict)
+    def lire_organisation(self, 
+                          organisation_id: OrganisationId) -> Organisation:
+        """Lit les informations d'une organisation de formation existante."""
+        logger.info("Appel de lire_organisation")
+        result = self.client_manager.call_service("LireOrganisation", id=asdict(organisation_id))
+        if result and 'body' in result and 'response' in result['body'] and 'organisation' in result['body']['response']:
+            org_data = result['body']['response']['organisation']    
+            logger.debug(f"Organisation : {pformat(org_data)}")        
+            return Organisation(
+                id=organisation_id,
+                dateDebutOrganisation=org_data['dateDebutOrganisation'],
+                dateFinOrganisation=org_data['dateFinOrganisation'],
+                nombreSemaineFormation=org_data['nombreSemaineFormation'],
+                statutDocumentOrganisation=StatutDocument(**org_data['statut']) if org_data.get('statut') else None,
+                organisationPeriodesSupplOuEPT=org_data.get('organisationPeriodesSupplOuEPT'),
+                valorisationAcquis=org_data.get('valorisationAcquis'),
+                enPrison=org_data.get('enPrison'),
+                activiteFormation=org_data.get('activiteFormation'),
+                conseillerPrevention=org_data.get('conseillerPrevention'),
+                enseignementHybride=org_data.get('enseignementHybride'),
+                numOrganisation2AnneesScolaires=org_data.get('numOrganisation2AnneesScolaires'),
+                typeInterventionExterieure=org_data.get('typeInterventionExterieure'),
+                interventionExterieure50p=org_data.get('interventionExterieure50p')
+            )
+        
+        return None
