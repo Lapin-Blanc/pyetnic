@@ -128,3 +128,75 @@ class FormationDocument2:
     swAppD2: bool = False
     tsMaj: Optional[str] = None
     teUserMaj: Optional[str] = None
+
+# Nouveaux modèles pour Document 3
+
+@dataclass
+class Doc3EnseignantDetailSave:
+    """Attribution d'enseignant pour la sauvegarde du document 3."""
+    noMatEns: Optional[str] = None
+    coDispo: Optional[str] = None
+    teStatut: Optional[str] = None
+    nbPeriodesAttribuees: Optional[float] = None
+
+@dataclass
+class Doc3EnseignantListSave:
+    """Liste des attributions d'enseignants pour la sauvegarde du document 3."""
+    enseignant: List[Doc3EnseignantDetailSave] = field(default_factory=list)
+
+@dataclass
+class Doc3ActiviteDetailSave:
+    """Détail d'une activité d'enseignement pour la sauvegarde du document 3."""
+    coNumBranche: Optional[int] = None
+    noAnneeEtude: Optional[str] = None
+    enseignantListe: Optional[Doc3EnseignantListSave] = None
+
+@dataclass
+class Doc3ActiviteListeSave:
+    """Liste des activités d'enseignement pour la sauvegarde du document 3."""
+    activite: List[Doc3ActiviteDetailSave] = field(default_factory=list)
+
+@dataclass
+class Doc3EnseignantDetail:
+    """Attribution d'enseignant pour le document 3."""
+    coNumAttribution: Optional[int] = None
+    noMatEns: Optional[str] = None
+    teNomEns: Optional[str] = None
+    tePrenomEns: Optional[str] = None
+    teAbrEns: Optional[str] = None
+    teEnseignant: Optional[str] = None
+    coDispo: Optional[str] = None
+    teStatut: Optional[str] = None
+    nbPeriodesAttribuees: Optional[float] = None
+    tsMaj: Optional[str] = None
+    teUserMaj: Optional[str] = None
+
+@dataclass
+class Doc3EnseignantList:
+    """Liste des attributions d'enseignants pour le document 3."""
+    enseignant: List[Doc3EnseignantDetail] = field(default_factory=list)
+
+@dataclass
+class Doc3ActiviteDetail:
+    """Détail d'une activité d'enseignement pour le document 3."""
+    coNumBranche: Optional[int] = None
+    coCategorie: Optional[str] = None
+    teNomBranche: Optional[str] = None
+    noAnneeEtude: Optional[str] = None
+    nbPeriodesDoc8: Optional[float] = None
+    nbPeriodesPrevuesDoc2: Optional[float] = None
+    nbPeriodesReellesDoc2: Optional[float] = None
+    enseignantListe: Optional[Doc3EnseignantList] = None
+
+@dataclass
+class Doc3ActiviteListe:
+    """Liste des activités d'enseignement pour le document 3."""
+    activite: List[Doc3ActiviteDetail] = field(default_factory=list)
+
+@dataclass
+class FormationDocument3:
+    """Représente un document 3 (attributions d'enseignants)."""
+    id: OrganisationId
+    activiteListe: Optional[Doc3ActiviteListe] = None
+    tsMaj: Optional[str] = None
+    teUserMaj: Optional[str] = None
