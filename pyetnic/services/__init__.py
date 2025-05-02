@@ -12,6 +12,7 @@ from .formations_liste import FormationsListeService
 from .organisation import OrganisationService
 from .document1 import Document1Service
 from .document2 import Document2Service
+from .document3 import Document3Service
 
 # Importation et exposition des fonctions pour la liste des formations
 # Instanciation du service
@@ -31,6 +32,11 @@ document2_service = Document2Service()
 lire_document_2 = document2_service.lire_document_2
 
 # instanciation du service
+document3_service = Document3Service()
+# Exposition des méthodes du service
+lire_document_3 = document3_service.lire_document_3
+
+# instanciation du service
 document1_service = Document1Service()
 # Exposition des méthodes du service
 lire_document_1 = document1_service.lire_document_1
@@ -44,5 +50,6 @@ __all__ = [
     'lister_formations',
     'lire_organisation',
     'lire_document_2',
+    'lire_document_3',
     'lire_document_1',
 ]

@@ -59,7 +59,12 @@ class Config:
             endpoint=f"https://services-web.{'tq.' if ENV == 'dev' else ''}etnic.be:11443/eprom/formation/document2/v1",
             wsdl_path="EpromFormationDocument2Service_external_v1.wsdl",
             binding_name="{http://services-web.etnic.be/eprom/formation/document2/v1}EPROMFormationDocument2ExternalV1Binding"
-        )
+        ),
+        "DOCUMENT3": ServiceConfig(
+            endpoint=f"https://services-web.{'tq.' if ENV == 'dev' else ''}etnic.be:11443/eprom/formation/document3/v1",
+            wsdl_path="EpromFormationDocument3Service_external_v1.wsdl",
+            binding_name="{http://services-web.etnic.be/eprom/formation/document3/v1}EPROMFormationDocument3ExternalV1Binding"
+        ),
     }
     
     @classmethod
