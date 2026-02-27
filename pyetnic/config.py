@@ -88,11 +88,6 @@ class Config:
         """Retourne si la vérification SSL doit être activée."""
         return cls.ENV != "dev"
 
-# Variables exposées pour la compatibilité avec le code existant
-anneeScolaire = Config.ANNEE_SCOLAIRE
-etabId = Config.ETAB_ID
-implId = Config.IMPL_ID
-
 # Validation initiale de la configuration
 if not Config.validate():
     logger.warning("Configuration incomplète. Certaines fonctionnalités pourraient ne pas fonctionner correctement.")

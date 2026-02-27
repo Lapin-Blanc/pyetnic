@@ -2,7 +2,7 @@
 
 import pytest
 from pyetnic.services.formations_liste import FormationsListeService
-from pyetnic.services.models import Formation, Organisation
+from pyetnic.services.models import Formation, OrganisationApercu
 import time
 from datetime import date
 
@@ -39,7 +39,7 @@ def test_lister_formations(formations_liste_service):
         if formation.organisations:
             formations_with_organisations += 1
             for organisation in formation.organisations:
-                assert isinstance(organisation, Organisation)
+                assert isinstance(organisation, OrganisationApercu)
                 assert organisation.id.numOrganisation > 0
                 assert organisation.dateDebutOrganisation is not None
                 assert organisation.dateFinOrganisation is not None
