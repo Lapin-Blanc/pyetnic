@@ -13,7 +13,8 @@ setup(
     install_requires=[
         'zeep',
         'python-dotenv',
-        # Add other dependencies here
+        'requests',
+        'openpyxl',
     ],
     author='Fabien Toune',
     author_email='fabien.toune@eica.be',

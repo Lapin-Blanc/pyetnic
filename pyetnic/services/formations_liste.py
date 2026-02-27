@@ -8,7 +8,7 @@ et les formations existantes avec leurs organisations.
 from typing import Any, Optional
 from ..soap_client import SoapClientManager, SoapError
 from ..config import Config
-from .models import Formation, FormationsListeResult, Organisation, OrganisationId, StatutDocument
+from .models import Formation, FormationsListeResult, OrganisationApercu, OrganisationId, StatutDocument
 import logging
 from pprint import pprint, pformat
 
@@ -74,7 +74,7 @@ class FormationsListeService:
             if result['body']['success']:
                 logger.debug(f"Résultat : {pformat(result)}")
                 formations = []
-                for f in result['body']['response']['formation']:
+                for f in result['body']['response'].get('formation', []):
                     logger.debug(f"Formation : {pformat(f)}")
                     organisations = []
                     for org_data in f.get('organisation', []):
@@ -84,25 +84,16 @@ class FormationsListeService:
                             etabId=etab_id,
                             numAdmFormation=f['numAdmFormation'],
                             numOrganisation=org_data['numOrganisation'],
+                            implId=org_data.get('implId'),
                         )
-                        organisation = Organisation(
+                        organisation = OrganisationApercu(
                             id=org_id,
                             dateDebutOrganisation=org_data['dateDebutOrganisation'],
                             dateFinOrganisation=org_data['dateFinOrganisation'],
-                            nombreSemaineFormation=org_data.get('nombreSemaineFormation'),
-                            organisationPeriodesSupplOuEPT=org_data.get('organisationPeriodesSupplOuEPT'),
-                            valorisationAcquis=org_data.get('valorisationAcquis'),
-                            enPrison=org_data.get('enPrison'),
-                            activiteFormation=org_data.get('activiteFormation'),
-                            conseillerPrevention=org_data.get('conseillerPrevention'),
-                            enseignementHybride=org_data.get('enseignementHybride'),
-                            numOrganisation2AnneesScolaires=org_data.get('numOrganisation2AnneesScolaires'),
-                            typeInterventionExterieure=org_data.get('typeInterventionExterieure'),
-                            interventionExterieure50p=org_data.get('interventionExterieure50p'),
                             statutDocumentOrganisation=StatutDocument(**org_data['statutDocumentOrganisation']) if org_data.get('statutDocumentOrganisation') else None,
                             statutDocumentPopulationPeriodes=StatutDocument(**org_data['statutDocumentPopulationPeriodes']) if org_data.get('statutDocumentPopulationPeriodes') else None,
                             statutDocumentDroitsInscription=StatutDocument(**org_data['statutDocumentDroitsInscription']) if org_data.get('statutDocumentDroitsInscription') else None,
-                            statutDocumentAttributions=StatutDocument(**org_data['statutDocumentAttributions']) if org_data.get('statutDocumentAttributions') else None
+                            statutDocumentAttributions=StatutDocument(**org_data['statutDocumentAttributions']) if org_data.get('statutDocumentAttributions') else None,
                         )
                         organisations.append(organisation)
                     formations.append(Formation(

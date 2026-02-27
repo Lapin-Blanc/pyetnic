@@ -13,22 +13,32 @@ from .services import (
     # Formations liste
     lister_formations,
     lister_formations_organisables,
-    
+
+    # Modèles
+    OrganisationApercu,
+
     # Organisation
     lire_organisation,
-    
+    creer_organisation,
+    modifier_organisation,
+    supprimer_organisation,
+
     # Document 1
     lire_document_1,
-    
+    modifier_document_1,
+    approuver_document_1,
+
     # Document 2
     lire_document_2,
-    
+    modifier_document_2,
+
     # Document 3
     lire_document_3,
+    modifier_document_3,
 )
 
-# Exposition des constantes de configuration
-from .config import anneeScolaire, etabId, implId
+# Exposition de la configuration
+from .config import Config
 
 from .cli import main as cli_main
 

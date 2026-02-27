@@ -4,7 +4,7 @@ import argparse
 import os
 
 def init_config(output_file='.env'):
-    contenu_env = """    
+    contenu_env = """# Environnement : dev (services-web.tq.etnic.be) ou prod (services-web.etnic.be)
 ENV=dev
 
 # Identifiants pour le développement
@@ -15,18 +15,7 @@ DEV_PASSWORD=
 PROD_USERNAME=
 PROD_PASSWORD=
 
-# Endpoints pour chaque service en développement
-LISTE_FORMATIONS_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formations/liste/v2
-ORGANISATION_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formation/organisation/v6
-DOCUMENT1_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formation/document1/v1
-DOCUMENT2_DEV_ENDPOINT=https://services-web.tq.etnic.be:11443/eprom/formation/document2/v1
-
-# Endpoints pour chaque service en production
-LISTE_FORMATIONS_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formations/liste/v2
-ORGANISATION_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formation/organisation/v6
-DOCUMENT1_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formation/document1/v1
-DOCUMENT2_PROD_ENDPOINT=https://services-web.etnic.be:11443/eprom/formation/document2/v1
-
+# Paramètres par défaut
 DEFAULT_ETABID=3052
 DEFAULT_IMPLID=6050
 DEFAULT_SCHOOLYEAR=2023-2024

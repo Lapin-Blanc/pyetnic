@@ -1,7 +1,9 @@
 import logging
 
+logger = logging.getLogger(__name__)
+
 def configure_logging():
-    print("Configuration du logging en cours...")
+    logger.info("Configuration du logging en cours...")
     # Configuration de base
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 

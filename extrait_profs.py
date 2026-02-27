@@ -1,32 +1,35 @@
-from pyetnic.services import *
+import logging
 from pprint import pprint
+from pyetnic.services import lister_formations, lire_document_3
+from pyetnic.log_config import configure_logging
 
-def extraire_noms_prenoms(data):
+configure_logging()
+logger = logging.getLogger(__name__)
+
+
+def extraire_noms_prenoms(doc3):
+    """Extrait les noms et prénoms des enseignants d'un document 3."""
     enseignants_info = []
-
-    try:
-        activites = data['body']['response']['document3']['activiteListe']['activite']
-        for activite in activites:
-            enseignants = activite.get('enseignantListe', {}).get('enseignant', [])
-            for ens in enseignants:
-                nom = ens.get('teNomEns')
-                prenom = ens.get('tePrenomEns')
-                if nom or prenom:
-                    enseignants_info.append({'Nom': nom, 'Prénom': prenom})
-    except (KeyError, TypeError):
-        print("Données non conformes")
-
+    if not doc3 or not doc3.activiteListe:
+        return enseignants_info
+    for activite in doc3.activiteListe.activite:
+        if not activite.enseignantListe:
+            continue
+        for ens in activite.enseignantListe.enseignant:
+            if ens.teNomEns or ens.tePrenomEns:
+                enseignants_info.append({'Nom': ens.teNomEns, 'Prénom': ens.tePrenomEns})
     return enseignants_info
 
-formations = [f for f in lister_formations()["body"]["response"]["formation"] if f["organisation"]]
 
-organisations = []
-for formation in formations:
-    for orga in formation["organisation"]:
-        num_adm = formation["numAdmFormation"]
-        num_orga = orga["numOrganisation"]
-        print(num_adm, num_orga)
-        print(type(num_adm), type(num_orga))
-        doc3 = lire_document_3(num_adm, num_orga)
-        noms_prenoms = extraire_noms_prenoms(doc3)
-        pprint(noms_prenoms)
+if __name__ == "__main__":
+    result = lister_formations()
+    if not result:
+        logger.error(f"Erreur lors de la liste des formations: {result.messages}")
+        raise SystemExit(1)
+
+    for formation in result:
+        for organisation in formation.organisations:
+            logger.info(f"Formation {organisation.id.numAdmFormation}, organisation {organisation.id.numOrganisation}")
+            doc3 = lire_document_3(organisation.id)
+            noms_prenoms = extraire_noms_prenoms(doc3)
+            pprint(noms_prenoms)
