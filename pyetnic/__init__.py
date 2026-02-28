@@ -5,7 +5,7 @@ Ce module permet d'interagir avec les services SOAP d'ETNIC pour gérer les form
 les organisations, les documents administratifs, etc.
 """
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 __author__ = 'Fabien Toune'
 
 # Exposition des fonctions principales pour un accès direct
