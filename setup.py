@@ -6,7 +6,7 @@ README = Path(__file__).with_name('README.md').read_text(encoding='utf-8')
 
 setup(
     name='pyetnic',
-    version='0.0.4',
+    version='0.0.5',
     packages=find_namespace_packages(include=['pyetnic*'], exclude=['tests*']),
     include_package_data=True,  # Include non-code files specified in MANIFEST.in
     package_data={
@@ -31,13 +31,13 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Operating System :: OS Independent',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],

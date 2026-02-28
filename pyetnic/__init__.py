@@ -1,46 +1,41 @@
-"""
-Pyetnic - Bibliothèque d'accès aux services web ETNIC pour l'enseignement de promotion sociale.
+﻿"""Pyetnic package public API."""
 
-Ce module permet d'interagir avec les services SOAP d'ETNIC pour gérer les formations,
-les organisations, les documents administratifs, etc.
-"""
+from importlib import import_module
+from typing import Any
 
-__version__ = '0.0.4'
-__author__ = 'Fabien Toune'
+__version__ = "0.0.5"
+__author__ = "Fabien Toune"
 
-# Exposition des fonctions principales pour un accès direct
-from .services import (
-    # Formations liste
-    lister_formations,
-    lister_formations_organisables,
+_SERVICE_EXPORTS = {
+    "lister_formations",
+    "lister_formations_organisables",
+    "OrganisationApercu",
+    "lire_organisation",
+    "creer_organisation",
+    "modifier_organisation",
+    "supprimer_organisation",
+    "lire_document_1",
+    "modifier_document_1",
+    "approuver_document_1",
+    "lire_document_2",
+    "modifier_document_2",
+    "lire_document_3",
+    "modifier_document_3",
+}
 
-    # Modèles
-    OrganisationApercu,
+__all__ = sorted([*_SERVICE_EXPORTS, "Config", "run_cli"])
 
-    # Organisation
-    lire_organisation,
-    creer_organisation,
-    modifier_organisation,
-    supprimer_organisation,
 
-    # Document 1
-    lire_document_1,
-    modifier_document_1,
-    approuver_document_1,
+def __getattr__(name: str) -> Any:
+    if name in _SERVICE_EXPORTS:
+        services = import_module(".services", __name__)
+        return getattr(services, name)
+    if name == "Config":
+        return import_module(".config", __name__).Config
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-    # Document 2
-    lire_document_2,
-    modifier_document_2,
 
-    # Document 3
-    lire_document_3,
-    modifier_document_3,
-)
+def run_cli() -> None:
+    from .cli import main as cli_main
 
-# Exposition de la configuration
-from .config import Config
-
-from .cli import main as cli_main
-
-def run_cli():
     cli_main()
