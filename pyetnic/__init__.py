@@ -3,7 +3,7 @@
 from importlib import import_module
 from typing import Any
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __author__ = "Fabien Toune"
 
 _SERVICE_EXPORTS = {

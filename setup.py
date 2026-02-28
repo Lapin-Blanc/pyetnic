@@ -6,7 +6,7 @@ README = Path(__file__).with_name('README.md').read_text(encoding='utf-8')
 
 setup(
     name='pyetnic',
-    version='0.0.5',
+    version='0.0.6',
     packages=find_namespace_packages(include=['pyetnic*'], exclude=['tests*']),
     include_package_data=True,  # Include non-code files specified in MANIFEST.in
     package_data={
