@@ -1,8 +1,8 @@
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/formation/organisation/v6" xmlns:tns="http://services-web.etnic.be/eprom/formation/organisation/messages/v6" xmlns:common="http://etnic.be/types/technical/common/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formation/organisation/messages/v6" version="6.0">
-<xs:import namespace="http://enseignement.cfwb.be/types/formation/organisation/v6" schemaLocation="FormationOrganisation_v6.xsd"></xs:import>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/formation/organisation/v7" xmlns:tns="http://services-web.etnic.be/eprom/formation/organisation/messages/v7" xmlns:common="http://etnic.be/types/technical/common/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formation/organisation/messages/v7" version="7.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/formation/organisation/v7" schemaLocation="FormationOrganisation_v7.xsd"></xs:import>
 <xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
 <xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
-<xs:import namespace="http://etnic.be/types/technical/common/v1" schemaLocation="Common_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/common/v2" schemaLocation="Common_v2.xsd"></xs:import>
 <xs:element name="CreerOrganisation" type="tns:CreerOrganisationRequeteCT"></xs:element>
 <xs:element name="CreerOrganisationReponse" type="tns:CreerOrganisationReponseCT"></xs:element>
 <xs:element name="LireOrganisation" type="tns:LireOrganisationRequeteCT"></xs:element>
@@ -28,6 +28,7 @@
 <xs:element minOccurs="0" name="organisationPeriodesSupplOuEPT" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="reorientation7TP" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enseignementHybride" type="xs:boolean"></xs:element>
@@ -38,7 +39,7 @@
 </xs:complexType>
 <xs:complexType name="CreerOrganisationReponseCT">
 <xs:complexContent>
-<xs:extension base="common:AbstractExternalResponseType">
+<xs:extension base="common:ResponseType">
 <xs:sequence>
 <xs:element minOccurs="0" name="response">
 <xs:complexType>
@@ -67,7 +68,7 @@
 </xs:complexType>
 <xs:complexType name="LireOrganisationReponseCT">
 <xs:complexContent>
-<xs:extension base="common:AbstractExternalResponseType">
+<xs:extension base="common:ResponseType">
 <xs:sequence>
 <xs:element minOccurs="0" name="response">
 <xs:complexType>
@@ -97,6 +98,7 @@
 <xs:element minOccurs="0" name="organisationPeriodesSupplOuEPT" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="reorientation7TP" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enseignementHybride" type="xs:boolean"></xs:element>
@@ -107,7 +109,7 @@
 </xs:complexType>
 <xs:complexType name="ModifierOrganisationReponseCT">
 <xs:complexContent>
-<xs:extension base="common:AbstractExternalResponseType">
+<xs:extension base="common:ResponseType">
 <xs:sequence>
 <xs:element minOccurs="0" name="response">
 <xs:complexType>
@@ -136,7 +138,7 @@
 </xs:complexType>
 <xs:complexType name="SupprimerOrganisationReponseCT">
 <xs:complexContent>
-<xs:extension base="common:AbstractExternalResponseType"></xs:extension>
+<xs:extension base="common:ResponseType"></xs:extension>
 </xs:complexContent>
 </xs:complexType>
 </xs:schema>

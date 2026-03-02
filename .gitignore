@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+*pypirc
 # fichiers excel générés
 *.xlsx
 # C extensions
@@ -92,6 +92,13 @@ celerybeat-schedule
 # dotenv
 .env
 .venv
+
+# Certificats et clés privées ETNIC (NE JAMAIS COMMITTER)
+*.pfx
+*.p12
+*.key
+*.crt
+SEPS.InstallationCertificat.cfg
 
 # virtualenv
 venv/

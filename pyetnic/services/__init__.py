@@ -14,6 +14,8 @@ from .models import OrganisationApercu
 from .document1 import Document1Service
 from .document2 import Document2Service
 from .document3 import Document3Service
+from .seps import RechercheEtudiantsService
+from .nomenclatures import TYPES_INTERVENTION_EXTERIEURE
 
 # Importation et exposition des fonctions pour la liste des formations
 # Instanciation du service
@@ -49,6 +51,12 @@ lire_document_1 = document1_service.lire_document_1
 modifier_document_1 = document1_service.modifier_document_1
 approuver_document_1 = document1_service.approuver_document_1
 
+# instanciation du service SEPS
+seps_service = RechercheEtudiantsService()
+# Exposition des méthodes du service
+lire_etudiant = seps_service.lire_etudiant
+rechercher_etudiants = seps_service.rechercher_etudiants
+
 __all__ = [
     'FormationsListeService',
     'OrganisationService',
@@ -69,4 +77,8 @@ __all__ = [
     'modifier_document_2',
     'lire_document_3',
     'modifier_document_3',
+    'RechercheEtudiantsService',
+    'lire_etudiant',
+    'rechercher_etudiants',
+    'TYPES_INTERVENTION_EXTERIEURE',
 ]

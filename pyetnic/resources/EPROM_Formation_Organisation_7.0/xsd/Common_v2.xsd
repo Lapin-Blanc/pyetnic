@@ -1,0 +1,23 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:req="http://etnic.be/types/technical/requestId/v1" xmlns:status="http://etnic.be/types/technical/ResponseStatus/v3" xmlns:common="http://etnic.be/types/technical/common/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://etnic.be/types/technical/common/v2" version="2.0">
+<xsd:import namespace="http://etnic.be/types/technical/ResponseStatus/v3" schemaLocation="ResponseStatus_v3.xsd"></xsd:import>
+<xsd:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="requestId_v1.xsd"></xsd:import>
+<xsd:complexType abstract="true" name="ResponseType">
+<xsd:complexContent>
+<xsd:extension base="common:ResponseAttributesType">
+<xsd:sequence>
+<xsd:element ref="status:success"></xsd:element>
+<xsd:element minOccurs="0" ref="status:messages"></xsd:element>
+</xsd:sequence>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:complexType name="ResponseAttributesType">
+<xsd:attribute name="requestId" type="req:UUIDType" use="required"></xsd:attribute>
+<xsd:attribute name="transactionId" type="common:Str36Type" use="required"></xsd:attribute>
+</xsd:complexType>
+<xsd:simpleType name="Str36Type">
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="36"></xsd:maxLength>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:schema>

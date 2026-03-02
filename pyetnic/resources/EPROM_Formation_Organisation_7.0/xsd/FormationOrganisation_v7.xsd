@@ -1,4 +1,4 @@
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:tns="http://enseignement.cfwb.be/types/formation/organisation/v6" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/organisation/v6" version="6.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:tns="http://enseignement.cfwb.be/types/formation/organisation/v7" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/organisation/v7" version="7.0">
 <xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
 <xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
 <xs:complexType name="FormationOrganisationCT">
@@ -11,6 +11,7 @@
 <xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="eLearning" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="reorientation7TP" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="partiellementDistance" type="xs:boolean"></xs:element>

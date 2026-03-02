@@ -4,6 +4,9 @@ zeep
 python-dotenv
 requests
 openpyxl
+cryptography
+xmlsec
+
 # #cgi-tools  # Support pour remplacer le module cgi déprécié
 
 # # Dépendances de développement

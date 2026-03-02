@@ -10,7 +10,7 @@ Ce document est destiné à un agent IA reprenant le développement. Il décrit 
 
 - Repo : https://github.com/Lapin-Blanc/pyetnic
 - Auteur : Fabien Toune (fabien.toune@eica.be)
-- Version : 0.0.4 (alpha)
+- Version : 0.0.7 (alpha)
 - Python ≥ 3.8
 
 ---
@@ -32,7 +32,8 @@ pyetnic/services/
     document1.py             ← Document1Service
     document2.py             ← Document2Service
     document3.py             ← Document3Service
-pyetnic/resources/           ← fichiers WSDL et XSD (packagés)
+    seps.py                  ← RechercheEtudiantsService (SEPS, X509)
+pyetnic/resources/           ← fichiers WSDL et XSD (packagés, un dossier par ZIP)
 tests/                       ← tests pytest (mock + intégration)
 ```
 
@@ -40,8 +41,10 @@ tests/                       ← tests pytest (mock + intégration)
 
 `SoapClientManager` :
 - Un client zeep par service (cache de classe `_client_cache`)
-- Authentification WS-Security UsernameToken
-- SSL désactivé en mode `dev`, activé en `prod`
+- Authentification WS-Security configurable via `ServiceConfig.auth_type` :
+  - `"username_token"` (défaut) : UsernameToken (services EPROM)
+  - `"x509_pfx"` : signature X509 BinarySignature (services SEPS)
+- SSL désactivé en mode `dev`, activé en `prod` (toujours `True` pour `x509_pfx`)
 - `call_service(method_name, **kwargs)` → retourne `serialize_object(result, dict)`
 - La réponse sérialisée a toujours la forme :
   ```python
@@ -54,6 +57,15 @@ tests/                       ← tests pytest (mock + intégration)
       }
   }
   ```
+
+#### Authentification X509 (SEPS)
+
+- Classe `_EtnicBinarySignature` (sous-classe de `MemorySignature` zeep) : signe les requêtes, ignore la vérification des réponses (CA ETNIC non distribué)
+- Fonction `_build_x509_wsse()` : charge le PFX depuis `Config.SEPS_PFX_PATH`, extrait clé + cert en mémoire via `cryptography`, retourne un plugin `_EtnicBinarySignature`
+- **Aucune écriture sur disque** — extraction PEM en mémoire seulement
+- **Zéro perte de performances** — extraction faite une seule fois au premier appel, mise en cache dans `_client_cache` avec le client zeep
+- Dépendances : `cryptography` (obligatoire) + `xmlsec` (optionnel, extra `pip install pyetnic[seps]`)
+- Chemin PFX : relatif au répertoire courant (résolu via `os.path.abspath`)
 
 ### Pattern des services
 
@@ -162,17 +174,22 @@ Inspection approuve l'organisation
 
 ## Services ETNIC et versions WSDL
 
-| Clé Config | Service ETNIC | Version WSDL |
-|---|---|---|
-| `LISTE_FORMATIONS` | EPROMFormationsListe | v2 |
-| `ORGANISATION` | EPROMFormationOrganisation | v6 |
-| `DOCUMENT1` | EPROMFormationDocument1 | v1 |
-| `DOCUMENT2` | EPROMFormationDocument2 | v1 |
-| `DOCUMENT3` | EPROMFormationDocument3 | v1 |
+| Clé Config | Service ETNIC | Version WSDL | Auth |
+|---|---|---|---|
+| `LISTE_FORMATIONS` | EPROMFormationsListe | v2 | UsernameToken |
+| `ORGANISATION` | EPROMFormationOrganisation | v7 | UsernameToken |
+| `DOCUMENT1` | EPROMFormationDocument1 | v1 | UsernameToken |
+| `DOCUMENT2` | EPROMFormationDocument2 | v1 | UsernameToken |
+| `DOCUMENT3` | EPROMFormationDocument3 | v1 | UsernameToken |
+| `SEPS_RECHERCHE_ETUDIANTS` | SEPSRechercheEtudiants | v1 | X509 PFX |
 
 **Endpoints :**
-- dev : `https://services-web.tq.etnic.be:11443/eprom/...`
-- prod : `https://services-web.etnic.be:11443/eprom/...`
+- dev ORGANISATION : `https://ws-tq.etnic.be/eprom/formation/organisation/v7`
+- prod ORGANISATION : `https://ws.etnic.be/eprom/formation/organisation/v7`
+- dev autres EPROM : `https://services-web.tq.etnic.be:11443/eprom/...`
+- prod autres EPROM : `https://services-web.etnic.be:11443/eprom/...`
+- SEPS dev : `https://ws-tq.etnic.be/seps/rechercheEtudiants/v1` (cert prod non enregistré en TQ → erreur SECU-0104)
+- SEPS prod : `https://ws.etnic.be/seps/rechercheEtudiants/v1` (GlobalSign, `verify=True`)
 
 ---
 
@@ -184,7 +201,7 @@ Inspection approuve l'organisation
 | `ListerFormationsOrganisables` | `lister_formations_organisables()` | ✅ |
 | `ListerFormations` | `lister_formations()` | ✅ |
 
-### Organisation (v6)
+### Organisation (v7)
 | Opération WSDL | Fonction Python | Statut |
 |---|---|---|
 | `LireOrganisation` | `lire_organisation(org_id)` | ✅ |
@@ -193,6 +210,7 @@ Inspection approuve l'organisation
 | `SupprimerOrganisation` | `supprimer_organisation(org_id)` | ✅ |
 
 > Note : il n'y a **pas** d'opération `ApprouverOrganisation` dans ce WSDL.
+> Nouveau champ v7 : `reorientation7TP` (bool, optionnel) dans Creer/Modifier/Lire.
 
 ### Document1 (v1)
 | Opération WSDL | Fonction Python | Statut |
@@ -212,6 +230,14 @@ Inspection approuve l'organisation
 |---|---|---|
 | `LireDocument3` | `lire_document_3(org_id)` | ✅ |
 | `ModifierDocument3` | `modifier_document_3(org_id, activite_liste)` | ✅ |
+
+### SEPS RechercheEtudiants (v1) — authentification X509
+| Opération WSDL | Fonction Python | Statut |
+|---|---|---|
+| `lireEtudiant` | `lire_etudiant(cf_num, from_date?)` | ✅ |
+| `rechercherEtudiants` | `rechercher_etudiants(niss? | nom, prenom?, date_naissance?, sexe?, force_rn_flag?)` | ✅ |
+
+> SEPS fonctionne **uniquement en production** (`ws.etnic.be`). Le certificat prod n'est pas enregistré dans l'annuaire LDAP TQ → erreur SECU-0104 en dev.
 
 ---
 

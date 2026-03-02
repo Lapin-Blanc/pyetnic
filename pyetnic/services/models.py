@@ -38,6 +38,7 @@ class Organisation(OrganisationApercu):
     valorisationAcquis: Optional[bool] = None
     enPrison: Optional[bool] = None
     eLearning: Optional[bool] = None
+    reorientation7TP: Optional[bool] = None
     activiteFormation: Optional[bool] = None
     conseillerPrevention: Optional[bool] = None
     partiellementDistance: Optional[bool] = None
@@ -323,3 +324,57 @@ class FormationDocument3:
     """Représente un document 3 (attributions d'enseignants)."""
     id: OrganisationId
     activiteListe: Optional[Doc3ActiviteListe] = None
+
+# ---------------------------------------------------------------------------
+# Modèles SEPS — RechercheEtudiants v1
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SepsLocalite:
+    """Localité (LocaliteType)."""
+    code: Optional[str] = None
+    description: Optional[str] = None
+
+@dataclass
+class SepsAdresse:
+    """Adresse postale (AdresseType)."""
+    rue: Optional[str] = None
+    codePostal: Optional[str] = None
+    codePays: Optional[str] = None
+    numero: Optional[str] = None
+    boite: Optional[str] = None
+    extension: Optional[str] = None
+    localite: Optional[SepsLocalite] = None
+    localiteExtension: Optional[str] = None
+
+@dataclass
+class SepsNaissance:
+    """Données de naissance (NaissanceType)."""
+    date: Optional[str] = None
+    codePays: Optional[str] = None
+    localite: Optional[SepsLocalite] = None
+
+@dataclass
+class SepsDeces:
+    """Données de décès (DecesType)."""
+    date: Optional[date] = None
+
+@dataclass
+class EtudiantDetails:
+    """Détails d'un étudiant depuis le registre national ou CFWB (EtudiantDetailsType)."""
+    niss: Optional[str] = None
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
+    autrePrenom: Optional[List[str]] = None
+    sexe: Optional[str] = None
+    naissance: Optional[SepsNaissance] = None
+    deces: Optional[SepsDeces] = None
+    adresse: Optional[SepsAdresse] = None
+    codeNationalite: Optional[str] = None
+
+@dataclass
+class Etudiant:
+    """Étudiant SEPS avec ses données RN et/ou CFWB (EtudiantType)."""
+    cfNum: Optional[str] = None
+    rnDetails: Optional[EtudiantDetails] = None
+    cfwbDetails: Optional[EtudiantDetails] = None
