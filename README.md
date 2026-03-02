@@ -11,11 +11,18 @@ Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.
 | **Document 1** | Lire, modifier, approuver le document de population (inscriptions) |
 | **Document 2** | Lire, modifier le document des périodes d'activités d'enseignement |
 | **Document 3** | Lire, modifier le document des attributions d'enseignants |
+| **SEPS** | Lire un étudiant par numéro CF, rechercher des étudiants par NISS ou nom *(prod uniquement)* |
 
 ## Installation
 
 ```bash
 pip install pyetnic
+```
+
+Pour utiliser les services SEPS (signature X509) :
+
+```bash
+pip install pyetnic[seps]
 ```
 
 ## Configuration
@@ -44,9 +51,15 @@ PROD_PASSWORD=
 DEFAULT_ETABID=       # identifiant établissement (int)
 DEFAULT_IMPLID=       # identifiant implantation (int)
 DEFAULT_SCHOOLYEAR=2024-2025
+
+# Certificat X509 pour les services SEPS (chemin relatif au répertoire courant)
+# Fourni par ETNIC (IAM-PROD). Uniquement nécessaire pour les services SEPS.
+SEPS_PFX_PATH=
+SEPS_PFX_PASSWORD=
 ```
 
-Les identifiants sont fournis par ETNIC pour accéder aux services web de votre établissement.
+Les identifiants EPROM sont fournis par ETNIC pour accéder aux services web de votre établissement.
+Le certificat SEPS (fichier `.pfx`) est fourni séparément par ETNIC via IAM-PROD.
 
 ---
 
@@ -79,6 +92,7 @@ for formation in result:
 ```python
 from datetime import date
 import pyetnic
+from pyetnic.services.models import OrganisationId
 
 org_id = OrganisationId(
     anneeScolaire="2024-2025",
@@ -167,6 +181,32 @@ liste_save = Doc3ActiviteListeSave(activite=[
 doc3 = pyetnic.modifier_document_3(org_id, liste_save)
 ```
 
+### SEPS — Recherche d'étudiants
+
+> **Prérequis :** `pip install pyetnic[seps]` + certificat `.pfx` fourni par ETNIC (IAM-PROD).
+> Ce service fonctionne **uniquement en production** (`ws.etnic.be`).
+
+```python
+import pyetnic
+
+# Recherche par nom
+etudiants = pyetnic.rechercher_etudiants(nom="DUPONT", prenom="Jean")
+for e in etudiants:
+    details = e.rnDetails or e.cfwbDetails
+    if details:
+        print(e.cfNum, details.nom, details.prenom, details.naissance.date if details.naissance else "")
+
+# Recherche par NISS
+etudiants = pyetnic.rechercher_etudiants(niss="850101-123-45")
+
+# Lecture par numéro CF (format : [0-9]{1,10}-[0-9]{2})
+etudiant = pyetnic.lire_etudiant("12345678-01")
+if etudiant:
+    rn = etudiant.rnDetails
+    print(rn.nom, rn.prenom, rn.niss)
+    print(rn.adresse.rue, rn.adresse.codePostal)
+```
+
 ---
 
 ## Workflow métier
@@ -187,8 +227,8 @@ Doc 1 ET Doc 2 approuvés  →  Doc 3 accessible
 
 **Règles de blocage :**
 - Doc 1 : inaccessible si l'organisation est "Encodé école"
-- Doc 3 : nécessite que Doc 1 ("Doc A") **et** Doc 2 soient approuvés (erreur ETNIC 20102)
-- Modification impossible si le document est dans un statut verrouillé
+- Doc 3 : nécessite que Doc 1 **et** Doc 2 soient approuvés (erreur ETNIC 20102)
+- L'approbation de l'organisation est effectuée par l'inspection, pas par l'école
 
 ---
 
@@ -206,7 +246,7 @@ class OrganisationId:
     implId: Optional[int]   # identifiant implantation (présent dans les réponses serveur)
 ```
 
-> **Important** : `implId` est retourné par le serveur dans ses réponses mais **ne doit pas** être envoyé dans les requêtes Lire/Modifier/Supprimer (contrat `OrganisationReqIdCT`). Seul `CreerOrganisation` accepte `implId`.
+> **Important** : `implId` est retourné par le serveur dans ses réponses mais **ne doit pas** être envoyé dans les requêtes Lire/Modifier/Supprimer. Seul `creer_organisation` accepte `impl_id`.
 
 ### Vue d'une organisation
 
@@ -219,14 +259,14 @@ class OrganisationId:
 | `statutDocumentDroitsInscription` | Statut du Document droits d'inscription |
 | `statutDocumentAttributions` | Statut du Document 3 |
 
-`Organisation` (retourné par `lire_organisation`) hérite de `OrganisationApercu` et ajoute les champs métier complets.
+`Organisation` (retourné par `lire_organisation`) hérite de `OrganisationApercu` et ajoute les champs métier complets. Note : les champs `statutDocument*` sont toujours `None` dans `Organisation` — ils ne sont disponibles que via `lister_formations`.
 
 ---
 
 ## Gestion des erreurs
 
 Toutes les fonctions de service retournent `None` (plutôt qu'une exception) si :
-- Le serveur répond avec `success: False` et `response: None` (accès refusé, document non existant, etc.)
+- Le serveur répond avec `success: False` (accès refusé, document non existant, workflow non respecté, etc.)
 - Le document n'est pas accessible selon le workflow métier
 
 Les erreurs réseau et SOAP sont encapsulées dans `SoapError` et propagées.
@@ -237,6 +277,7 @@ Les erreurs réseau et SOAP sont encapsulées dans `SoapError` et propagées.
 |---|---|
 | 00009 | Aucun enregistrement trouvé |
 | 20102 | Doc 1 et Doc 2 doivent être approuvés pour accéder au Doc 3 |
+| SECU-0104 | Certificat X509 non enregistré dans l'annuaire (SEPS en dev) |
 
 ---
 
@@ -247,18 +288,23 @@ pyetnic/
 ├── __init__.py                  # Point d'entrée public
 ├── cli.py                       # CLI : commande init-config
 ├── config.py                    # Configuration (.env, endpoints SOAP)
-├── soap_client.py               # SoapClientManager (zeep + WSSE)
+├── soap_client.py               # SoapClientManager (zeep + WSSE/X509)
 ├── services/
 │   ├── __init__.py              # Instanciation des services, exports
-│   ├── models.py                # Tous les dataclasses (communs, Doc1, Doc2, Doc3)
+│   ├── models.py                # Tous les dataclasses (EPROM + SEPS)
 │   ├── formations_liste.py      # FormationsListeService
 │   ├── organisation.py          # OrganisationService
 │   ├── document1.py             # Document1Service
 │   ├── document2.py             # Document2Service
-│   └── document3.py             # Document3Service
+│   ├── document3.py             # Document3Service
+│   └── seps.py                  # RechercheEtudiantsService (SEPS)
 └── resources/
-    ├── *.wsdl                   # Contrats WSDL des services ETNIC
-    └── xsd/                     # Schémas XSD associés
+    ├── EPROM_Formations_Liste_2.0/
+    ├── EPROM_Formation_Organisation_7.0/
+    ├── EPROM_Formation_Population_1.0/
+    ├── EPROM_Formation_Périodes_1.0/
+    ├── EPROM_Document_3_1.0/
+    └── SEPS_Recherche_Étudiants_2.1/
 ```
 
 ---
@@ -276,8 +322,8 @@ pytest tests/ -k "mock"
 Les tests d'intégration nécessitent un `.env` valide. Ils skipent automatiquement si les credentials sont absents ou si le document n'est pas accessible dans l'environnement courant.
 
 **Environnements ETNIC :**
-- `dev` → `services-web.tq.etnic.be` (test, SSL non vérifié)
-- `prod` → `services-web.etnic.be` (production, SSL vérifié)
+- `dev` → `services-web.tq.etnic.be` / `ws-tq.etnic.be` (test, SSL non vérifié)
+- `prod` → `services-web.etnic.be` / `ws.etnic.be` (production, SSL vérifié)
 
 ---
 
@@ -288,7 +334,9 @@ Les tests d'intégration nécessitent un `.env` valide. Ils skipent automatiquem
 | [zeep](https://docs.python-zeep.org/) | Client SOAP |
 | [python-dotenv](https://pypi.org/project/python-dotenv/) | Chargement `.env` |
 | [requests](https://pypi.org/project/requests/) | Transport HTTP |
-| [openpyxl](https://pypi.org/project/openpyxl/) | Export Excel (futur) |
+| [cryptography](https://pypi.org/project/cryptography/) | Extraction PFX en mémoire (SEPS) |
+| [openpyxl](https://pypi.org/project/openpyxl/) | Export Excel |
+| [xmlsec](https://pypi.org/project/xmlsec/) *(extra seps)* | Signature XML X509 |
 
 ## Licence
 

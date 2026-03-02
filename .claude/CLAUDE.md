@@ -10,7 +10,7 @@ Ce document est destiné à un agent IA reprenant le développement. Il décrit 
 
 - Repo : https://github.com/Lapin-Blanc/pyetnic
 - Auteur : Fabien Toune (fabien.toune@eica.be)
-- Version : 0.0.7 (alpha)
+- Version : 0.0.8 (alpha)
 - Python ≥ 3.8
 
 ---
@@ -116,6 +116,7 @@ Organisation des sections dans l'ordre :
 2. **Document 1** : `Doc1PopulationLine`, `Doc1PopulationList`, `Doc1PopulationLineSave`, `Doc1PopulationListSave`, `FormationDocument1`
 3. **Document 2** : `Doc2Activite*`, `Doc2PeriodeExt*`, `Doc2InterventionExt*` (read + save), `FormationDocument2`
 4. **Document 3** : `Doc3EnseignantDetail`, `Doc3EnseignantList`, `Doc3ActiviteDetail`, `Doc3ActiviteListe` (read), puis `Doc3*Save` (save), `FormationDocument3`
+5. **SEPS** : `SepsLocalite`, `SepsAdresse`, `SepsNaissance`, `SepsDeces`, `EtudiantDetails`, `Etudiant`
 
 ### Hiérarchie Organisation
 
@@ -305,7 +306,7 @@ tests/test_formation_document3.py     7 tests  (5 mock + 2 intégration)
 ## Points d'attention pour les développements futurs
 
 ### Vérification XSD avant d'implémenter
-Avant d'implémenter ou de modifier un service, toujours vérifier le WSDL/XSD dans `pyetnic/resources/`. Les fichiers `.xsd` se trouvent dans `pyetnic/resources/xsd/`. Points à vérifier :
+Avant d'implémenter ou de modifier un service, toujours vérifier le WSDL/XSD dans `pyetnic/resources/`. Chaque service a son propre dossier (ex. `pyetnic/resources/EPROM_Document_3_1.0/xsd/`). Points à vérifier :
 1. Les champs obligatoires (absence de `minOccurs="0"`) → ne pas les mettre `Optional`
 2. La distinction `OrganisationReqIdCT` vs `OrganisationResIdCT` (avec/sans `implId`)
 3. Les noms exacts des éléments (ex. `activiteListe` vs `activiteList`)
@@ -328,11 +329,11 @@ Avant d'implémenter ou de modifier un service, toujours vérifier le WSDL/XSD d
 Pour vérifier la cohérence d'un modèle Python avec le contrat WSDL :
 
 ```bash
-# Lire le WSDL du service ciblé
-cat pyetnic/resources/EpromFormationDocument3Service_external_v1.wsdl | grep -A5 "Doc3Activite"
+# Lire le WSDL du service ciblé (chaque service dans son propre dossier)
+cat "pyetnic/resources/EPROM_Document_3_1.0/EpromFormationDocument3Service_external_v1.wsdl"
 
 # Lire le XSD correspondant
-cat pyetnic/resources/xsd/EpromFormationDocument3_external_v1.xsd | grep -A10 "Doc3ActiviteDetailSaveCT"
+cat "pyetnic/resources/EPROM_Document_3_1.0/xsd/EpromFormationDocument3_external_v1.xsd"
 ```
 
 Comparer :
