@@ -3,7 +3,7 @@
 from importlib import import_module
 from typing import Any
 
-__version__ = "0.0.6"
+__version__ = "0.0.8"
 __author__ = "Fabien Toune"
 
 _SERVICE_EXPORTS = {
@@ -21,6 +21,9 @@ _SERVICE_EXPORTS = {
     "modifier_document_2",
     "lire_document_3",
     "modifier_document_3",
+    "lire_etudiant",
+    "rechercher_etudiants",
+    "TYPES_INTERVENTION_EXTERIEURE",
 }
 
 __all__ = sorted([*_SERVICE_EXPORTS, "Config", "run_cli"])

@@ -1,0 +1,60 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cfNum="http://enseignement.cfwb.be/types/seps/cfNum/v1" xmlns:et="http://enseignement.cfwb.be/types/seps/etudiant/v1" xmlns:tns="http://ws.etnic.be/seps/rechercheEtudiants/messages/v1" xmlns:ext="http://etnic.be/types/technical/external/v1" xmlns:etd="http://enseignement.cfwb.be/types/seps/etudiantDetails/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://ws.etnic.be/seps/rechercheEtudiants/messages/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/cfNum/v1" schemaLocation="cfNum_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/etudiant/v1" schemaLocation="etudiant_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/etudiantDetails/v1" schemaLocation="etudiantDetails_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/external/v1" schemaLocation="external_v1.xsd"></xs:import>
+<xs:element name="lireEtudiant" type="tns:LireEtudiantRequeteType"></xs:element>
+<xs:element name="lireEtudiantReponse" type="tns:LireEtudiantReponseType"></xs:element>
+<xs:element name="rechercherEtudiants" type="tns:RechercherEtudiantsRequeteType"></xs:element>
+<xs:element name="rechercherEtudiantsReponse" type="tns:RechercherEtudiantsReponseType"></xs:element>
+<xs:complexType name="LireEtudiantRequeteType">
+<xs:sequence>
+<xs:element name="cfNum" type="cfNum:cfNumType"></xs:element>
+<xs:element minOccurs="0" name="fromDate" type="xs:date"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="LireEtudiantReponseType">
+<xs:complexContent>
+<xs:extension base="ext:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="etudiant" type="et:EtudiantType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="RechercherEtudiantsRequeteType">
+<xs:sequence>
+<xs:choice>
+<xs:element name="niss" type="etd:NISSType"></xs:element>
+<xs:sequence>
+<xs:element minOccurs="0" name="forceRnFlag" type="xs:boolean"></xs:element>
+<xs:element name="nom" type="etd:NomType"></xs:element>
+<xs:element minOccurs="0" name="prenom" type="etd:PrenomType"></xs:element>
+<xs:element minOccurs="0" name="dateNaissance" type="etd:IncompleteDateType"></xs:element>
+<xs:element minOccurs="0" name="sexe" type="etd:SexeType"></xs:element>
+</xs:sequence>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="RechercherEtudiantsReponseType">
+<xs:complexContent>
+<xs:extension base="ext:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="etudiant" type="et:EtudiantType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+</xs:schema>

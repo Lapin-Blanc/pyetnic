@@ -70,7 +70,7 @@
   </wsdl:binding>
   <wsdl:service name="service_eprom_formation_document2_external_v1">
     <wsdl:port name="EPROMFormationDocument2ExternalV1Port" binding="tns:EPROMFormationDocument2ExternalV1Binding">
-      <soap:address location="https://services-web.tq.etnic.be:11443/eprom/formation/document2/v1"></soap:address>
+      <soap:address location="https://ws-tq.etnic.be/eprom/formation/document2/v1"></soap:address>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

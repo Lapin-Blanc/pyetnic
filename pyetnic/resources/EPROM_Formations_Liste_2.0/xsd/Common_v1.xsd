@@ -1,0 +1,24 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:addr="http://etnic.be/types/technical/addressing/v2" xmlns:tns="http://etnic.be/types/technical/common/v1" xmlns:status="http://etnic.be/types/technical/ResponseStatus/v3" xmlns:auth="http://etnic.be/types/technical/authorisation/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://etnic.be/types/technical/common/v1" version="1.0">
+<xsd:import namespace="http://etnic.be/types/technical/ResponseStatus/v3" schemaLocation="ResponseStatus_v3.xsd"></xsd:import>
+<xsd:import namespace="http://etnic.be/types/technical/addressing/v2" schemaLocation="Addressing_v2.xsd"></xsd:import>
+<xsd:import namespace="http://etnic.be/types/technical/authorisation/v2" schemaLocation="Authorisation_v2.xsd"></xsd:import>
+<xsd:complexType abstract="true" name="AbstractInternalRequestType">
+<xsd:sequence>
+<xsd:element ref="addr:addressing"></xsd:element>
+<xsd:element minOccurs="0" ref="auth:authorisation"></xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+<xsd:complexType abstract="true" name="AbstractExternalResponseType">
+<xsd:sequence>
+<xsd:element ref="status:success"></xsd:element>
+<xsd:element minOccurs="0" ref="status:messages"></xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+<xsd:complexType abstract="true" name="AbstractInternalResponseType">
+<xsd:sequence>
+<xsd:element ref="addr:addressing"></xsd:element>
+<xsd:element ref="status:success"></xsd:element>
+<xsd:element minOccurs="0" ref="status:messages"></xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyetnic"
+version = "0.0.8"
+description = "Access to ETNIC web services through Python"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Fabien Toune", email = "fabien.toune@eica.be" }]
+requires-python = ">=3.8"
+dependencies = [
+    "zeep",
+    "python-dotenv",
+    "requests",
+    "openpyxl",
+    "cryptography",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.optional-dependencies]
+seps = ["xmlsec"]
+
+[project.urls]
+Homepage = "https://github.com/Lapin-Blanc/pyetnic"
+
+[project.scripts]
+pyetnic = "pyetnic.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pyetnic*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+pyetnic = [
+    "resources/*/*.wsdl",
+    "resources/*/xsd/*.xsd",
+]
+
+[tool.pytest.ini_options]
+# Warning normal en mode dev (ENV=dev) : SSL désactivé pour les serveurs TQ
+filterwarnings = ["ignore::urllib3.exceptions.InsecureRequestWarning"]

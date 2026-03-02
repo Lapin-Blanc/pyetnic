@@ -18,6 +18,12 @@ PROD_PASSWORD=
 DEFAULT_ETABID=3052
 DEFAULT_IMPLID=6050
 DEFAULT_SCHOOLYEAR=2023-2024
+
+# Certificat X509 pour les services SEPS (chemin relatif au repertoire courant)
+# Le fichier PFX est fourni par ETNIC (IAM-PROD).
+# Remarque : le service SEPS n'est disponible qu'en production (ws.etnic.be).
+SEPS_PFX_PATH=
+SEPS_PFX_PASSWORD=
 """
 
     if os.path.exists(output_file):
