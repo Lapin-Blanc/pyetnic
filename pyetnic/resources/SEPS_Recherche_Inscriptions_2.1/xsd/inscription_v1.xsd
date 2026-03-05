@@ -1,0 +1,330 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cfNum="http://enseignement.cfwb.be/types/seps/cfNum/v1" xmlns:tns="http://enseignement.cfwb.be/types/seps/inscription/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/seps/inscription/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/cfNum/v1" schemaLocation="cfNum_v1.xsd"></xs:import>
+<xs:complexType name="InscriptionInputDataType">
+<xs:sequence>
+<xs:element name="cfNum" type="cfNum:cfNumType"></xs:element>
+<xs:element name="idEtab" type="xs:integer"></xs:element>
+<xs:element name="idImplantation" type="xs:integer"></xs:element>
+<xs:element name="codePostalLieuCours" type="tns:CodePostalLieuType"></xs:element>
+<xs:element name="inscription" type="tns:InscriptionInputType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="InscriptionInputType">
+<xs:sequence>
+<xs:element name="dateInscription" type="tns:DateType"></xs:element>
+<xs:element name="statut" type="tns:CodeStatutType"></xs:element>
+<xs:element minOccurs="0" name="anneeScolaire" type="xs:integer"></xs:element>
+<xs:element minOccurs="0" name="ue" type="tns:UEInputType"></xs:element>
+<xs:element minOccurs="0" name="specificite" type="tns:SpecificiteDataType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="UEInputType">
+<xs:sequence>
+<xs:element name="noAdministratif" type="tns:ShortType"></xs:element>
+<xs:element name="noOrganisation" type="tns:ShortType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="SpecificiteDataInputType">
+<xs:sequence>
+<xs:element minOccurs="0" name="droitInscription" type="tns:DroitInscriptionType"></xs:element>
+<xs:element minOccurs="0" name="droitInscriptionSpecifique" type="tns:DroitInscriptionSpecifiqueType"></xs:element>
+<xs:element minOccurs="0" name="dureeInoccupation" type="tns:DureeInoccupationType"></xs:element>
+<xs:element minOccurs="0" name="situationMenage" type="tns:SituationMenageType"></xs:element>
+<xs:element minOccurs="0" name="enfantACharge" type="tns:IndicateurType"></xs:element>
+<xs:element minOccurs="0" name="difficulteHandicap" type="tns:IndicateurXType"></xs:element>
+<xs:element minOccurs="0" name="difficulteAutre" type="tns:IndicateurXType"></xs:element>
+<xs:element minOccurs="0" name="admission" type="tns:AdmissionType"></xs:element>
+<xs:element minOccurs="0" name="sanction" type="tns:SanctionType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="DroitInscriptionType">
+<xs:sequence>
+<xs:element name="indicateurDroitInscription" type="tns:IndicateurType"></xs:element>
+<xs:element minOccurs="0" name="exempte" type="tns:ExempteDroitInscriptionType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ExempteDroitInscriptionType">
+<xs:sequence>
+<xs:element name="indicateurExempteDroitInscription" type="tns:IndicateurType"></xs:element>
+<xs:element name="motifExemption" type="tns:MotifExemptionType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="DroitInscriptionSpecifiqueType">
+<xs:sequence>
+<xs:element name="indicateurDroitInscriptionSpecifique" type="tns:IndicateurType"></xs:element>
+<xs:element minOccurs="0" name="exempte" type="tns:ExempteDroitInscriptionSpecType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ExempteDroitInscriptionSpecType">
+<xs:sequence>
+<xs:element name="indicateurExempteDroitInscriptionSpec" type="tns:IndicateurType"></xs:element>
+<xs:element name="motifExemptionSpec" type="tns:MotifExemptionSpecType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="AdmissionType">
+<xs:sequence>
+<xs:element name="codeAdmission" type="tns:CodeAdmissionType"></xs:element>
+<xs:element minOccurs="0" name="typeEnseignement" type="tns:TypeEnseignementType"></xs:element>
+<xs:element minOccurs="0" name="titreDelivre" type="tns:TitreDelivreType"></xs:element>
+<xs:element minOccurs="0" name="equivalence" type="tns:EquivalenceType"></xs:element>
+<xs:element minOccurs="0" name="valorisationAcquis" type="tns:ValorisationAcquisType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="SanctionType">
+<xs:sequence>
+<xs:element name="codeSanction" type="tns:CodeSanctionType"></xs:element>
+<xs:element minOccurs="0" name="valorisationAcquisSanction" type="tns:ValorisationAcquisSanctionType"></xs:element>
+<xs:element minOccurs="0" name="motifAbandon" type="tns:MotifAbandonType"></xs:element>
+<xs:element minOccurs="0" name="statutFinFormation" type="tns:StatutFinFormationType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="InscriptionType">
+<xs:sequence>
+<xs:element name="cfNum" type="cfNum:cfNumType"></xs:element>
+<xs:element minOccurs="0" name="anneeScolaire" type="xs:integer"></xs:element>
+<xs:element minOccurs="0" name="idEtab" type="xs:integer"></xs:element>
+<xs:element minOccurs="0" name="idImplantation" type="xs:integer"></xs:element>
+<xs:element minOccurs="0" name="dateInscription" type="tns:DateType"></xs:element>
+<xs:element minOccurs="0" name="lieuCours" type="tns:LieuCoursType"></xs:element>
+<xs:element minOccurs="0" name="statut" type="tns:CodeStatutType"></xs:element>
+<xs:element minOccurs="0" name="ue" type="tns:UEType"></xs:element>
+<xs:element minOccurs="0" name="specificite" type="tns:SpecificiteDataType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="SpecificiteDataType">
+<xs:sequence>
+<xs:element minOccurs="0" name="regulier1" type="tns:IndicateurType"></xs:element>
+<xs:element minOccurs="0" name="regulier5" type="tns:IndicateurType"></xs:element>
+<xs:element minOccurs="0" name="droitInscription" type="tns:DroitInscriptionType"></xs:element>
+<xs:element minOccurs="0" name="droitInscriptionSpecifique" type="tns:DroitInscriptionSpecifiqueType"></xs:element>
+<xs:element minOccurs="0" name="dureeInoccupation" type="tns:DureeInoccupationType"></xs:element>
+<xs:element minOccurs="0" name="situationMenage" type="tns:SituationMenageType"></xs:element>
+<xs:element minOccurs="0" name="enfantACharge" type="tns:IndicateurType"></xs:element>
+<xs:element minOccurs="0" name="difficulteHandicap" type="tns:IndicateurXType"></xs:element>
+<xs:element minOccurs="0" name="difficulteAutre" type="tns:IndicateurXType"></xs:element>
+<xs:element minOccurs="0" name="admission" type="tns:AdmissionType"></xs:element>
+<xs:element minOccurs="0" name="sanction" type="tns:SanctionType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="LieuCoursType">
+<xs:sequence>
+<xs:element minOccurs="0" name="codePostal" type="tns:CodePostalLieuType"></xs:element>
+<xs:element minOccurs="0" name="ville" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="UEType">
+<xs:sequence>
+<xs:element name="noAdministratif" type="tns:ShortType"></xs:element>
+<xs:element name="noOrganisation" type="tns:ShortType"></xs:element>
+<xs:element minOccurs="0" name="label" type="tns:TextType"></xs:element>
+<xs:element minOccurs="0" name="code" type="tns:TextType"></xs:element>
+<xs:element minOccurs="0" name="codeNiveau" type="tns:CodeNiveauType"></xs:element>
+<xs:element minOccurs="0" name="nombreSemaine" type="tns:ShortType"></xs:element>
+<xs:element minOccurs="0" name="dateDebut" type="tns:DateType"></xs:element>
+<xs:element minOccurs="0" name="dateFin" type="tns:DateType"></xs:element>
+<xs:element minOccurs="0" name="fse" type="tns:IndicateurType"></xs:element>
+<xs:element minOccurs="0" name="noOrganisationPrecedent" type="tns:TextType"></xs:element>
+<xs:element minOccurs="0" name="activiteDeFormation" type="tns:IndicateurType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:simpleType name="CodePostalLieuType">
+<xs:restriction base="xs:string">
+<xs:maxLength value="7"></xs:maxLength>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="DateType">
+<xs:restriction base="xs:string">
+<xs:maxLength value="10"></xs:maxLength>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="TextType">
+<xs:restriction base="xs:string">
+<xs:maxLength value="250"></xs:maxLength>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ShortType">
+<xs:restriction base="xs:integer">
+<xs:maxInclusive value="32767"></xs:maxInclusive>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="CodeStatutType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="DE"></xs:enumeration>
+<xs:enumeration value="AN"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="DureeInoccupationType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="C00"></xs:enumeration>
+<xs:enumeration value="C06"></xs:enumeration>
+<xs:enumeration value="C12"></xs:enumeration>
+<xs:enumeration value="C24"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="SituationMenageType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="ISOL"></xs:enumeration>
+<xs:enumeration value="SSEM"></xs:enumeration>
+<xs:enumeration value="A1EM"></xs:enumeration>
+<xs:enumeration value="X"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="MotifExemptionType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="C01"></xs:enumeration>
+<xs:enumeration value="C02"></xs:enumeration>
+<xs:enumeration value="C03"></xs:enumeration>
+<xs:enumeration value="C04"></xs:enumeration>
+<xs:enumeration value="C05"></xs:enumeration>
+<xs:enumeration value="C06"></xs:enumeration>
+<xs:enumeration value="C07"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="MotifExemptionSpecType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="C01"></xs:enumeration>
+<xs:enumeration value="C02"></xs:enumeration>
+<xs:enumeration value="C03"></xs:enumeration>
+<xs:enumeration value="C04"></xs:enumeration>
+<xs:enumeration value="C05"></xs:enumeration>
+<xs:enumeration value="C06"></xs:enumeration>
+<xs:enumeration value="C07"></xs:enumeration>
+<xs:enumeration value="C08"></xs:enumeration>
+<xs:enumeration value="C09"></xs:enumeration>
+<xs:enumeration value="C10"></xs:enumeration>
+<xs:enumeration value="C11"></xs:enumeration>
+<xs:enumeration value="C12"></xs:enumeration>
+<xs:enumeration value="C13"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="CodeAdmissionType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="REUSSITE"></xs:enumeration>
+<xs:enumeration value="TITREBEL"></xs:enumeration>
+<xs:enumeration value="TITREETR"></xs:enumeration>
+<xs:enumeration value="AUTRE"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="TypeEnseignementType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="PRI"></xs:enumeration>
+<xs:enumeration value="SIPE"></xs:enumeration>
+<xs:enumeration value="SSPE"></xs:enumeration>
+<xs:enumeration value="SIPS"></xs:enumeration>
+<xs:enumeration value="SSPS"></xs:enumeration>
+<xs:enumeration value="SCPE"></xs:enumeration>
+<xs:enumeration value="SLPE"></xs:enumeration>
+<xs:enumeration value="SCPS"></xs:enumeration>
+<xs:enumeration value="SLPS"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="TitreDelivreType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="CEB"></xs:enumeration>
+<xs:enumeration value="CE1D"></xs:enumeration>
+<xs:enumeration value="CESI"></xs:enumeration>
+<xs:enumeration value="CE2D"></xs:enumeration>
+<xs:enumeration value="CQ4"></xs:enumeration>
+<xs:enumeration value="CESSG"></xs:enumeration>
+<xs:enumeration value="CESST"></xs:enumeration>
+<xs:enumeration value="CESSQ"></xs:enumeration>
+<xs:enumeration value="CESSP"></xs:enumeration>
+<xs:enumeration value="CESSA"></xs:enumeration>
+<xs:enumeration value="CE6P"></xs:enumeration>
+<xs:enumeration value="CQ6"></xs:enumeration>
+<xs:enumeration value="CQ7"></xs:enumeration>
+<xs:enumeration value="DAES"></xs:enumeration>
+<xs:enumeration value="BES"></xs:enumeration>
+<xs:enumeration value="BACH"></xs:enumeration>
+<xs:enumeration value="MAST"></xs:enumeration>
+<xs:enumeration value="CESS"></xs:enumeration>
+<xs:enumeration value="CQSUP"></xs:enumeration>
+<xs:enumeration value="CQINF"></xs:enumeration>
+<xs:enumeration value="MASTSPE"></xs:enumeration>
+<xs:enumeration value="DOC"></xs:enumeration>
+<xs:enumeration value="BACHSPE"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="EquivalenceType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="C01"></xs:enumeration>
+<xs:enumeration value="C02"></xs:enumeration>
+<xs:enumeration value="C03"></xs:enumeration>
+<xs:enumeration value="C04"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ValorisationAcquisType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="C01"></xs:enumeration>
+<xs:enumeration value="C02"></xs:enumeration>
+<xs:enumeration value="C03"></xs:enumeration>
+<xs:enumeration value="C04"></xs:enumeration>
+<xs:enumeration value="C10"></xs:enumeration>
+<xs:enumeration value="C20"></xs:enumeration>
+<xs:enumeration value="C30"></xs:enumeration>
+<xs:enumeration value="C40"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="CodeSanctionType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="RE"></xs:enumeration>
+<xs:enumeration value="AB"></xs:enumeration>
+<xs:enumeration value="EH"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ValorisationAcquisSanctionType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="C00"></xs:enumeration>
+<xs:enumeration value="C01"></xs:enumeration>
+<xs:enumeration value="C02"></xs:enumeration>
+<xs:enumeration value="C03"></xs:enumeration>
+<xs:enumeration value="C04"></xs:enumeration>
+<xs:enumeration value="C05"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="MotifAbandonType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="TPS"></xs:enumeration>
+<xs:enumeration value="PRO"></xs:enumeration>
+<xs:enumeration value="FAM"></xs:enumeration>
+<xs:enumeration value="SAN"></xs:enumeration>
+<xs:enumeration value="ATT"></xs:enumeration>
+<xs:enumeration value="MEM"></xs:enumeration>
+<xs:enumeration value="FMJ"></xs:enumeration>
+<xs:enumeration value="NUM"></xs:enumeration>
+<xs:enumeration value="AUT"></xs:enumeration>
+<xs:enumeration value="INC"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="StatutFinFormationType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="C01"></xs:enumeration>
+<xs:enumeration value="C02"></xs:enumeration>
+<xs:enumeration value="C03"></xs:enumeration>
+<xs:enumeration value="C04"></xs:enumeration>
+<xs:enumeration value="C05"></xs:enumeration>
+<xs:enumeration value="C06"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="CodeNiveauType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="SI"></xs:enumeration>
+<xs:enumeration value="SS"></xs:enumeration>
+<xs:enumeration value="SC"></xs:enumeration>
+<xs:enumeration value="SL"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="IndicateurType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="O"></xs:enumeration>
+<xs:enumeration value="N"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="IndicateurXType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="O"></xs:enumeration>
+<xs:enumeration value="N"></xs:enumeration>
+<xs:enumeration value="X"></xs:enumeration>
+</xs:restriction>
+</xs:simpleType>
+</xs:schema>

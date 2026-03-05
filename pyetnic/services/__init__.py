@@ -16,6 +16,7 @@ from .document2 import Document2Service
 from .document3 import Document3Service
 from .seps import RechercheEtudiantsService
 from .enregistrer_etudiant import EnregistrerEtudiantService
+from .inscriptions import InscriptionsService
 from .nomenclatures import TYPES_INTERVENTION_EXTERIEURE
 
 # Importation et exposition des fonctions pour la liste des formations
@@ -64,6 +65,13 @@ enregistrer_etudiant_service = EnregistrerEtudiantService()
 enregistrer_etudiant = enregistrer_etudiant_service.enregistrer_etudiant
 modifier_etudiant = enregistrer_etudiant_service.modifier_etudiant
 
+# instanciation des services SEPS Inscriptions
+inscriptions_service = InscriptionsService()
+# Exposition des méthodes du service
+rechercher_inscriptions = inscriptions_service.rechercher_inscriptions
+enregistrer_inscription = inscriptions_service.enregistrer_inscription
+modifier_inscription = inscriptions_service.modifier_inscription
+
 __all__ = [
     'FormationsListeService',
     'OrganisationService',
@@ -90,5 +98,9 @@ __all__ = [
     'EnregistrerEtudiantService',
     'enregistrer_etudiant',
     'modifier_etudiant',
+    'InscriptionsService',
+    'rechercher_inscriptions',
+    'enregistrer_inscription',
+    'modifier_inscription',
     'TYPES_INTERVENTION_EXTERIEURE',
 ]

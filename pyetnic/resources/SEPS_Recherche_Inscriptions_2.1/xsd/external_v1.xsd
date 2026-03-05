@@ -1,0 +1,9 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://etnic.be/types/technical/external/v1" xmlns:status="http://etnic.be/types/technical/ResponseStatus/v3" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://etnic.be/types/technical/external/v1" version="1.0">
+<xsd:import namespace="http://etnic.be/types/technical/ResponseStatus/v3" schemaLocation="ResponseStatus_v3.xsd"></xsd:import>
+<xsd:complexType abstract="true" name="AbstractExternalResponseType">
+<xsd:sequence>
+<xsd:element ref="status:success"></xsd:element>
+<xsd:element minOccurs="0" ref="status:messages"></xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+</xsd:schema>

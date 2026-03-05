@@ -12,7 +12,44 @@ logger = logging.getLogger(__name__)
 _NISS_RE = re.compile(r'[0-9]{6}-?[0-9]{3}-?[0-9]{2}')
 
 
-class NissMutationError(Exception):
+class SepsEtnicError(Exception):
+    """Erreur retournée par le serveur ETNIC SEPS (success=False).
+
+    Tous les codes d'erreur SEPS héritent de cette classe, ce qui permet
+    de les intercepter globalement si besoin :
+
+        try:
+            etudiants = pyetnic.seps.rechercher_etudiants(nom="Dupont")
+        except SepsEtnicError as e:
+            print(e.code, e.description)
+    """
+
+    def __init__(self, code: str, description: str):
+        self.code = code
+        self.description = description
+        super().__init__(f"SEPS erreur {code}: {description}")
+
+
+class SepsAuthError(SepsEtnicError):
+    """Échec d'authentification SEPS (code 30550).
+
+    Indique un problème avec le certificat PFX : expiré, non enregistré,
+    ou mauvais mot de passe.
+    """
+
+
+class TropDeResultatsError(SepsEtnicError):
+    """Le serveur ETNIC a retourné trop de résultats (code 30501).
+
+    Affiner la recherche en ajoutant des critères supplémentaires
+    (prenom, date_naissance, sexe…).
+    """
+
+    def __init__(self):
+        super().__init__("30501", "Trop de résultats — affiner la recherche (prenom, date_naissance, sexe…)")
+
+
+class NissMutationError(SepsEtnicError):
     """Le NISS fourni a été remplacé par un nouveau NISS (code ETNIC 30401).
 
     Se produit quand un numéro BIS a été remplacé par un vrai numéro de
@@ -30,8 +67,9 @@ class NissMutationError(Exception):
         self.ancien_niss = ancien_niss
         self.nouveau_niss = nouveau_niss
         super().__init__(
+            "30401",
             f"NISS {ancien_niss!r} remplacé par {nouveau_niss!r} — "
-            "relancer la recherche avec nouveau_niss"
+            "relancer la recherche avec nouveau_niss",
         )
 
 
@@ -130,10 +168,17 @@ class RechercheEtudiantsService:
             if not body.get("success", True):
                 errors = (body.get("messages") or {}).get("error") or []
                 for err in (errors if isinstance(errors, list) else [errors]):
-                    if str(err.get("code")) == "30401":
+                    code = str(err.get("code"))
+                    if code == "30401":
                         match = _NISS_RE.search(err.get("description", ""))
                         nouveau_niss = match.group(0) if match else ""
                         raise NissMutationError(ancien_niss or "", nouveau_niss)
+                    elif code == "30501":
+                        raise TropDeResultatsError()
+                    elif code == "30550":
+                        raise SepsAuthError(code, err.get("description", ""))
+                    else:
+                        raise SepsEtnicError(code, err.get("description", ""))
         if not (
             result
             and result.get("body")

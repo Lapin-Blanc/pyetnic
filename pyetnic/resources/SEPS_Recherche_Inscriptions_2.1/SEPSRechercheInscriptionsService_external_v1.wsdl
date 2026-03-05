@@ -1,0 +1,48 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:req="http://etnic.be/types/technical/requestId/v1" xmlns:msg="http://ws.etnic.be/seps/rechercheInscriptions/messages/v1" xmlns:tns="http://ws.etnic.be/seps/rechercheInscriptions/v1" name="SEPSRechercheInscriptionsServiceExternalV1" targetNamespace="http://ws.etnic.be/seps/rechercheInscriptions/v1">
+  <wsdl:types>
+    <xs:schema>
+			<xs:import namespace="http://ws.etnic.be/seps/rechercheInscriptions/messages/v1" schemaLocation="xsd/SEPSRechercheInscriptionsMessages_external_v1.xsd"></xs:import>
+			<xs:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="xsd/requestId_v1.xsd"></xs:import>
+		</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="RechercherInscriptionsReponseMessage">
+    <wsdl:part name="parameters" element="msg:rechercherInscriptionsReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="RechercherInscriptionsRequeteMessage">
+    <wsdl:part name="parameters" element="msg:rechercherInscriptions">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="RequestIdHeader">
+    <wsdl:part name="requestId" element="req:requestId">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="SEPSRechercheInscriptionsV1PortType">
+    <wsdl:operation name="rechercherInscriptions">
+      <wsdl:input message="tns:RechercherInscriptionsRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:RechercherInscriptionsReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SEPSRechercheInscriptionsV1ExternalBinding" type="tns:SEPSRechercheInscriptionsV1PortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="rechercherInscriptions">
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="service_seps_rechercheInscriptions_external_v1">
+    <wsdl:port name="SEPSRechercheInscriptionsV1ExternalPort" binding="tns:SEPSRechercheInscriptionsV1ExternalBinding">
+      <soap:address location="https://ws-tq.etnic.be/seps/rechercheInscriptions/v1"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

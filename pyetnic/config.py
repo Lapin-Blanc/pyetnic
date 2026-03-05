@@ -87,6 +87,18 @@ class Config:
             binding_name="{http://ws.etnic.be/seps/enregistrerEtudiant/v1}SEPSEnregistrerEtudiantV1ExternalBinding",
             auth_type="x509_pfx",
         ),
+        "SEPS_ENREGISTRER_INSCRIPTION": ServiceConfig(
+            endpoint=f"https://ws{'-tq' if ENV == 'dev' else ''}.etnic.be/seps/enregistrerInscription/v1",
+            wsdl_path="SEPS_Enregistrer_Inscription_2.1/SEPSEnregistrerInscriptionService_external_v1.wsdl",
+            binding_name="{http://ws.etnic.be/seps/enregistrerInscription/v1}SEPSEnregistrerInscriptionV1ExternalBinding",
+            auth_type="x509_pfx",
+        ),
+        "SEPS_RECHERCHE_INSCRIPTIONS": ServiceConfig(
+            endpoint=f"https://ws{'-tq' if ENV == 'dev' else ''}.etnic.be/seps/rechercheInscriptions/v1",
+            wsdl_path="SEPS_Recherche_Inscriptions_2.1/SEPSRechercheInscriptionsService_external_v1.wsdl",
+            binding_name="{http://ws.etnic.be/seps/rechercheInscriptions/v1}SEPSRechercheInscriptionsV1ExternalBinding",
+            auth_type="x509_pfx",
+        ),
     }
 
     @classmethod
