@@ -412,3 +412,138 @@ class EtudiantDetailsSave:
     deces: Optional[SepsDeces] = None
     adresse: Optional[SepsAdresseSave] = None
     codeNationalite: Optional[str] = None
+
+# ---------------------------------------------------------------------------
+# Modèles Inscription (lecture)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SepsDroitInscription:
+    """Droit d'inscription (DroitInscriptionType)."""
+    indicateurDroitInscription: str                        # "O" | "N"
+    exempte: Optional["SepsExempteDroitInscription"] = None
+
+@dataclass
+class SepsExempteDroitInscription:
+    """Exemption de droit d'inscription (ExempteDroitInscriptionType)."""
+    indicateurExempteDroitInscription: str                 # "O" | "N"
+    motifExemption: str                                    # C01-C07
+
+@dataclass
+class SepsDroitInscriptionSpecifique:
+    """Droit d'inscription spécifique (DroitInscriptionSpecifiqueType)."""
+    indicateurDroitInscriptionSpecifique: str              # "O" | "N"
+    exempte: Optional["SepsExempteDroitInscriptionSpec"] = None
+
+@dataclass
+class SepsExempteDroitInscriptionSpec:
+    """Exemption de droit d'inscription spécifique."""
+    indicateurExempteDroitInscriptionSpec: str             # "O" | "N"
+    motifExemptionSpec: str                                # C01-C13
+
+@dataclass
+class SepsAdmission:
+    """Données d'admission (AdmissionType)."""
+    codeAdmission: str                                     # "REUSSITE"|"TITREBEL"|"TITREETR"|"AUTRE"
+    typeEnseignement: Optional[str] = None
+    titreDelivre: Optional[str] = None
+    equivalence: Optional[str] = None                     # C01-C04
+    valorisationAcquis: Optional[str] = None              # C01-C04, C10-C40
+
+@dataclass
+class SepsSanction:
+    """Sanction de formation (SanctionType)."""
+    codeSanction: str                                      # "RE"|"AB"|"EH"
+    valorisationAcquisSanction: Optional[str] = None      # C00-C05
+    motifAbandon: Optional[str] = None                    # TPS|PRO|FAM|SAN|ATT|MEM|FMJ|NUM|AUT|INC
+    statutFinFormation: Optional[str] = None              # C01-C06
+
+@dataclass
+class SepsSpecificite:
+    """Spécificités d'inscription (SpecificiteDataType — lecture)."""
+    regulier1: Optional[str] = None                       # "O" | "N"
+    regulier5: Optional[str] = None                       # "O" | "N"
+    droitInscription: Optional[SepsDroitInscription] = None
+    droitInscriptionSpecifique: Optional[SepsDroitInscriptionSpecifique] = None
+    dureeInoccupation: Optional[str] = None               # C00|C06|C12|C24
+    situationMenage: Optional[str] = None                 # ISOL|SSEM|A1EM|X
+    enfantACharge: Optional[str] = None                   # "O" | "N"
+    difficulteHandicap: Optional[str] = None              # "O" | "N" | "X"
+    difficulteAutre: Optional[str] = None                 # "O" | "N" | "X"
+    admission: Optional[SepsAdmission] = None
+    sanction: Optional[SepsSanction] = None
+
+@dataclass
+class SepsUE:
+    """Unité d'enseignement (UEType — lecture)."""
+    noAdministratif: int
+    noOrganisation: int
+    label: Optional[str] = None
+    code: Optional[str] = None
+    codeNiveau: Optional[str] = None                      # "SI"|"SS"|"SC"|"SL"
+    nombreSemaine: Optional[int] = None
+    dateDebut: Optional[str] = None
+    dateFin: Optional[str] = None
+    fse: Optional[str] = None                             # "O" | "N"
+    noOrganisationPrecedent: Optional[str] = None
+    activiteDeFormation: Optional[str] = None             # "O" | "N"
+
+@dataclass
+class SepsLieuCours:
+    """Lieu de cours (LieuCoursType)."""
+    codePostal: Optional[str] = None
+    ville: Optional[str] = None
+
+@dataclass
+class Inscription:
+    """Inscription d'un étudiant à une UE (InscriptionType)."""
+    cfNum: str
+    anneeScolaire: Optional[int] = None
+    idEtab: Optional[int] = None
+    idImplantation: Optional[int] = None
+    dateInscription: Optional[str] = None
+    lieuCours: Optional[SepsLieuCours] = None
+    statut: Optional[str] = None                          # "DE" | "AN"
+    ue: Optional[SepsUE] = None
+    specificite: Optional[SepsSpecificite] = None
+
+# ---------------------------------------------------------------------------
+# Modèles Inscription (envoi)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SepsUESave:
+    """Unité d'enseignement à envoyer (UEInputType)."""
+    noAdministratif: int
+    noOrganisation: int
+
+@dataclass
+class SepsSpecificiteSave:
+    """Spécificités d'inscription à envoyer (SpecificiteDataInputType — sans regulier1/5)."""
+    droitInscription: Optional[SepsDroitInscription] = None
+    droitInscriptionSpecifique: Optional[SepsDroitInscriptionSpecifique] = None
+    dureeInoccupation: Optional[str] = None               # C00|C06|C12|C24
+    situationMenage: Optional[str] = None                 # ISOL|SSEM|A1EM|X
+    enfantACharge: Optional[str] = None                   # "O" | "N"
+    difficulteHandicap: Optional[str] = None              # "O" | "N" | "X"
+    difficulteAutre: Optional[str] = None                 # "O" | "N" | "X"
+    admission: Optional[SepsAdmission] = None
+    sanction: Optional[SepsSanction] = None
+
+@dataclass
+class InscriptionInputSave:
+    """Données d'inscription à envoyer (InscriptionInputType)."""
+    dateInscription: str                                   # requis
+    statut: str                                            # requis: "DE" | "AN"
+    anneeScolaire: Optional[int] = None
+    ue: Optional[SepsUESave] = None
+    specificite: Optional[SepsSpecificiteSave] = None
+
+@dataclass
+class InscriptionInputDataSave:
+    """Données complètes d'inscription à envoyer (InscriptionInputDataType)."""
+    cfNum: str                                             # requis
+    idEtab: int                                            # requis
+    idImplantation: int                                    # requis
+    codePostalLieuCours: str                               # requis
+    inscription: InscriptionInputSave                      # requis

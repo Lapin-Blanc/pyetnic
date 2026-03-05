@@ -10,13 +10,17 @@ from ..services import (
     rechercher_etudiants,
     enregistrer_etudiant,
     modifier_etudiant,
+    rechercher_inscriptions,
+    enregistrer_inscription,
+    modifier_inscription,
 )
 
 # Exceptions
-from ..services.seps import NissMutationError
+from ..services.seps import SepsEtnicError, SepsAuthError, NissMutationError, TropDeResultatsError
 
 # Modèles
 from ..services.models import (
+    # Étudiant
     Etudiant,
     EtudiantDetails,
     EtudiantDetailsSave,
@@ -26,6 +30,22 @@ from ..services.models import (
     SepsNaissance,
     SepsNaissanceSave,
     SepsDeces,
+    # Inscription (lecture)
+    Inscription,
+    SepsUE,
+    SepsLieuCours,
+    SepsSpecificite,
+    SepsDroitInscription,
+    SepsExempteDroitInscription,
+    SepsDroitInscriptionSpecifique,
+    SepsExempteDroitInscriptionSpec,
+    SepsAdmission,
+    SepsSanction,
+    # Inscription (envoi)
+    InscriptionInputDataSave,
+    InscriptionInputSave,
+    SepsUESave,
+    SepsSpecificiteSave,
 )
 
 __all__ = [
@@ -34,8 +54,11 @@ __all__ = [
     "rechercher_etudiants",
     "enregistrer_etudiant",
     "modifier_etudiant",
-    # Exceptions
+    # Exceptions (base → spécialisées)
+    "SepsEtnicError",
+    "SepsAuthError",
     "NissMutationError",
+    "TropDeResultatsError",
     # Modèles (lecture)
     "Etudiant",
     "EtudiantDetails",
@@ -43,8 +66,28 @@ __all__ = [
     "SepsLocalite",
     "SepsNaissance",
     "SepsDeces",
-    # Modèles (envoi)
+    # Modèles étudiant (envoi)
     "EtudiantDetailsSave",
     "SepsAdresseSave",
     "SepsNaissanceSave",
+    # Fonctions inscription
+    "rechercher_inscriptions",
+    "enregistrer_inscription",
+    "modifier_inscription",
+    # Modèles inscription (lecture)
+    "Inscription",
+    "SepsUE",
+    "SepsLieuCours",
+    "SepsSpecificite",
+    "SepsDroitInscription",
+    "SepsExempteDroitInscription",
+    "SepsDroitInscriptionSpecifique",
+    "SepsExempteDroitInscriptionSpec",
+    "SepsAdmission",
+    "SepsSanction",
+    # Modèles inscription (envoi)
+    "InscriptionInputDataSave",
+    "InscriptionInputSave",
+    "SepsUESave",
+    "SepsSpecificiteSave",
 ]

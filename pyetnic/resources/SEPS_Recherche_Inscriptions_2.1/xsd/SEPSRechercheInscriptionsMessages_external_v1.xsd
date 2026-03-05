@@ -1,0 +1,32 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cfNum="http://enseignement.cfwb.be/types/seps/cfNum/v1" xmlns:tns="http://ws.etnic.be/seps/rechercheInscriptions/messages/v1" xmlns:in="http://enseignement.cfwb.be/types/seps/inscription/v1" xmlns:ext="http://etnic.be/types/technical/external/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://ws.etnic.be/seps/rechercheInscriptions/messages/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/cfNum/v1" schemaLocation="cfNum_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/inscription/v1" schemaLocation="inscription_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/external/v1" schemaLocation="external_v1.xsd"></xs:import>
+<xs:element name="rechercherInscriptions" type="tns:RechercherInscriptionsRequeteType"></xs:element>
+<xs:element name="rechercherInscriptionsReponse" type="tns:RechercherInscriptionsReponseType"></xs:element>
+<xs:complexType name="RechercherInscriptionsRequeteType">
+<xs:sequence>
+<xs:element minOccurs="0" name="anneeScolaire" type="xs:integer"></xs:element>
+<xs:element minOccurs="0" name="etabId" type="xs:integer"></xs:element>
+<xs:element minOccurs="0" name="dateRequete" type="xs:date"></xs:element>
+<xs:element minOccurs="0" name="cfNum" type="cfNum:cfNumType"></xs:element>
+<xs:element minOccurs="0" name="noAdministratif" type="in:ShortType"></xs:element>
+<xs:element minOccurs="0" name="noOrganisation" type="in:ShortType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="RechercherInscriptionsReponseType">
+<xs:complexContent>
+<xs:extension base="ext:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="inscription" type="in:InscriptionType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+</xs:schema>

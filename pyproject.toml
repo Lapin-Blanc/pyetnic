@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyetnic"
-version = "0.0.10"
+version = "0.0.11"
 description = "Access to ETNIC web services through Python"
 readme = "README.md"
 license = "MIT"

@@ -359,7 +359,9 @@ pyetnic/
 │   ├── document1.py
 │   ├── document2.py
 │   ├── document3.py
-│   └── seps.py
+│   ├── seps.py
+│   ├── enregistrer_etudiant.py
+│   └── inscriptions.py
 └── resources/
     ├── EPROM_Formations_Liste_2.0/
     ├── EPROM_Formation_Organisation_7.0/
@@ -367,7 +369,9 @@ pyetnic/
     ├── EPROM_Formation_Periodes_1.0/
     ├── EPROM_Document_3_1.0/
     ├── SEPS_Recherche_Etudiants_2.1/
-    └── SEPS_Enregistrer_Etudiant_2.1/
+    ├── SEPS_Enregistrer_Etudiant_2.1/
+    ├── SEPS_Enregistrer_Inscription_2.1/
+    └── SEPS_Recherche_Inscriptions_2.1/
 ```
 
 ---
@@ -387,51 +391,6 @@ Les tests d'intégration nécessitent un `.env` valide. Ils skipent automatiquem
 **Environnements ETNIC :**
 - `dev` → `services-web.tq.etnic.be` / `ws-tq.etnic.be` (test, SSL non vérifié)
 - `prod` → `services-web.etnic.be` / `ws.etnic.be` (production, SSL vérifié)
-
----
-
-## Release PyPI (Trusted Publishing)
-
-### 1) Configurer le Trusted Publisher sur PyPI
-
-Dans PyPI (`pyetnic`), aller dans **Manage project** -> **Publishing** -> **Add a new publisher** puis renseigner :
-- `Owner`: `Lapin-Blanc`
-- `Repository name`: `pyetnic`
-- `Workflow name`: `publish-pypi.yml`
-- `Environment name`: `pypi`
-
-Le workflow est dans `.github/workflows/publish-pypi.yml` et utilise OIDC via `pypa/gh-action-pypi-publish@release/v1`.
-
-### 2) Créer l'environnement GitHub `pypi`
-
-Dans GitHub : **Settings** -> **Environments** -> **New environment** -> nommer `pypi`.
-
-Optionnel : ajouter des protection rules (reviewers, branche/tag rules) selon votre politique de release.
-
-### 3) Bump version
-
-Mettre à jour la version dans :
-- `pyproject.toml` (`[project].version`)
-- `pyetnic/__init__.py` (`__version__`)
-
-Exemple pour cette release : `0.0.9`.
-
-### 4) Tagger et publier
-
-```bash
-git add pyproject.toml pyetnic/__init__.py README.md .github/workflows/publish-pypi.yml
-git commit -m "release: v0.0.9"
-git tag v0.0.9
-git push origin main
-git push origin v0.0.9
-```
-
-Le workflow GitHub Actions :
-- se déclenche sur tag `v*`
-- vérifie que le tag est exactement `v<version pyproject.toml>`
-- build le package (`python -m build`)
-- vérifie les artefacts (`twine check dist/*`)
-- publie sur PyPI via Trusted Publishing (OIDC)
 
 ---
 

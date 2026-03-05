@@ -1,0 +1,49 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cfNum="http://enseignement.cfwb.be/types/seps/cfNum/v1" xmlns:tns="http://ws.etnic.be/seps/enregistrerInscription/messages/v1" xmlns:in="http://enseignement.cfwb.be/types/seps/inscription/v1" xmlns:ext="http://etnic.be/types/technical/external/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://ws.etnic.be/seps/enregistrerInscription/messages/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/cfNum/v1" schemaLocation="cfNum_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/seps/inscription/v1" schemaLocation="inscription_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/external/v1" schemaLocation="external_v1.xsd"></xs:import>
+<xs:element name="modifierInscription" type="tns:ModifierInscriptionRequeteType"></xs:element>
+<xs:element name="modifierInscriptionReponse" type="tns:ModifierInscriptionReponseType"></xs:element>
+<xs:element name="enregistrerInscription" type="tns:EnregistrerInscriptionRequeteType"></xs:element>
+<xs:element name="enregistrerInscriptionReponse" type="tns:EnregistrerInscriptionReponseType"></xs:element>
+<xs:complexType name="EnregistrerInscriptionRequeteType">
+<xs:sequence>
+<xs:element minOccurs="0" name="inscriptionInputData" type="in:InscriptionInputDataType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="EnregistrerInscriptionReponseType">
+<xs:complexContent>
+<xs:extension base="ext:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element minOccurs="0" name="inscription" type="in:InscriptionType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="ModifierInscriptionRequeteType">
+<xs:sequence>
+<xs:element minOccurs="0" name="inscriptionInputData" type="in:InscriptionInputDataType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ModifierInscriptionReponseType">
+<xs:complexContent>
+<xs:extension base="ext:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response">
+<xs:complexType>
+<xs:sequence>
+<xs:element minOccurs="0" name="inscription" type="in:InscriptionType"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+</xs:schema>
