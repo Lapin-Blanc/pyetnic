@@ -1,5 +1,6 @@
 """Service SEPS — Recherche d'étudiants."""
 
+import re
 import logging
 from typing import List, Optional
 
@@ -7,6 +8,31 @@ from ..soap_client import SoapClientManager, SoapError
 from .models import Etudiant, EtudiantDetails, SepsAdresse, SepsLocalite, SepsNaissance, SepsDeces
 
 logger = logging.getLogger(__name__)
+
+_NISS_RE = re.compile(r'[0-9]{6}-?[0-9]{3}-?[0-9]{2}')
+
+
+class NissMutationError(Exception):
+    """Le NISS fourni a été remplacé par un nouveau NISS (code ETNIC 30401).
+
+    Se produit quand un numéro BIS a été remplacé par un vrai numéro de
+    Registre National, ou lors d'autres fusions de dossiers à la BCSS.
+
+    Relancer la recherche avec ``nouveau_niss`` :
+
+        try:
+            etudiants = pyetnic.seps.rechercher_etudiants(niss="...")
+        except NissMutationError as e:
+            etudiants = pyetnic.seps.rechercher_etudiants(niss=e.nouveau_niss)
+    """
+
+    def __init__(self, ancien_niss: str, nouveau_niss: str):
+        self.ancien_niss = ancien_niss
+        self.nouveau_niss = nouveau_niss
+        super().__init__(
+            f"NISS {ancien_niss!r} remplacé par {nouveau_niss!r} — "
+            "relancer la recherche avec nouveau_niss"
+        )
 
 
 class RechercheEtudiantsService:
@@ -98,7 +124,16 @@ class RechercheEtudiantsService:
             return None
         return self._parse_etudiant(result["body"]["response"]["etudiant"])
 
-    def _parse_rechercher_etudiants_response(self, result) -> List[Etudiant]:
+    def _parse_rechercher_etudiants_response(self, result, ancien_niss: Optional[str] = None) -> List[Etudiant]:
+        if result and result.get("body"):
+            body = result["body"]
+            if not body.get("success", True):
+                errors = (body.get("messages") or {}).get("error") or []
+                for err in (errors if isinstance(errors, list) else [errors]):
+                    if str(err.get("code")) == "30401":
+                        match = _NISS_RE.search(err.get("description", ""))
+                        nouveau_niss = match.group(0) if match else ""
+                        raise NissMutationError(ancien_niss or "", nouveau_niss)
         if not (
             result
             and result.get("body")
@@ -177,4 +212,4 @@ class RechercheEtudiantsService:
             raise ValueError("Vous devez fournir soit niss, soit nom")
 
         result = self.client_manager.call_service("rechercherEtudiants", **kwargs)
-        return self._parse_rechercher_etudiants_response(result)
+        return self._parse_rechercher_etudiants_response(result, ancien_niss=niss)
