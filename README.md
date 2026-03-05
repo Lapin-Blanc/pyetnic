@@ -357,6 +357,51 @@ Les tests d'intégration nécessitent un `.env` valide. Ils skipent automatiquem
 
 ---
 
+## Release PyPI (Trusted Publishing)
+
+### 1) Configurer le Trusted Publisher sur PyPI
+
+Dans PyPI (`pyetnic`), aller dans **Manage project** -> **Publishing** -> **Add a new publisher** puis renseigner :
+- `Owner`: `Lapin-Blanc`
+- `Repository name`: `pyetnic`
+- `Workflow name`: `publish-pypi.yml`
+- `Environment name`: `pypi`
+
+Le workflow est dans `.github/workflows/publish-pypi.yml` et utilise OIDC via `pypa/gh-action-pypi-publish@release/v1`.
+
+### 2) Créer l'environnement GitHub `pypi`
+
+Dans GitHub : **Settings** -> **Environments** -> **New environment** -> nommer `pypi`.
+
+Optionnel : ajouter des protection rules (reviewers, branche/tag rules) selon votre politique de release.
+
+### 3) Bump version
+
+Mettre à jour la version dans :
+- `pyproject.toml` (`[project].version`)
+- `pyetnic/__init__.py` (`__version__`)
+
+Exemple pour cette release : `0.0.9`.
+
+### 4) Tagger et publier
+
+```bash
+git add pyproject.toml pyetnic/__init__.py README.md .github/workflows/publish-pypi.yml
+git commit -m "release: v0.0.9"
+git tag v0.0.9
+git push origin main
+git push origin v0.0.9
+```
+
+Le workflow GitHub Actions :
+- se déclenche sur tag `v*`
+- vérifie que le tag est exactement `v<version pyproject.toml>`
+- build le package (`python -m build`)
+- vérifie les artefacts (`twine check dist/*`)
+- publie sur PyPI via Trusted Publishing (OIDC)
+
+---
+
 ## Dépendances
 
 | Package | Usage |
