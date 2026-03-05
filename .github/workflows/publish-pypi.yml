@@ -1,0 +1,57 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify tag matches pyproject version
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import sys
+          import tomllib
+
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))
+          version = pyproject["project"]["version"]
+          tag = os.environ["GITHUB_REF_NAME"]
+          expected = f"v{version}"
+
+          print(f"Tag: {tag}")
+          print(f"Expected: {expected}")
+
+          if tag != expected:
+            print("Error: git tag and pyproject.toml version do not match.", file=sys.stderr)
+            sys.exit(1)
+          PY
+
+      - name: Build package
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
