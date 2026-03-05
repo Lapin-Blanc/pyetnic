@@ -378,3 +378,37 @@ class Etudiant:
     cfNum: Optional[str] = None
     rnDetails: Optional[EtudiantDetails] = None
     cfwbDetails: Optional[EtudiantDetails] = None
+
+# Types Save pour EnregistrerEtudiant / ModifierEtudiant
+
+@dataclass
+class SepsNaissanceSave:
+    """Données de naissance à envoyer (NaissanceType — date et codePays requis)."""
+    date: str                          # format YYYY ou YYYY-MM-DD
+    codePays: str
+    localite: Optional[SepsLocalite] = None
+
+@dataclass
+class SepsAdresseSave:
+    """Adresse postale à envoyer (AdresseType — rue, codePostal, codePays requis)."""
+    rue: str
+    codePostal: str
+    codePays: str
+    numero: Optional[str] = None
+    boite: Optional[str] = None
+    extension: Optional[str] = None
+    localite: Optional[SepsLocalite] = None
+    localiteExtension: Optional[str] = None
+
+@dataclass
+class EtudiantDetailsSave:
+    """Détails d'un étudiant à envoyer (EtudiantDetailsType — tous les champs optionnels)."""
+    niss: Optional[str] = None
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
+    autrePrenom: Optional[List[str]] = None
+    sexe: Optional[str] = None
+    naissance: Optional[SepsNaissanceSave] = None
+    deces: Optional[SepsDeces] = None
+    adresse: Optional[SepsAdresseSave] = None
+    codeNationalite: Optional[str] = None

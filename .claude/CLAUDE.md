@@ -20,12 +20,16 @@ Ce document est destiné à un agent IA reprenant le développement. Il décrit 
 ### Vue d'ensemble
 
 ```
-pyetnic/__init__.py          ← exports publics (fonctions de commodité)
+pyetnic/__init__.py          ← from . import eprom, seps (API publique)
 pyetnic/config.py            ← Config (variables .env, endpoints SOAP)
 pyetnic/soap_client.py       ← SoapClientManager (zeep + WSSE auth)
 pyetnic/cli.py               ← CLI (init-config)
-pyetnic/services/
-    __init__.py              ← instanciation singletons + re-exports
+pyetnic/eprom/
+    __init__.py              ← namespace public EPROM (re-exports depuis services/)
+pyetnic/seps/
+    __init__.py              ← namespace public SEPS (re-exports depuis services/)
+pyetnic/services/            ← implémentation interne (ne pas importer directement)
+    __init__.py              ← instanciation singletons
     models.py                ← tous les dataclasses (source de vérité)
     formations_liste.py      ← FormationsListeService
     organisation.py          ← OrganisationService
@@ -33,9 +37,22 @@ pyetnic/services/
     document2.py             ← Document2Service
     document3.py             ← Document3Service
     seps.py                  ← RechercheEtudiantsService (SEPS, X509)
+    nomenclatures.py         ← TYPES_INTERVENTION_EXTERIEURE
 pyetnic/resources/           ← fichiers WSDL et XSD (packagés, un dossier par ZIP)
 tests/                       ← tests pytest (mock + intégration)
 ```
+
+**API publique :**
+```python
+import pyetnic
+pyetnic.eprom.lister_formations(annee_scolaire="2024-2025")
+pyetnic.seps.rechercher_etudiants(nom="DUPONT")
+
+from pyetnic.eprom import OrganisationId, lire_organisation
+from pyetnic.seps import lire_etudiant
+```
+
+**Note :** les tests importent depuis `pyetnic.services.*` (niveau interne) — c'est voulu pour les tests unitaires.
 
 ### Couche SOAP (`soap_client.py`)
 
@@ -183,14 +200,15 @@ Inspection approuve l'organisation
 | `DOCUMENT2` | EPROMFormationDocument2 | v1 | UsernameToken |
 | `DOCUMENT3` | EPROMFormationDocument3 | v1 | UsernameToken |
 | `SEPS_RECHERCHE_ETUDIANTS` | SEPSRechercheEtudiants | v1 | X509 PFX |
+| `SEPS_ENREGISTRER_ETUDIANT` | SEPSEnregistrerEtudiant | v1 | X509 PFX |
 
 **Endpoints :**
 - dev ORGANISATION : `https://ws-tq.etnic.be/eprom/formation/organisation/v7`
 - prod ORGANISATION : `https://ws.etnic.be/eprom/formation/organisation/v7`
 - dev autres EPROM : `https://services-web.tq.etnic.be:11443/eprom/...`
 - prod autres EPROM : `https://services-web.etnic.be:11443/eprom/...`
-- SEPS dev : `https://ws-tq.etnic.be/seps/rechercheEtudiants/v1` (cert prod non enregistré en TQ → erreur SECU-0104)
-- SEPS prod : `https://ws.etnic.be/seps/rechercheEtudiants/v1` (GlobalSign, `verify=True`)
+- SEPS dev : `https://ws-tq.etnic.be/seps/...` (cert prod non enregistré en TQ → erreur SECU-0104)
+- SEPS prod : `https://ws.etnic.be/seps/...` (GlobalSign, `verify=True`)
 
 ---
 
@@ -236,9 +254,19 @@ Inspection approuve l'organisation
 | Opération WSDL | Fonction Python | Statut |
 |---|---|---|
 | `lireEtudiant` | `lire_etudiant(cf_num, from_date?)` | ✅ |
-| `rechercherEtudiants` | `rechercher_etudiants(niss? | nom, prenom?, date_naissance?, sexe?, force_rn_flag?)` | ✅ |
+| `rechercherEtudiants` | `rechercher_etudiants(niss? \| nom, prenom?, date_naissance?, sexe?, force_rn_flag?)` | ✅ |
 
-> SEPS fonctionne **uniquement en production** (`ws.etnic.be`). Le certificat prod n'est pas enregistré dans l'annuaire LDAP TQ → erreur SECU-0104 en dev.
+> Mutation NISS (code 30401) → `NissMutationError(ancien_niss, nouveau_niss)` levée depuis `rechercher_etudiants`.
+
+### SEPS EnregistrerEtudiant (v1) — authentification X509
+| Opération WSDL | Fonction Python | Statut |
+|---|---|---|
+| `enregistrerEtudiant` | `enregistrer_etudiant(mode_enregistrement, etudiant_details?, double_flag?, create_bis_flag?)` | ✅ |
+| `modifierEtudiant` | `modifier_etudiant(cf_num, etudiant_details?)` | ✅ |
+
+> `mode_enregistrement` : `"NISS"` (par NISS) ou `"DETAILS"` (par données d'identité).
+> Types Save : `EtudiantDetailsSave`, `SepsNaissanceSave`, `SepsAdresseSave`.
+> Tous les services SEPS fonctionnent **uniquement en production** (`ws.etnic.be`). Erreur SECU-0104 en dev.
 
 ---
 

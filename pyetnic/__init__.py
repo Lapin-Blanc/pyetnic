@@ -1,44 +1,24 @@
-﻿"""Pyetnic package public API."""
+"""Pyetnic — client Python pour les services web SOAP d'ETNIC.
 
-from importlib import import_module
-from typing import Any
+Usage :
+    import pyetnic
+    pyetnic.eprom.lister_formations(annee_scolaire="2024-2025")
+    pyetnic.seps.rechercher_etudiants(nom="DUPONT")
+
+    # ou import explicite
+    from pyetnic.eprom import lire_organisation, OrganisationId
+    from pyetnic.seps import lire_etudiant
+"""
+
+from . import eprom
+from . import seps
+from .config import Config
 
 __version__ = "0.0.8"
 __author__ = "Fabien Toune"
-
-_SERVICE_EXPORTS = {
-    "lister_formations",
-    "lister_formations_organisables",
-    "OrganisationApercu",
-    "lire_organisation",
-    "creer_organisation",
-    "modifier_organisation",
-    "supprimer_organisation",
-    "lire_document_1",
-    "modifier_document_1",
-    "approuver_document_1",
-    "lire_document_2",
-    "modifier_document_2",
-    "lire_document_3",
-    "modifier_document_3",
-    "lire_etudiant",
-    "rechercher_etudiants",
-    "TYPES_INTERVENTION_EXTERIEURE",
-}
-
-__all__ = sorted([*_SERVICE_EXPORTS, "Config", "run_cli"])
-
-
-def __getattr__(name: str) -> Any:
-    if name in _SERVICE_EXPORTS:
-        services = import_module(".services", __name__)
-        return getattr(services, name)
-    if name == "Config":
-        return import_module(".config", __name__).Config
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+__all__ = ["eprom", "seps", "Config"]
 
 
 def run_cli() -> None:
     from .cli import main as cli_main
-
     cli_main()

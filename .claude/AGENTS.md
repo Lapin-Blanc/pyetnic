@@ -7,8 +7,8 @@ Ce fichier est destiné aux assistants IA (Claude, Copilot, etc.) qui aident un 
 ## Ce que fait pyetnic
 
 Client Python pour les services web SOAP d'ETNIC (Fédération Wallonie-Bruxelles). Il couvre :
-- **Services EPROM** : gestion des formations, organisations et documents administratifs de l'enseignement de promotion sociale
-- **Service SEPS** : recherche d'étudiants dans le registre national / CFWB (authentification X509)
+- **`pyetnic.eprom`** : formations, organisations et documents administratifs (EPROM)
+- **`pyetnic.seps`** : recherche d'étudiants dans le registre national / CFWB (authentification X509)
 
 ---
 
@@ -23,9 +23,11 @@ Client Python pour les services web SOAP d'ETNIC (Fédération Wallonie-Bruxelle
 ## Règles critiques à ne jamais enfreindre
 
 ### 1. `implId` est interdit dans les requêtes
-`OrganisationId` a un champ `implId` qui est **retourné** par le serveur mais **refusé** dans les requêtes de lecture/modification/suppression. Ne jamais le passer à `lire_organisation`, `modifier_organisation`, `supprimer_organisation`, ni aux fonctions de documents.
+`OrganisationId` a un champ `implId` qui est **retourné** par le serveur mais **refusé** dans les requêtes de lecture/modification/suppression.
 
 ```python
+from pyetnic.eprom import OrganisationId
+
 # ✅ Correct
 org_id = OrganisationId(anneeScolaire="2024-2025", etabId=3052, numAdmFormation=455, numOrganisation=1)
 
@@ -38,7 +40,9 @@ Seul `creer_organisation(impl_id=...)` accepte ce paramètre.
 ### 2. Les fonctions retournent `None`, pas d'exception, si le document est inaccessible
 
 ```python
-doc1 = pyetnic.lire_document_1(org_id)
+from pyetnic.eprom import lire_document_1
+
+doc1 = lire_document_1(org_id)
 if doc1 is None:
     # Normal : organisation pas encore approuvée par l'inspection,
     # ou document dans un statut incompatible
@@ -49,12 +53,12 @@ Ne jamais supposer qu'une fonction retourne toujours un objet.
 
 ### 3. Types Save ≠ types lecture
 
-Pour modifier un document, utiliser les types `*Save`, pas les types retournés par `lire_*` :
+Pour modifier un document, utiliser les types `*Save` (depuis `pyetnic.eprom`), pas les types retournés par `lire_*` :
 
 ```python
 # lire_document_1() retourne FormationDocument1 (type lecture, lecture seule)
 # modifier_document_1() attend Doc1PopulationListSave (type Save)
-from pyetnic.services.models import Doc1PopulationListSave, Doc1PopulationLineSave
+from pyetnic.eprom import Doc1PopulationListSave, Doc1PopulationLineSave
 ```
 
 ### 4. SEPS uniquement en production
@@ -66,13 +70,13 @@ Le service SEPS ne fonctionne qu'avec `ENV=prod` dans `.env`. En mode dev, le ce
 ## Workflow métier ETNIC — ordre obligatoire
 
 ```
-creer_organisation()
+eprom.creer_organisation()
     → statut "Encodé école" → Doc 1/2/3 retournent None
 
 [L'inspection approuve via son interface]
     → statut "Approuvé" → Doc 1/2 accessibles
 
-approuver_document_1()
+eprom.approuver_document_1()
     → Doc 3 accessible
 ```
 
@@ -84,37 +88,39 @@ Il n'y a **pas** de fonction `approuver_organisation()` — c'est fait manuellem
 
 ```python
 import pyetnic
-from pyetnic.services.models import OrganisationId
+from pyetnic.eprom import OrganisationId
 
 # --- Formations ---
-pyetnic.lister_formations_organisables(annee_scolaire="2024-2025")  # → FormationsListeResult
-pyetnic.lister_formations(annee_scolaire="2024-2025")               # → FormationsListeResult
+pyetnic.eprom.lister_formations_organisables(annee_scolaire="2024-2025")  # → FormationsListeResult
+pyetnic.eprom.lister_formations(annee_scolaire="2024-2025")               # → FormationsListeResult
 
 # --- Organisation ---
-pyetnic.lire_organisation(org_id)                   # → Organisation | None
-pyetnic.creer_organisation(annee_scolaire, etab_id, impl_id, num_adm_formation, date_debut, date_fin, **options)  # → Organisation | None
-pyetnic.modifier_organisation(org)                  # → Organisation | None
-pyetnic.supprimer_organisation(org_id)              # → bool
+pyetnic.eprom.lire_organisation(org_id)                    # → Organisation | None
+pyetnic.eprom.creer_organisation(annee_scolaire, etab_id, impl_id, num_adm_formation, date_debut, date_fin, **options)
+pyetnic.eprom.modifier_organisation(org)                   # → Organisation | None
+pyetnic.eprom.supprimer_organisation(org_id)               # → bool
 
 # --- Document 1 (population) ---
-pyetnic.lire_document_1(org_id)                     # → FormationDocument1 | None
-pyetnic.modifier_document_1(org_id, population_liste=None)  # → FormationDocument1 | None
-pyetnic.approuver_document_1(org_id, population_liste=None) # → FormationDocument1 | None
+pyetnic.eprom.lire_document_1(org_id)                      # → FormationDocument1 | None
+pyetnic.eprom.modifier_document_1(org_id, population_liste=None)
+pyetnic.eprom.approuver_document_1(org_id, population_liste=None)
 
 # --- Document 2 (périodes) ---
-pyetnic.lire_document_2(org_id)                     # → FormationDocument2 | None
-pyetnic.modifier_document_2(org_id, activite_enseignement_liste=None, intervention_exterieure_liste=None)
+pyetnic.eprom.lire_document_2(org_id)                      # → FormationDocument2 | None
+pyetnic.eprom.modifier_document_2(org_id, activite_enseignement_liste=None, intervention_exterieure_liste=None)
 
 # --- Document 3 (attributions) ---
-pyetnic.lire_document_3(org_id)                     # → FormationDocument3 | None
-pyetnic.modifier_document_3(org_id, activite_liste) # → FormationDocument3 | None
-
-# --- SEPS (prod uniquement, pip install pyetnic[seps]) ---
-pyetnic.lire_etudiant(cf_num, from_date=None)       # → Etudiant | None
-pyetnic.rechercher_etudiants(niss=None, nom=None, prenom=None, date_naissance=None, sexe=None, force_rn_flag=None)  # → List[Etudiant]
+pyetnic.eprom.lire_document_3(org_id)                      # → FormationDocument3 | None
+pyetnic.eprom.modifier_document_3(org_id, activite_liste)
 
 # --- Nomenclatures ---
-pyetnic.TYPES_INTERVENTION_EXTERIEURE               # liste des types valides pour Doc2
+pyetnic.eprom.TYPES_INTERVENTION_EXTERIEURE                # liste des types valides pour Doc2
+
+# --- SEPS (prod uniquement, pip install pyetnic[seps]) ---
+pyetnic.seps.lire_etudiant(cf_num, from_date=None)         # → Etudiant | None
+pyetnic.seps.rechercher_etudiants(niss=None, nom=None, prenom=None, date_naissance=None, sexe=None, force_rn_flag=None)  # → List[Etudiant]
+pyetnic.seps.enregistrer_etudiant(mode_enregistrement, etudiant_details=None, double_flag=None, create_bis_flag=None)  # → Etudiant | None
+pyetnic.seps.modifier_etudiant(cf_num, etudiant_details=None)  # → Etudiant | None
 ```
 
 ---
@@ -122,7 +128,7 @@ pyetnic.TYPES_INTERVENTION_EXTERIEURE               # liste des types valides po
 ## Modèles importants
 
 ```python
-from pyetnic.services.models import (
+from pyetnic.eprom import (
     # Communs
     OrganisationId, OrganisationApercu, Organisation, StatutDocument,
 
@@ -131,14 +137,20 @@ from pyetnic.services.models import (
 
     # Document 2
     Doc2ActiviteEnseignementLineSave, Doc2ActiviteEnseignementListSave,
-    Doc2InterventionExterieureLineSave, Doc2InterventionExterieureListSave,
+    Doc2InterventionExtLineSave, Doc2InterventionExtListSave,
 
     # Document 3
     Doc3ActiviteDetailSave, Doc3ActiviteListeSave,
     Doc3EnseignantDetailSave, Doc3EnseignantListSave,
+)
 
-    # SEPS
+from pyetnic.seps import (
+    # Lecture
     Etudiant, EtudiantDetails, SepsAdresse, SepsNaissance, SepsDeces, SepsLocalite,
+    # Envoi
+    EtudiantDetailsSave, SepsAdresseSave, SepsNaissanceSave,
+    # Exceptions
+    NissMutationError,
 )
 ```
 
@@ -148,7 +160,7 @@ from pyetnic.services.models import (
 
 | Erreur | Cause | Solution |
 |---|---|---|
-| Fonction retourne `None` | Workflow non respecté (doc inaccessible) | Vérifier le statut de l'organisation avec `lister_formations()` |
+| Fonction retourne `None` | Workflow non respecté (doc inaccessible) | Vérifier le statut via `eprom.lister_formations()` |
 | `SoapError` au démarrage | Mauvais credentials ou `.env` manquant | Vérifier `.env` et relancer `pyetnic init-config` |
 | `SECU-0104` (SEPS) | Certificat prod utilisé en mode dev | Passer à `ENV=prod` dans `.env` |
 | `xmlsec` ImportError | Package optionnel manquant | `pip install pyetnic[seps]` |

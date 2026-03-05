@@ -4,14 +4,15 @@ Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.
 
 ## Fonctionnalités
 
-| Service | Opérations |
-|---|---|
-| **Formations** | Lister les formations organisables (catalogue), lister les formations organisées |
-| **Organisation** | Créer, lire, modifier, supprimer une organisation de formation |
-| **Document 1** | Lire, modifier, approuver le document de population (inscriptions) |
-| **Document 2** | Lire, modifier le document des périodes d'activités d'enseignement |
-| **Document 3** | Lire, modifier le document des attributions d'enseignants |
-| **SEPS** | Lire un étudiant par numéro CF, rechercher des étudiants par NISS ou nom *(prod uniquement)* |
+| Namespace | Service | Opérations |
+|---|---|---|
+| `pyetnic.eprom` | **Formations** | Lister les formations organisables (catalogue), lister les formations organisées |
+| `pyetnic.eprom` | **Organisation** | Créer, lire, modifier, supprimer une organisation de formation |
+| `pyetnic.eprom` | **Document 1** | Lire, modifier, approuver le document de population (inscriptions) |
+| `pyetnic.eprom` | **Document 2** | Lire, modifier le document des périodes d'activités d'enseignement |
+| `pyetnic.eprom` | **Document 3** | Lire, modifier le document des attributions d'enseignants |
+| `pyetnic.seps` | **Recherche étudiants** | Lire un étudiant par numéro CF, rechercher par NISS ou nom *(prod uniquement)* |
+| `pyetnic.seps` | **Enregistrement étudiants** | Enregistrer un nouvel étudiant, modifier un étudiant existant *(prod uniquement)* |
 
 ## Installation
 
@@ -69,15 +70,14 @@ Le certificat SEPS (fichier `.pfx`) est fourni séparément par ETNIC via IAM-PR
 
 ```python
 import pyetnic
-from pyetnic.services.models import OrganisationId
 
 # Formations organisables (catalogue de l'année)
-result = pyetnic.lister_formations_organisables(annee_scolaire="2024-2025")
+result = pyetnic.eprom.lister_formations_organisables(annee_scolaire="2024-2025")
 for formation in result:
     print(formation.numAdmFormation, formation.codeFormation, formation.libelleFormation)
 
 # Formations déjà organisées (avec leurs organisations et statuts de documents)
-result = pyetnic.lister_formations(annee_scolaire="2024-2025")
+result = pyetnic.eprom.lister_formations(annee_scolaire="2024-2025")
 for formation in result:
     for org in formation.organisations:
         print(
@@ -91,8 +91,8 @@ for formation in result:
 
 ```python
 from datetime import date
-import pyetnic
-from pyetnic.services.models import OrganisationId
+from pyetnic.eprom import OrganisationId, lire_organisation, creer_organisation
+from pyetnic.eprom import modifier_organisation, supprimer_organisation
 
 org_id = OrganisationId(
     anneeScolaire="2024-2025",
@@ -102,10 +102,10 @@ org_id = OrganisationId(
 )
 
 # Lire
-org = pyetnic.lire_organisation(org_id)
+org = lire_organisation(org_id)
 
 # Créer (numOrganisation attribué par le serveur)
-org = pyetnic.creer_organisation(
+org = creer_organisation(
     annee_scolaire="2025-2026",
     etab_id=3052,
     impl_id=6050,
@@ -116,52 +116,55 @@ org = pyetnic.creer_organisation(
 
 # Modifier
 org.dateFinOrganisation = date(2026, 6, 20)
-org = pyetnic.modifier_organisation(org)
+org = modifier_organisation(org)
 
 # Supprimer
-ok = pyetnic.supprimer_organisation(org_id)
+ok = supprimer_organisation(org_id)
 ```
 
 ### Document 1 — Population
 
 ```python
-from pyetnic.services.models import Doc1PopulationListSave, Doc1PopulationLineSave
+from pyetnic.eprom import lire_document_1, modifier_document_1, approuver_document_1
+from pyetnic.eprom import Doc1PopulationListSave, Doc1PopulationLineSave
 
-doc1 = pyetnic.lire_document_1(org_id)
+doc1 = lire_document_1(org_id)
 # doc1 est None si le document n'est pas accessible (statut org insuffisant)
 
 # Modifier
 liste_save = Doc1PopulationListSave(population=[
     Doc1PopulationLineSave(coAnnEtude=1, nbEleveA=12, nbEleveTotHom=5, nbEleveTotFem=7),
 ])
-doc1 = pyetnic.modifier_document_1(org_id, population_liste=liste_save)
+doc1 = modifier_document_1(org_id, population_liste=liste_save)
 
 # Approuver
-doc1 = pyetnic.approuver_document_1(org_id)
+doc1 = approuver_document_1(org_id)
 ```
 
 ### Document 2 — Périodes d'activités
 
 ```python
-from pyetnic.services.models import Doc2ActiviteEnseignementListSave, Doc2ActiviteEnseignementLineSave
+from pyetnic.eprom import lire_document_2, modifier_document_2
+from pyetnic.eprom import Doc2ActiviteEnseignementListSave, Doc2ActiviteEnseignementLineSave
 
-doc2 = pyetnic.lire_document_2(org_id)
+doc2 = lire_document_2(org_id)
 
 liste_save = Doc2ActiviteEnseignementListSave(activiteEnseignement=[
     Doc2ActiviteEnseignementLineSave(coNumBranche=1, nbEleveC1=15, nbPeriodePrevueAn1=32.0),
 ])
-doc2 = pyetnic.modifier_document_2(org_id, activite_enseignement_liste=liste_save)
+doc2 = modifier_document_2(org_id, activite_enseignement_liste=liste_save)
 ```
 
 ### Document 3 — Attributions d'enseignants
 
 ```python
-from pyetnic.services.models import (
+from pyetnic.eprom import (
+    lire_document_3, modifier_document_3,
     Doc3ActiviteListeSave, Doc3ActiviteDetailSave,
     Doc3EnseignantListSave, Doc3EnseignantDetailSave,
 )
 
-doc3 = pyetnic.lire_document_3(org_id)
+doc3 = lire_document_3(org_id)
 # doc3 est None si Doc 1 et Doc 2 ne sont pas encore approuvés
 
 liste_save = Doc3ActiviteListeSave(activite=[
@@ -178,33 +181,54 @@ liste_save = Doc3ActiviteListeSave(activite=[
         ]),
     ),
 ])
-doc3 = pyetnic.modifier_document_3(org_id, liste_save)
+doc3 = modifier_document_3(org_id, liste_save)
 ```
 
-### SEPS — Recherche d'étudiants
+### SEPS — Recherche et enregistrement d'étudiants
 
 > **Prérequis :** `pip install pyetnic[seps]` + certificat `.pfx` fourni par ETNIC (IAM-PROD).
-> Ce service fonctionne **uniquement en production** (`ws.etnic.be`).
+> Ces services fonctionnent **uniquement en production** (`ws.etnic.be`).
 
 ```python
-import pyetnic
+from pyetnic.seps import (
+    rechercher_etudiants, lire_etudiant,
+    enregistrer_etudiant, modifier_etudiant,
+    EtudiantDetailsSave, SepsNaissanceSave, SepsAdresseSave,
+    NissMutationError,
+)
 
 # Recherche par nom
-etudiants = pyetnic.rechercher_etudiants(nom="DUPONT", prenom="Jean")
+etudiants = rechercher_etudiants(nom="DUPONT", prenom="Jean")
 for e in etudiants:
     details = e.rnDetails or e.cfwbDetails
     if details:
         print(e.cfNum, details.nom, details.prenom, details.naissance.date if details.naissance else "")
 
-# Recherche par NISS
-etudiants = pyetnic.rechercher_etudiants(niss="850101-123-45")
+# Recherche par NISS (avec gestion de mutation)
+try:
+    etudiants = rechercher_etudiants(niss="850101-123-45")
+except NissMutationError as e:
+    etudiants = rechercher_etudiants(niss=e.nouveau_niss)
 
 # Lecture par numéro CF (format : [0-9]{1,10}-[0-9]{2})
-etudiant = pyetnic.lire_etudiant("12345678-01")
+etudiant = lire_etudiant("12345678-01")
 if etudiant:
     rn = etudiant.rnDetails
     print(rn.nom, rn.prenom, rn.niss)
-    print(rn.adresse.rue, rn.adresse.codePostal)
+
+# Enregistrement d'un étudiant (mode DETAILS = recherche par identité)
+details = EtudiantDetailsSave(
+    nom="DUPONT",
+    prenom="Jean",
+    sexe="M",
+    naissance=SepsNaissanceSave(date="1985-01-15", codePays="BE"),
+)
+etudiant = enregistrer_etudiant("DETAILS", etudiant_details=details)
+
+# Modification d'un étudiant existant
+etudiant = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave(
+    adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="BE"),
+))
 ```
 
 ---
@@ -237,16 +261,18 @@ Doc 1 ET Doc 2 approuvés  →  Doc 3 accessible
 ### Identifiant d'organisation
 
 ```python
-@dataclass
-class OrganisationId:
-    anneeScolaire: str      # ex. "2024-2025"
-    etabId: int             # identifiant établissement
-    numAdmFormation: int    # numéro administratif de la formation
-    numOrganisation: int    # numéro d'organisation (attribué par le serveur à la création)
-    implId: Optional[int]   # identifiant implantation (présent dans les réponses serveur)
+from pyetnic.eprom import OrganisationId
+
+org_id = OrganisationId(
+    anneeScolaire="2024-2025",  # ex. "2024-2025"
+    etabId=3052,                # identifiant établissement
+    numAdmFormation=455,        # numéro administratif de la formation
+    numOrganisation=1,          # numéro d'organisation (attribué par le serveur à la création)
+    # implId : présent dans les réponses serveur, NE PAS inclure dans les requêtes
+)
 ```
 
-> **Important** : `implId` est retourné par le serveur dans ses réponses mais **ne doit pas** être envoyé dans les requêtes Lire/Modifier/Supprimer. Seul `creer_organisation` accepte `impl_id`.
+> **Important** : `implId` est retourné par le serveur mais **ne doit pas** être envoyé dans les requêtes Lire/Modifier/Supprimer. Seul `creer_organisation` accepte `impl_id`.
 
 ### Vue d'une organisation
 
@@ -285,26 +311,30 @@ Les erreurs réseau et SOAP sont encapsulées dans `SoapError` et propagées.
 
 ```
 pyetnic/
-├── __init__.py                  # Point d'entrée public
+├── __init__.py                  # Point d'entrée : from . import eprom, seps
+├── eprom/
+│   └── __init__.py              # Namespace public EPROM (fonctions + modèles)
+├── seps/
+│   └── __init__.py              # Namespace public SEPS (fonctions + modèles)
 ├── cli.py                       # CLI : commande init-config
 ├── config.py                    # Configuration (.env, endpoints SOAP)
 ├── soap_client.py               # SoapClientManager (zeep + WSSE/X509)
-├── services/
-│   ├── __init__.py              # Instanciation des services, exports
-│   ├── models.py                # Tous les dataclasses (EPROM + SEPS)
-│   ├── formations_liste.py      # FormationsListeService
-│   ├── organisation.py          # OrganisationService
-│   ├── document1.py             # Document1Service
-│   ├── document2.py             # Document2Service
-│   ├── document3.py             # Document3Service
-│   └── seps.py                  # RechercheEtudiantsService (SEPS)
+├── services/                    # Implémentation interne
+│   ├── models.py                # Tous les dataclasses
+│   ├── formations_liste.py
+│   ├── organisation.py
+│   ├── document1.py
+│   ├── document2.py
+│   ├── document3.py
+│   └── seps.py
 └── resources/
     ├── EPROM_Formations_Liste_2.0/
     ├── EPROM_Formation_Organisation_7.0/
     ├── EPROM_Formation_Population_1.0/
-    ├── EPROM_Formation_Périodes_1.0/
+    ├── EPROM_Formation_Periodes_1.0/
     ├── EPROM_Document_3_1.0/
-    └── SEPS_Recherche_Étudiants_2.1/
+    ├── SEPS_Recherche_Etudiants_2.1/
+    └── SEPS_Enregistrer_Etudiant_2.1/
 ```
 
 ---

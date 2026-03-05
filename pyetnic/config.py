@@ -67,7 +67,7 @@ class Config:
         ),
         "DOCUMENT2": ServiceConfig(
             endpoint=f"https://services-web.{'tq.' if ENV == 'dev' else ''}etnic.be:11443/eprom/formation/document2/v1",
-            wsdl_path="EPROM_Formation_Périodes_1.0/EpromFormationDocument2Service_external_v1.wsdl",
+            wsdl_path="EPROM_Formation_Periodes_1.0/EpromFormationDocument2Service_external_v1.wsdl",
             binding_name="{http://services-web.etnic.be/eprom/formation/document2/v1}EPROMFormationDocument2ExternalV1Binding",
         ),
         "DOCUMENT3": ServiceConfig(
@@ -77,8 +77,14 @@ class Config:
         ),
         "SEPS_RECHERCHE_ETUDIANTS": ServiceConfig(
             endpoint=f"https://ws{'-tq' if ENV == 'dev' else ''}.etnic.be/seps/rechercheEtudiants/v1",
-            wsdl_path="SEPS_Recherche_Étudiants_2.1/SEPSRechercheEtudiantsService_external_v1.wsdl",
+            wsdl_path="SEPS_Recherche_Etudiants_2.1/SEPSRechercheEtudiantsService_external_v1.wsdl",
             binding_name="{http://ws.etnic.be/seps/rechercheEtudiants/v1}SEPSRechercheEtudiantsV1ExternalBinding",
+            auth_type="x509_pfx",
+        ),
+        "SEPS_ENREGISTRER_ETUDIANT": ServiceConfig(
+            endpoint=f"https://ws{'-tq' if ENV == 'dev' else ''}.etnic.be/seps/enregistrerEtudiant/v1",
+            wsdl_path="SEPS_Enregistrer_Etudiant_2.1/SEPSEnregistrerEtudiantService_external_v1.wsdl",
+            binding_name="{http://ws.etnic.be/seps/enregistrerEtudiant/v1}SEPSEnregistrerEtudiantV1ExternalBinding",
             auth_type="x509_pfx",
         ),
     }

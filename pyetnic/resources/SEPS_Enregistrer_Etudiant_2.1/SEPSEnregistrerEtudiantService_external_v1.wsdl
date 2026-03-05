@@ -1,0 +1,74 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:req="http://etnic.be/types/technical/requestId/v1" xmlns:msg="http://ws.etnic.be/seps/enregistrerEtudiant/messages/v1" xmlns:tns="http://ws.etnic.be/seps/enregistrerEtudiant/v1" name="SEPSEnregistrerEtudiantServiceExternalV1" targetNamespace="http://ws.etnic.be/seps/enregistrerEtudiant/v1">
+  <wsdl:types>
+    <xs:schema>
+            <xs:import namespace="http://ws.etnic.be/seps/enregistrerEtudiant/messages/v1" schemaLocation="xsd/SEPSEnregistrerEtudiantMessages_external_v1.xsd"></xs:import>
+			<xs:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="xsd/requestId_v1.xsd"></xs:import>
+        </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ModifierEtudiantReponseMessage">
+    <wsdl:part name="parameters" element="msg:modifierEtudiantReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ModifierEtudiantRequeteMessage">
+    <wsdl:part name="parameters" element="msg:modifierEtudiant">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="RequestIdHeader">
+    <wsdl:part name="requestId" element="req:requestId">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="EnregistrerEtudiantReponseMessage">
+    <wsdl:part name="parameters" element="msg:enregistrerEtudiantReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="EnregistrerEtudiantRequeteMessage">
+    <wsdl:part name="parameters" element="msg:enregistrerEtudiant">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="SEPSEnregistrerEtudiantV1PortType">
+    <wsdl:operation name="modifierEtudiant">
+      <wsdl:input message="tns:ModifierEtudiantRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:ModifierEtudiantReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="enregistrerEtudiant">
+      <wsdl:input message="tns:EnregistrerEtudiantRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:EnregistrerEtudiantReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SEPSEnregistrerEtudiantV1ExternalBinding" type="tns:SEPSEnregistrerEtudiantV1PortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="modifierEtudiant">
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="enregistrerEtudiant">
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="service_seps_enregistrerEtudiant_external_v1">
+    <wsdl:port name="SEPSEnregistrerEtudiantV1ExternalPort" binding="tns:SEPSEnregistrerEtudiantV1ExternalBinding">
+      <soap:address location="https://ws-tq.etnic.be/seps/enregistrerEtudiant/v1"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
