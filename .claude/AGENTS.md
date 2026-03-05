@@ -8,7 +8,7 @@ Ce fichier est destiné aux assistants IA (Claude, Copilot, etc.) qui aident un 
 
 Client Python pour les services web SOAP d'ETNIC (Fédération Wallonie-Bruxelles). Il couvre :
 - **`pyetnic.eprom`** : formations, organisations et documents administratifs (EPROM)
-- **`pyetnic.seps`** : recherche d'étudiants dans le registre national / CFWB (authentification X509)
+- **`pyetnic.seps`** : recherche/enregistrement d'étudiants et d'inscriptions dans le registre national / CFWB (authentification X509)
 
 ---
 
@@ -121,6 +121,11 @@ pyetnic.seps.lire_etudiant(cf_num, from_date=None)         # → Etudiant | None
 pyetnic.seps.rechercher_etudiants(niss=None, nom=None, prenom=None, date_naissance=None, sexe=None, force_rn_flag=None)  # → List[Etudiant]
 pyetnic.seps.enregistrer_etudiant(mode_enregistrement, etudiant_details=None, double_flag=None, create_bis_flag=None)  # → Etudiant | None
 pyetnic.seps.modifier_etudiant(cf_num, etudiant_details=None)  # → Etudiant | None
+
+# --- SEPS Inscriptions (prod uniquement) ---
+pyetnic.seps.rechercher_inscriptions(annee_scolaire=None, etab_id=None, date_requete=None, cf_num=None, no_administratif=None, no_organisation=None)  # → List[Inscription]
+pyetnic.seps.enregistrer_inscription(inscription_input_data=None)  # → Inscription | None
+pyetnic.seps.modifier_inscription(inscription_input_data=None)     # → Inscription | None
 ```
 
 ---
@@ -145,12 +150,19 @@ from pyetnic.eprom import (
 )
 
 from pyetnic.seps import (
-    # Lecture
+    # Lecture étudiants
     Etudiant, EtudiantDetails, SepsAdresse, SepsNaissance, SepsDeces, SepsLocalite,
-    # Envoi
+    # Envoi étudiants
     EtudiantDetailsSave, SepsAdresseSave, SepsNaissanceSave,
+    # Lecture inscriptions
+    Inscription, SepsUE, SepsLieuCours, SepsSpecificite,
+    SepsDroitInscription, SepsDroitInscriptionSpecifique,
+    SepsAdmission, SepsSanction,
+    # Envoi inscriptions
+    InscriptionInputDataSave, InscriptionInputSave, SepsUESave, SepsSpecificiteSave,
+    SepsDroitInscriptionSave, SepsAdmissionSave, SepsSanctionSave,
     # Exceptions
-    NissMutationError,
+    SepsEtnicError, SepsAuthError, NissMutationError, TropDeResultatsError,
 )
 ```
 
@@ -165,6 +177,9 @@ from pyetnic.seps import (
 | `SECU-0104` (SEPS) | Certificat prod utilisé en mode dev | Passer à `ENV=prod` dans `.env` |
 | `xmlsec` ImportError | Package optionnel manquant | `pip install pyetnic[seps]` |
 | `implId` rejeté | `implId` inclus dans une requête | Construire `OrganisationId` sans `implId` |
+| `TropDeResultatsError` | Trop de résultats (nom trop court) | Affiner avec `prenom`, `date_naissance`, `sexe` |
+| `NissMutationError` | NISS remplacé | Utiliser `e.nouveau_niss` pour relancer la recherche |
+| `SepsEtnicError` | Erreur métier SEPS | Vérifier `e.code` et `e.description` |
 
 ---
 

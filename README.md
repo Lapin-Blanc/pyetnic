@@ -13,6 +13,7 @@ Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.
 | `pyetnic.eprom` | **Document 3** | Lire, modifier le document des attributions d'enseignants |
 | `pyetnic.seps` | **Recherche étudiants** | Lire un étudiant par numéro CF, rechercher par NISS ou nom *(prod uniquement)* |
 | `pyetnic.seps` | **Enregistrement étudiants** | Enregistrer un nouvel étudiant, modifier un étudiant existant *(prod uniquement)* |
+| `pyetnic.seps` | **Inscriptions** | Rechercher, enregistrer, modifier des inscriptions d'étudiants *(prod uniquement)* |
 
 ## Installation
 
@@ -229,6 +230,38 @@ etudiant = enregistrer_etudiant("DETAILS", etudiant_details=details)
 etudiant = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave(
     adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="BE"),
 ))
+```
+
+### SEPS — Inscriptions
+
+```python
+from pyetnic.seps import (
+    rechercher_inscriptions, enregistrer_inscription, modifier_inscription,
+    InscriptionInputDataSave, InscriptionInputSave, SepsUESave, SepsSpecificiteSave,
+    SepsDroitInscriptionSave, SepsAdmissionSave, SepsSanctionSave,
+)
+
+# Recherche des inscriptions d'un étudiant
+inscriptions = rechercher_inscriptions(cf_num="12345678-01", annee_scolaire=2024)
+for i in inscriptions:
+    print(i.cfNum, i.anneeScolaire, i.statut, i.ue.noAdministratif if i.ue else "")
+
+# Enregistrement d'une nouvelle inscription
+data = InscriptionInputDataSave(
+    cfNum="12345678-01",
+    idEtab=3052,
+    idImplantation=6050,
+    codePostalLieuCours="4000",
+    inscription=InscriptionInputSave(
+        dateInscription="2024-09-15",
+        statut="I",
+        ue=SepsUESave(noAdministratif=455, noOrganisation=1),
+    ),
+)
+inscription = enregistrer_inscription(inscription_input_data=data)
+
+# Modification d'une inscription existante
+inscription = modifier_inscription(inscription_input_data=data)
 ```
 
 ---

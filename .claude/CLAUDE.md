@@ -10,7 +10,7 @@ Ce document est destiné à un agent IA reprenant le développement. Il décrit 
 
 - Repo : https://github.com/Lapin-Blanc/pyetnic
 - Auteur : Fabien Toune (fabien.toune@eica.be)
-- Version : 0.0.8 (alpha)
+- Version : 0.0.9 (alpha)
 - Python ≥ 3.8
 
 ---
@@ -37,6 +37,8 @@ pyetnic/services/            ← implémentation interne (ne pas importer direct
     document2.py             ← Document2Service
     document3.py             ← Document3Service
     seps.py                  ← RechercheEtudiantsService (SEPS, X509)
+    enregistrer_etudiant.py  ← EnregistrerEtudiantService (SEPS, X509)
+    inscriptions.py          ← InscriptionsService (SEPS, X509)
     nomenclatures.py         ← TYPES_INTERVENTION_EXTERIEURE
 pyetnic/resources/           ← fichiers WSDL et XSD (packagés, un dossier par ZIP)
 tests/                       ← tests pytest (mock + intégration)
@@ -133,7 +135,9 @@ Organisation des sections dans l'ordre :
 2. **Document 1** : `Doc1PopulationLine`, `Doc1PopulationList`, `Doc1PopulationLineSave`, `Doc1PopulationListSave`, `FormationDocument1`
 3. **Document 2** : `Doc2Activite*`, `Doc2PeriodeExt*`, `Doc2InterventionExt*` (read + save), `FormationDocument2`
 4. **Document 3** : `Doc3EnseignantDetail`, `Doc3EnseignantList`, `Doc3ActiviteDetail`, `Doc3ActiviteListe` (read), puis `Doc3*Save` (save), `FormationDocument3`
-5. **SEPS** : `SepsLocalite`, `SepsAdresse`, `SepsNaissance`, `SepsDeces`, `EtudiantDetails`, `Etudiant`
+5. **SEPS étudiants** : `SepsLocalite`, `SepsAdresse`, `SepsNaissance`, `SepsDeces`, `EtudiantDetails`, `Etudiant`, `SepsNaissanceSave`, `SepsAdresseSave`, `EtudiantDetailsSave`
+6. **SEPS inscriptions (lecture)** : `SepsUE`, `SepsLieuCours`, `SepsDroitInscription`, `SepsExempteDroitInscription`, `SepsDroitInscriptionSpecifique`, `SepsExempteDroitInscriptionSpec`, `SepsAdmission`, `SepsSanction`, `SepsSpecificite`, `Inscription`
+7. **SEPS inscriptions (save)** : `SepsUESave`, `SepsDroitInscriptionSave`, `SepsAdmissionSave`, `SepsSanctionSave`, `SepsSpecificiteSave`, `InscriptionInputSave`, `InscriptionInputDataSave`
 
 ### Hiérarchie Organisation
 
@@ -201,6 +205,8 @@ Inspection approuve l'organisation
 | `DOCUMENT3` | EPROMFormationDocument3 | v1 | UsernameToken |
 | `SEPS_RECHERCHE_ETUDIANTS` | SEPSRechercheEtudiants | v1 | X509 PFX |
 | `SEPS_ENREGISTRER_ETUDIANT` | SEPSEnregistrerEtudiant | v1 | X509 PFX |
+| `SEPS_ENREGISTRER_INSCRIPTION` | SEPSEnregistrerInscription | v1 | X509 PFX |
+| `SEPS_RECHERCHE_INSCRIPTIONS` | SEPSRechercheInscriptions | v1 | X509 PFX |
 
 **Endpoints :**
 - dev ORGANISATION : `https://ws-tq.etnic.be/eprom/formation/organisation/v7`
@@ -267,6 +273,22 @@ Inspection approuve l'organisation
 > `mode_enregistrement` : `"NISS"` (par NISS) ou `"DETAILS"` (par données d'identité).
 > Types Save : `EtudiantDetailsSave`, `SepsNaissanceSave`, `SepsAdresseSave`.
 > Tous les services SEPS fonctionnent **uniquement en production** (`ws.etnic.be`). Erreur SECU-0104 en dev.
+
+### SEPS RechercheInscriptions (v1) — authentification X509
+| Opération WSDL | Fonction Python | Statut |
+|---|---|---|
+| `rechercherInscriptions` | `rechercher_inscriptions(annee_scolaire?, etab_id?, date_requete?, cf_num?, no_administratif?, no_organisation?)` | ✅ |
+
+### SEPS EnregistrerInscription (v1) — authentification X509
+| Opération WSDL | Fonction Python | Statut |
+|---|---|---|
+| `enregistrerInscription` | `enregistrer_inscription(inscription_input_data?)` | ✅ |
+| `modifierInscription` | `modifier_inscription(inscription_input_data?)` | ✅ |
+
+> Types Save : `InscriptionInputDataSave`, `InscriptionInputSave`, `SepsUESave`, `SepsSpecificiteSave`.
+> `InscriptionInputDataSave` : champs requis = `cfNum`, `idEtab`, `idImplantation`, `codePostalLieuCours`, `inscription`.
+> `InscriptionInputSave` : champs requis = `dateInscription`, `statut`.
+> `SpecificiteDataInputType` (Save) n'a pas `regulier1`/`regulier5` — ne pas les inclure.
 
 ---
 
