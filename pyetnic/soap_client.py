@@ -38,10 +38,7 @@ except ImportError:
 # Configuration du logging
 logger = logging.getLogger(__name__)
 
-# Désactivation des avertissements SSL pour le développement
-if not Config.get_verify_ssl():
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    logger.warning("Vérification SSL désactivée (mode développement). Ne pas utiliser en production.")
+_ssl_warnings_suppressed = False
 
 def get_wsdl_path(package, resource):
     """Obtient le chemin absolu d'un fichier WSDL depuis les ressources du package.
@@ -118,22 +115,29 @@ class SoapClientManager:
     def __init__(self, service_name):
         """
         Initialise un gestionnaire de client SOAP pour un service spécifique.
-        
+
         Args:
             service_name (str): Nom du service (LISTE_FORMATIONS, ORGANISATION, DOCUMENT1, DOCUMENT2)
-        
-        Raises:
-            ValueError: Si le service n'est pas reconnu
         """
         self.service_name = service_name
-        self.service_config = Config.SERVICES.get(service_name)
-        
-        if not self.service_config:
-            raise ValueError(f"Configuration manquante pour le service: {service_name}")
+
+    @property
+    def service_config(self):
+        """Resolve service config lazily from Config.SERVICES."""
+        config = Config.SERVICES.get(self.service_name)
+        if not config:
+            raise ValueError(f"Configuration manquante pour le service: {self.service_name}")
+        return config
 
     def _initialize_client(self):
         if self.service_name in self._client_cache:
             return self._client_cache[self.service_name]
+
+        global _ssl_warnings_suppressed
+        if not _ssl_warnings_suppressed and not Config.get_verify_ssl():
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            logger.warning("Vérification SSL désactivée (mode développement). Ne pas utiliser en production.")
+            _ssl_warnings_suppressed = True
 
         logger.debug(f"Création d'un nouveau client SOAP pour {self.service_name}")
         session = Session()

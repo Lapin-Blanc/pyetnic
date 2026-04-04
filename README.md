@@ -63,6 +63,23 @@ SEPS_PFX_PASSWORD=
 Les identifiants EPROM sont fournis par ETNIC pour accéder aux services web de votre établissement.
 Le certificat SEPS (fichier `.pfx`) est fourni séparément par ETNIC via IAM-PROD.
 
+### Configuration programmatique
+
+Pour les applications qui gèrent leurs propres credentials (ex. Django), il est possible de configurer `pyetnic` sans fichier `.env` :
+
+```python
+from pyetnic.config import Config
+
+Config.ENV = "prod"
+Config.USERNAME = "my_user"
+Config.PASSWORD = "my_pass"
+
+# Optionnel : charger explicitement un fichier .env
+Config.load_from_dotenv()
+```
+
+La configuration est **lazy** : rien n'est résolu à l'import. Les overrides programmatiques ont priorité sur les variables d'environnement.
+
 ---
 
 ## Utilisation
