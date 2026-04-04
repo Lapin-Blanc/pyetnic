@@ -21,7 +21,7 @@ Ce document est destiné à un agent IA reprenant le développement. Il décrit 
 
 ```
 pyetnic/__init__.py          ← from . import eprom, seps (API publique)
-pyetnic/config.py            ← Config (variables .env, endpoints SOAP)
+pyetnic/config.py            ← Config (lazy resolution via metaclass, .env, endpoints SOAP)
 pyetnic/soap_client.py       ← SoapClientManager (zeep + WSSE auth)
 pyetnic/cli.py               ← CLI (init-config)
 pyetnic/eprom/
@@ -55,6 +55,27 @@ from pyetnic.seps import lire_etudiant
 ```
 
 **Note :** les tests importent depuis `pyetnic.services.*` (niveau interne) — c'est voulu pour les tests unitaires.
+
+### Configuration lazy (`config.py`)
+
+`Config` utilise une metaclass `_ConfigMeta` pour résoudre ses attributs **lazily** (au moment de l'accès, pas à l'import). Cela permet aux intégrateurs (ex. Django) de configurer les credentials programmatiquement :
+
+```python
+from pyetnic.config import Config
+Config.ENV = "prod"
+Config.USERNAME = "my_user"
+Config.PASSWORD = "my_pass"
+# → les credentials sont utilisés au prochain appel SOAP
+```
+
+**Mécanisme :**
+- `__getattr__` sur la metaclass : vérifie `_overrides` → charge `.env` lazily → résout depuis `os.environ`
+- `__setattr__` : stocke dans `_overrides` (priorité sur env vars)
+- `SERVICES` dict : reconstruit dynamiquement via `_build_services()` selon `Config.ENV` courant
+- `load_dotenv()` : déclenché lazily au premier accès d'attribut, ou explicitement via `Config.load_from_dotenv()`
+- `Config._reset()` : remet overrides et état dotenv à zéro (pour les tests)
+
+**Aucun side-effect à l'import** : ni `load_dotenv()`, ni `Config.validate()`, ni suppression des warnings SSL ne s'exécutent au `import pyetnic`.
 
 ### Couche SOAP (`soap_client.py`)
 

@@ -14,7 +14,7 @@ from . import eprom
 from . import seps
 from .config import Config
 
-__version__ = "0.0.11"
+__version__ = "0.0.12"
 __author__ = "Fabien Toune"
 __all__ = ["eprom", "seps", "Config"]
 

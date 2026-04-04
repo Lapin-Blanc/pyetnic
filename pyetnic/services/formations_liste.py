@@ -5,6 +5,8 @@ Ce module fournit des fonctions pour lister les formations organisables
 et les formations existantes avec leurs organisations.
 """
 
+from __future__ import annotations
+
 from typing import Any, Optional
 from ..soap_client import SoapClientManager, SoapError
 from ..config import Config
@@ -25,15 +27,15 @@ class FormationsListeService:
     
     def lister_formations_organisables(
         self,
-        annee_scolaire: str = Config.ANNEE_SCOLAIRE,
-        etab_id: int = Config.ETAB_ID,
-        impl_id: int = Config.IMPL_ID
+        annee_scolaire: str | None = None,
+        etab_id: int | None = None,
+        impl_id: int | None = None,
     ) -> FormationsListeResult:
         try:
             request_data = {
-                "anneeScolaire": annee_scolaire,
-                "etabId": etab_id,
-                "implId": impl_id,
+                "anneeScolaire": annee_scolaire if annee_scolaire is not None else Config.ANNEE_SCOLAIRE,
+                "etabId": etab_id if etab_id is not None else Config.ETAB_ID,
+                "implId": impl_id if impl_id is not None else Config.IMPL_ID,
             }
             
             result = self.client_manager.call_service("ListerFormationsOrganisables", **request_data)
@@ -58,11 +60,17 @@ class FormationsListeService:
 
     def lister_formations(
         self,
-        annee_scolaire: str = Config.ANNEE_SCOLAIRE,
-        etab_id: int = Config.ETAB_ID,
-        impl_id: int = Config.IMPL_ID
+        annee_scolaire: str | None = None,
+        etab_id: int | None = None,
+        impl_id: int | None = None,
     ) -> FormationsListeResult:
         logger.info("Appel de lister_formations")
+        if annee_scolaire is None:
+            annee_scolaire = Config.ANNEE_SCOLAIRE
+        if etab_id is None:
+            etab_id = Config.ETAB_ID
+        if impl_id is None:
+            impl_id = Config.IMPL_ID
         try:
             request_data = {
                 "anneeScolaire": annee_scolaire,
