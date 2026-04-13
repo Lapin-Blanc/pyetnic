@@ -40,7 +40,7 @@ This document is the single source of truth for refactoring progress. It is upda
   - Install `docs/PUBLIC_API_SURFACE.md`
   - **Validation**: documents present and internally consistent
 
-- [ ] **Phase 0.3** — Regression tests
+- [x] **Phase 0.3** — Regression tests _(completed 2026-04-13)_
   - Create `tests/regression/` directory
   - Create `tests/regression/conftest.py` with mock fixtures for `SoapClientManager`
   - Write `tests/regression/test_public_api_eprom.py` covering all stable EPROM symbols
