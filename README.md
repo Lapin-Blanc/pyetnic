@@ -1,5 +1,7 @@
 # pyetnic
 
+[![Tests](https://github.com/Lapin-Blanc/pyetnic/actions/workflows/tests.yml/badge.svg)](https://github.com/Lapin-Blanc/pyetnic/actions/workflows/tests.yml)
+
 Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.be/) pour l'enseignement de promotion sociale (Wallonie-Bruxelles).
 
 ## Fonctionnalités
