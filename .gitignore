@@ -91,6 +91,8 @@ celerybeat-schedule
 
 # dotenv
 .env
+.env.test
+.env.test.seps
 .venv
 
 # Certificats et clés privées ETNIC (NE JAMAIS COMMITTER)
