@@ -48,7 +48,7 @@ This document is the single source of truth for refactoring progress. It is upda
   - Migrate existing tests to `tests/unit/` and `tests/integration/`
   - **Validation**: `pytest tests/regression/` green without network; existing tests still green
 
-- [ ] **Phase 0.4** — CI setup
+- [x] **Phase 0.4** — CI setup _(completed 2026-04-13)_
   - Create `.github/workflows/tests.yml`
   - Workflow runs `pytest tests/regression/ tests/unit/` on push and PR
   - Matrix: Python 3.10, 3.11, 3.12, 3.13 on ubuntu-latest

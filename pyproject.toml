@@ -9,7 +9,7 @@ description = "Access to ETNIC web services through Python"
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Fabien Toune", email = "fabien.toune@eica.be" }]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "zeep",
     "python-dotenv",
@@ -21,8 +21,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
