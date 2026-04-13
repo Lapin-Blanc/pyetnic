@@ -35,7 +35,7 @@ This document is the single source of truth for refactoring progress. It is upda
   - Do NOT modify any code under `pyetnic/`
   - **Validation**: `tree -L 2` shows new structure; `pytest tests/` still green
 
-- [ ] **Phase 0.2** — Backwards compatibility policy
+- [x] **Phase 0.2** — Backwards compatibility policy _(completed 2026-04-13)_
   - Install `docs/BACKWARDS_COMPAT.md`
   - Install `docs/PUBLIC_API_SURFACE.md`
   - **Validation**: documents present and internally consistent
