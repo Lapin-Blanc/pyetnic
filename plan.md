@@ -1,8 +1,8 @@
 # pyetnic — Refactoring Plan
 
-> **Current sprint**: Sprint 0 — Preparation _(complete, awaiting merge)_
+> **Current sprint**: Sprint 1 — Robustness
 > **Target version**: 0.1.0 beta (end of Sprint 4)
-> **Current branch**: `refactor/sprint-0` → merges to `main` at end of sprint
+> **Current branch**: `refactor/sprint-1`
 
 This document is the single source of truth for refactoring progress. It is updated by Claude Code at the end of each phase. Read it first before starting any new phase.
 
