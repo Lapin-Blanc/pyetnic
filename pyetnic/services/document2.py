@@ -1,6 +1,5 @@
-from dataclasses import asdict
 from typing import Optional
-from ._helpers import organisation_request_id
+from ._helpers import organisation_request_id, to_soap_dict
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -143,8 +142,8 @@ class Document2Service:
         logger.info(f"Modification du document 2 pour l'organisation : {organisation_id}")
         request_data: dict = {'id': organisation_request_id(organisation_id)}
         if activite_enseignement_liste is not None:
-            request_data['activiteEnseignementListe'] = asdict(activite_enseignement_liste)
+            request_data['activiteEnseignementListe'] = to_soap_dict(activite_enseignement_liste)
         if intervention_exterieure_liste is not None:
-            request_data['interventionExterieureListe'] = asdict(intervention_exterieure_liste)
+            request_data['interventionExterieureListe'] = to_soap_dict(intervention_exterieure_liste)
         result = self.client_manager.call_service("ModifierDocument2", **request_data)
         return self._parse_document2_response(result, organisation_id)

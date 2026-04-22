@@ -1,6 +1,5 @@
-from dataclasses import asdict
 from typing import Optional
-from ._helpers import organisation_request_id
+from ._helpers import organisation_request_id, to_soap_dict
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -104,7 +103,7 @@ class Document1Service:
         logger.info(f"Modification du document 1 pour l'organisation : {organisation_id}")
         request_data: dict = {'id': organisation_request_id(organisation_id)}
         if population_liste is not None:
-            request_data['populationListe'] = asdict(population_liste)
+            request_data['populationListe'] = to_soap_dict(population_liste)
         result = self.client_manager.call_service("ModifierDocument1", **request_data)
         return self._parse_document1_response(result, organisation_id)
 
@@ -121,6 +120,6 @@ class Document1Service:
         logger.info(f"Approbation du document 1 pour l'organisation : {organisation_id}")
         request_data: dict = {'id': organisation_request_id(organisation_id)}
         if population_liste is not None:
-            request_data['populationListe'] = asdict(population_liste)
+            request_data['populationListe'] = to_soap_dict(population_liste)
         result = self.client_manager.call_service("ApprouverDocument1", **request_data)
         return self._parse_document1_response(result, organisation_id)

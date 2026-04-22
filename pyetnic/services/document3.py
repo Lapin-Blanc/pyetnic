@@ -1,6 +1,5 @@
-from dataclasses import asdict
 from typing import Optional
-from ._helpers import organisation_request_id
+from ._helpers import organisation_request_id, to_soap_dict
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -110,6 +109,6 @@ class Document3Service:
         result = self.client_manager.call_service(
             "ModifierDocument3",
             id=organisation_request_id(organisation_id),
-            activiteListe=asdict(activite_liste),
+            activiteListe=to_soap_dict(activite_liste),
         )
         return self._parse_document3_response(result, organisation_id)
