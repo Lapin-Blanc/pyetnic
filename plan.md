@@ -93,7 +93,10 @@ This document is the single source of truth for refactoring progress. It is upda
   - Unexpected errors (KeyError, etc.) now propagate with full traceback
   - 2 new regression tests in `tests/regression/test_unexpected_errors.py`
   - Updated 2 unit tests to the new contract; added 2 more for `SoapError` wrapping and `RuntimeError` propagation
-- [ ] **Phase 1.6** — CLI and README hygiene
+- [x] **Phase 1.6** — CLI and README hygiene _(completed 2026-04-22)_
+  - Removed hardcoded `DEFAULT_ETABID=3052` / `DEFAULT_IMPLID=6050` / `DEFAULT_SCHOOLYEAR=2023-2024` from `cli.py`
+  - Added "Namespaces" section to README documenting `pyetnic.eprom` / `pyetnic.seps`
+  - Rewrote "Gestion des erreurs" section to document `strict_errors()`, the typed exception hierarchy, and the upcoming 0.2.0 default change
 
 ---
 
