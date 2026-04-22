@@ -208,7 +208,7 @@ class SoapClientManager:
             from zeep.helpers import serialize_object
             return serialize_object(result, dict)
             
-        except (Fault, TransportError, RequestException, AttributeError) as e:
+        except (Fault, TransportError, RequestException) as e:
             error_msg = f"Erreur lors de l'appel à {method_name} sur {self.service_name}: {str(e)}"
             logger.error(f"{error_msg} (request_id: {request_id})")
             raise SoapError(error_msg, soap_fault=e, request_id=request_id)
