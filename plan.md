@@ -78,7 +78,7 @@ This document is the single source of truth for refactoring progress. It is upda
   - New `SoapClientManager.reset_cache()` classmethod
   - 5 regression tests in `tests/regression/test_cache_invalidation.py`
 
-- [ ] **Phase 1.2** — EPROM exception hierarchy
+- [x] **Phase 1.2** — EPROM exception hierarchy _(completed 2026-04-13)_
 - [ ] **Phase 1.3** — Strict-mode migration (opt-in raise-on-error)
 - [ ] **Phase 1.4** — AttributeError fix
 - [ ] **Phase 1.5** — Replace `except Exception` blocks

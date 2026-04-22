@@ -19,6 +19,7 @@ from requests import Session
 from requests.exceptions import RequestException
 
 from .config import Config
+from .exceptions import EtnicTransportError
 
 # Support optionnel de la signature X509 (nécessite xmlsec + cryptography)
 try:
@@ -93,14 +94,15 @@ def _build_x509_wsse():
     logger.debug("Certificat X509 chargé depuis %s", pfx_path)
     return _EtnicBinarySignature(key_pem, cert_pem)
 
-class SoapError(Exception):
-    """Exception personnalisée pour les erreurs SOAP."""
-    
-    def __init__(self, message, soap_fault=None, request_id=None):
-        self.message = message
-        self.soap_fault = soap_fault
-        self.request_id = request_id
-        super().__init__(self.message)
+class SoapError(EtnicTransportError):
+    """Deprecated alias for :class:`pyetnic.exceptions.EtnicTransportError`.
+
+    Kept for backwards compatibility with code that does
+    ``except SoapError``. New code should catch ``EtnicTransportError``
+    (or the broader ``EtnicError``) directly.
+
+    Will be removed in version 1.0.0.
+    """
 
 class SoapClientManager:
     """
