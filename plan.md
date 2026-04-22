@@ -88,7 +88,11 @@ This document is the single source of truth for refactoring progress. It is upda
 - [x] **Phase 1.4** — AttributeError fix _(completed 2026-04-22)_
   - Removed `AttributeError` from `SoapClientManager.call_service` except tuple
   - 2 regression tests in `tests/regression/test_call_service_errors.py`
-- [ ] **Phase 1.5** — Replace `except Exception` blocks
+- [x] **Phase 1.5** — Replace `except Exception` blocks _(completed 2026-04-22)_
+  - Removed broad `except Exception` from `lister_formations` and `lister_formations_organisables`
+  - Unexpected errors (KeyError, etc.) now propagate with full traceback
+  - 2 new regression tests in `tests/regression/test_unexpected_errors.py`
+  - Updated 2 unit tests to the new contract; added 2 more for `SoapError` wrapping and `RuntimeError` propagation
 - [ ] **Phase 1.6** — CLI and README hygiene
 
 ---
