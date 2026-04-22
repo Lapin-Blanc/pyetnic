@@ -1,10 +1,10 @@
 """Services SEPS — Inscriptions (recherche et enregistrement)."""
 
-import dataclasses
 import logging
 from typing import List, Optional
 
 from ..soap_client import SoapClientManager
+from ._helpers import to_soap_dict
 from .models import (
     Inscription, SepsUE, SepsLieuCours, SepsSpecificite,
     SepsDroitInscription, SepsExempteDroitInscription,
@@ -239,7 +239,7 @@ class InscriptionsService:
         """
         kwargs = {}
         if inscription_input_data is not None:
-            kwargs["inscriptionInputData"] = dataclasses.asdict(inscription_input_data)
+            kwargs["inscriptionInputData"] = to_soap_dict(inscription_input_data)
 
         result = self._enregistrer.call_service("enregistrerInscription", **kwargs)
         return self._parse_inscription_response(result)
@@ -258,7 +258,7 @@ class InscriptionsService:
         """
         kwargs = {}
         if inscription_input_data is not None:
-            kwargs["inscriptionInputData"] = dataclasses.asdict(inscription_input_data)
+            kwargs["inscriptionInputData"] = to_soap_dict(inscription_input_data)
 
         result = self._enregistrer.call_service("modifierInscription", **kwargs)
         return self._parse_inscription_response(result)

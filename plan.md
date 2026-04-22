@@ -175,7 +175,7 @@ Completed on: 2026-04-22
   - Stable API — existing tests must pass unmodified
   - **Conversation B** (with phase 2.4)
 
-- [ ] **Phase 2.4** — Migrate to_soap_dict in SEPS write services (D2)
+- [x] **Phase 2.4** — Migrate to_soap_dict in SEPS write services (D2) _(completed 2026-04-22)_
   - Replace `asdict()` in enregistrer_etudiant.py and inscriptions.py
   - Construction API — free to refactor
   - **Conversation B** (with phase 2.3)
@@ -234,3 +234,4 @@ Completed on: TBD
 - **[Sprint 2, phase 2.1]** `_helpers.py` module created (D2 + D5 foundations); 14 unit tests added.
 - **[Sprint 2, phase 2.2]** `_organisation_id_dict` deduplicated across 4 services (D5 closed); 4 stale unit tests removed.
 - **[Sprint 2, phase 2.3]** `asdict()` replaced by `to_soap_dict()` in 3 EPROM document services (D2 EPROM side); 4 payload-shape regression tests added.
+- **[Sprint 2, phase 2.4]** `asdict()` replaced by `to_soap_dict()` in 2 SEPS write services (D2 closed); 4 payload-shape unit tests added.

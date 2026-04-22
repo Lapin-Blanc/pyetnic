@@ -1,10 +1,10 @@
 """Service SEPS — Enregistrement et modification d'étudiants."""
 
-import dataclasses
 import logging
 from typing import Optional
 
 from ..soap_client import SoapClientManager
+from ._helpers import to_soap_dict
 from .models import Etudiant, EtudiantDetailsSave
 from .seps import RechercheEtudiantsService
 
@@ -77,7 +77,7 @@ class EnregistrerEtudiantService:
         """
         kwargs = {"modeEnregistrement": mode_enregistrement}
         if etudiant_details is not None:
-            kwargs["etudiantDetails"] = dataclasses.asdict(etudiant_details)
+            kwargs["etudiantDetails"] = to_soap_dict(etudiant_details)
         if double_flag is not None:
             kwargs["doubleFlag"] = double_flag
         if create_bis_flag is not None:
@@ -102,7 +102,7 @@ class EnregistrerEtudiantService:
         """
         kwargs = {"cfNum": cf_num}
         if etudiant_details is not None:
-            kwargs["etudiantDetails"] = dataclasses.asdict(etudiant_details)
+            kwargs["etudiantDetails"] = to_soap_dict(etudiant_details)
 
         result = self.client_manager.call_service("modifierEtudiant", **kwargs)
         return self._parse_modifier_response(result)
