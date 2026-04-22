@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any, Optional
 from ..soap_client import SoapClientManager, SoapError
 from ..config import Config
-from ..exceptions import EtnicBusinessError, extract_error_info, map_etnic_error_code_to_class
+from ..exceptions import extract_error_info, map_etnic_error_code_to_class
 from .models import Formation, FormationsListeResult, OrganisationApercu, OrganisationId, StatutDocument
 import logging
 from pprint import pprint, pformat
@@ -67,13 +67,6 @@ class FormationsListeService:
             if Config.RAISE_ON_ERROR:
                 raise
             return FormationsListeResult(False, [], messages=[str(e)])
-        except EtnicBusinessError:
-            raise
-        # TODO(phase 1.5): remove this broad except in favor of targeted handling.
-        except Exception as e:
-            if Config.RAISE_ON_ERROR:
-                raise
-            return FormationsListeResult(False, [], messages=[f"Une erreur inattendue s'est produite : {str(e)}"])
 
     def lister_formations(
         self,
@@ -144,11 +137,4 @@ class FormationsListeService:
             if Config.RAISE_ON_ERROR:
                 raise
             return FormationsListeResult(False, [], messages=[str(e)])
-        except EtnicBusinessError:
-            raise
-        # TODO(phase 1.5): remove this broad except in favor of targeted handling.
-        except Exception as e:
-            if Config.RAISE_ON_ERROR:
-                raise
-            return FormationsListeResult(False, [], messages=[f"Une erreur inattendue s'est produite : {str(e)}"])
 
