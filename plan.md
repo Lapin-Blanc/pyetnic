@@ -158,7 +158,7 @@ Completed on: 2026-04-22
 
 ### Phases
 
-- [ ] **Phase 2.1** — Create private helpers module (D2 + D5 foundations)
+- [x] **Phase 2.1** — Create private helpers module (D2 + D5 foundations) _(completed 2026-04-22)_
   - `pyetnic/services/_helpers.py` with `to_soap_dict` and `organisation_request_id`
   - ~14 unit tests
   - No service code modified
@@ -231,3 +231,4 @@ Completed on: TBD
 - **[Sprint 1, pre-start]** Sprint 1 section and retrospective template added.
 - **[Sprint 1, post-merge]** Sprint 1 marked complete; retrospective added.
 - **[Sprint 2, pre-start]** Sprint 2 section added with design decisions and phase breakdown.
+- **[Sprint 2, phase 2.1]** `_helpers.py` module created (D2 + D5 foundations); 14 unit tests added.
