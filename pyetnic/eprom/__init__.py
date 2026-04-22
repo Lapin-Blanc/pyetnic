@@ -9,6 +9,7 @@ from ..exceptions import (
     EtnicNotFoundError,
     EtnicValidationError,
 )
+from ..error_mode import strict_errors
 from ..soap_client import SoapError  # legacy alias for EtnicTransportError
 
 # Fonctions de service — singletons gérés dans services/
@@ -88,6 +89,7 @@ __all__ = [
     "EtnicNotFoundError",
     "EtnicValidationError",
     "SoapError",
+    "strict_errors",
     # Fonctions
     "lister_formations",
     "lister_formations_organisables",

@@ -13,6 +13,7 @@ Usage :
 from . import eprom
 from . import seps
 from .config import Config
+from .error_mode import strict_errors
 from .exceptions import (
     EtnicError,
     EtnicTransportError,
@@ -29,6 +30,7 @@ __all__ = [
     "eprom",
     "seps",
     "Config",
+    "strict_errors",
     "EtnicError",
     "EtnicTransportError",
     "EtnicBusinessError",

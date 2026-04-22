@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any, Optional
 from ..soap_client import SoapClientManager, SoapError
 from ..config import Config
+from ..exceptions import EtnicBusinessError, extract_error_info, map_etnic_error_code_to_class
 from .models import Formation, FormationsListeResult, OrganisationApercu, OrganisationId, StatutDocument
 import logging
 from pprint import pprint, pformat
@@ -37,9 +38,9 @@ class FormationsListeService:
                 "etabId": etab_id if etab_id is not None else Config.ETAB_ID,
                 "implId": impl_id if impl_id is not None else Config.IMPL_ID,
             }
-            
+
             result = self.client_manager.call_service("ListerFormationsOrganisables", **request_data)
-            
+
             if result['body']['success']:
                 formations = []
                 for f in result['body']['response'].get('formation', []):
@@ -51,11 +52,27 @@ class FormationsListeService:
                     ))
                 return FormationsListeResult(True, formations)
             else:
+                if Config.RAISE_ON_ERROR:
+                    code, description, request_id = extract_error_info(result)
+                    cls = map_etnic_error_code_to_class(code)
+                    raise cls(
+                        f"ListerFormationsOrganisables failed (code={code}, description={description})",
+                        code=code,
+                        description=description,
+                        request_id=request_id,
+                    )
                 return FormationsListeResult(False, [], messages=result['body'].get('messages', []))
-        
+
         except SoapError as e:
+            if Config.RAISE_ON_ERROR:
+                raise
             return FormationsListeResult(False, [], messages=[str(e)])
+        except EtnicBusinessError:
+            raise
+        # TODO(phase 1.5): remove this broad except in favor of targeted handling.
         except Exception as e:
+            if Config.RAISE_ON_ERROR:
+                raise
             return FormationsListeResult(False, [], messages=[f"Une erreur inattendue s'est produite : {str(e)}"])
 
     def lister_formations(
@@ -112,10 +129,26 @@ class FormationsListeService:
                     ))
                 return FormationsListeResult(True, formations)
             else:
+                if Config.RAISE_ON_ERROR:
+                    code, description, request_id = extract_error_info(result)
+                    cls = map_etnic_error_code_to_class(code)
+                    raise cls(
+                        f"ListerFormations failed (code={code}, description={description})",
+                        code=code,
+                        description=description,
+                        request_id=request_id,
+                    )
                 return FormationsListeResult(False, [], messages=result['body'].get('messages', []))
-        
+
         except SoapError as e:
+            if Config.RAISE_ON_ERROR:
+                raise
             return FormationsListeResult(False, [], messages=[str(e)])
+        except EtnicBusinessError:
+            raise
+        # TODO(phase 1.5): remove this broad except in favor of targeted handling.
         except Exception as e:
+            if Config.RAISE_ON_ERROR:
+                raise
             return FormationsListeResult(False, [], messages=[f"Une erreur inattendue s'est produite : {str(e)}"])
 

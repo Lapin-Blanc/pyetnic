@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from typing import Optional
+from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
     FormationDocument2, OrganisationId,
@@ -47,7 +48,10 @@ class Document2Service:
             and result['body'].get('response')
             and 'document2' in result['body']['response']
         ):
-            return None
+            return signal_business_error(
+                result,
+                message="Document2 response was empty or success=False",
+            )
 
         doc_data = result['body']['response']['document2']
         logger.debug(f"document2 : {pformat(doc_data)}")

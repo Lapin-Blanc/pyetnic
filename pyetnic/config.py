@@ -19,9 +19,14 @@ from __future__ import annotations
 
 import logging
 import os
+from contextvars import ContextVar
 from typing import Any, NamedTuple
 
 logger = logging.getLogger(__name__)
+
+# Thread-safe and asyncio-safe storage for the raise-on-error flag.
+# Each thread / asyncio task sees its own value; the default is False.
+_raise_on_error: ContextVar[bool] = ContextVar("pyetnic_raise_on_error", default=False)
 
 
 def _load_dotenv_compat() -> None:
@@ -60,7 +65,7 @@ _SIMPLE_ENV_MAP: dict[str, tuple[str, str | None]] = {
     "SEPS_PFX_PASSWORD": ("SEPS_PFX_PASSWORD", None),
 }
 
-_ALL_CONFIG_ATTRS = {*_SIMPLE_ENV_MAP, "USERNAME", "PASSWORD", "SERVICES"}
+_ALL_CONFIG_ATTRS = {*_SIMPLE_ENV_MAP, "USERNAME", "PASSWORD", "SERVICES", "RAISE_ON_ERROR"}
 
 
 class _ConfigMeta(type):
@@ -88,6 +93,11 @@ class _ConfigMeta(type):
         if name not in _ALL_CONFIG_ATTRS:
             raise AttributeError(f"type object 'Config' has no attribute {name!r}")
 
+        # RAISE_ON_ERROR is backed by a ContextVar (thread/asyncio-safe),
+        # not by _overrides.
+        if name == "RAISE_ON_ERROR":
+            return _raise_on_error.get()
+
         # 1. Explicit override wins
         if name in _ConfigMeta._overrides:
             return _ConfigMeta._overrides[name]
@@ -108,6 +118,9 @@ class _ConfigMeta(type):
         return os.getenv(env_var, default)
 
     def __setattr__(cls, name: str, value: Any) -> None:
+        if name == "RAISE_ON_ERROR":
+            _raise_on_error.set(bool(value))
+            return
         if name in _ALL_CONFIG_ATTRS:
             _ConfigMeta._overrides[name] = value
         else:
@@ -208,3 +221,4 @@ class Config(metaclass=_ConfigMeta):
         """Reset all overrides and dotenv state.  For testing only."""
         _ConfigMeta._overrides.clear()
         _ConfigMeta._dotenv_loaded = False
+        _raise_on_error.set(False)
