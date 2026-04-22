@@ -80,6 +80,18 @@ A symbol is **construction** otherwise. Construction symbols are still exported 
 |---|---|
 | `TYPES_INTERVENTION_EXTERIEURE` | Used in form dropdowns |
 
+### Stable — Exceptions
+
+| Symbol | Notes |
+|---|---|
+| `EtnicError` | Base class, catch to handle any pyetnic error |
+| `EtnicTransportError` | Network/SOAP-level failures |
+| `EtnicBusinessError` | Server-side refusals (`success=False`) |
+| `EtnicDocumentNotAccessibleError` | Doc1/Doc2/Doc3 workflow violation (e.g. error 20102) |
+| `EtnicNotFoundError` | Resource not found (e.g. error 00009) |
+| `EtnicValidationError` | Input rejected by validation |
+| `SoapError` | **Deprecated** alias for `EtnicTransportError`. Will be removed in 1.0.0 |
+
 ---
 
 ## `pyetnic.seps` — SEPS namespace
