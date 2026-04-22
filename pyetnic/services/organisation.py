@@ -1,7 +1,9 @@
 from datetime import date
 from pprint import pformat
 from typing import Optional
+from ._helpers import organisation_request_id
 from .models import Organisation, OrganisationId, StatutDocument
+from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 import logging
 
@@ -70,20 +72,10 @@ class OrganisationService:
                 interventionExterieure50p=org_data.get('interventionExterieure50p'),
             )
 
-        return None
-
-    @staticmethod
-    def _organisation_id_dict(organisation_id: OrganisationId) -> dict:
-        """Retourne uniquement les champs attendus par Lire/Modifier/Supprimer.
-
-        Ces opérations n'incluent pas implId dans leur schéma d'ID.
-        """
-        return {
-            'anneeScolaire': organisation_id.anneeScolaire,
-            'etabId': organisation_id.etabId,
-            'numAdmFormation': organisation_id.numAdmFormation,
-            'numOrganisation': organisation_id.numOrganisation,
-        }
+        return signal_business_error(
+            result,
+            message="Organisation response was empty or success=False",
+        )
 
     # ------------------------------------------------------------------
     # Opérations WSDL
@@ -94,7 +86,7 @@ class OrganisationService:
         logger.info(f"Lecture de l'organisation {organisation_id}")
         result = self.client_manager.call_service(
             "LireOrganisation",
-            id=self._organisation_id_dict(organisation_id),
+            id=organisation_request_id(organisation_id),
         )
         return self._parse_organisation_response(result, organisation_id)
 
@@ -150,7 +142,7 @@ class OrganisationService:
         """Modifie une organisation de formation existante."""
         logger.info(f"Modification de l'organisation {organisation.id}")
         request_data = {
-            'id': self._organisation_id_dict(organisation.id),
+            'id': organisation_request_id(organisation.id),
             'dateDebutOrganisation': organisation.dateDebutOrganisation,
             'dateFinOrganisation': organisation.dateFinOrganisation,
             'organisationPeriodesSupplOuEPT': organisation.organisationPeriodesSupplOuEPT,
@@ -171,10 +163,17 @@ class OrganisationService:
         """Supprime une organisation de formation.
 
         Retourne True si la suppression a réussi, False sinon.
+        En mode strict, lève une EtnicBusinessError sur échec.
         """
         logger.info(f"Suppression de l'organisation {organisation_id}")
         result = self.client_manager.call_service(
             "SupprimerOrganisation",
-            id=self._organisation_id_dict(organisation_id),
+            id=organisation_request_id(organisation_id),
         )
-        return bool(result and result.get('body', {}).get('success', False))
+        success = bool(result and result.get('body', {}).get('success', False))
+        if not success:
+            signal_business_error(
+                result,
+                message=f"SupprimerOrganisation failed for {organisation_id}",
+            )
+        return success

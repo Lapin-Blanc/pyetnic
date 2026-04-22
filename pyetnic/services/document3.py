@@ -1,5 +1,6 @@
-from dataclasses import asdict
 from typing import Optional
+from ._helpers import organisation_request_id, to_soap_dict
+from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
     FormationDocument3, OrganisationId,
@@ -22,16 +23,6 @@ class Document3Service:
     # Méthodes privées
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _organisation_id_dict(organisation_id: OrganisationId) -> dict:
-        """Retourne les champs attendus par OrganisationReqIdCT (sans implId)."""
-        return {
-            'anneeScolaire': organisation_id.anneeScolaire,
-            'etabId': organisation_id.etabId,
-            'numAdmFormation': organisation_id.numAdmFormation,
-            'numOrganisation': organisation_id.numOrganisation,
-        }
-
     def _parse_document3_response(
         self,
         result: dict,
@@ -44,7 +35,10 @@ class Document3Service:
             and result['body'].get('response')
             and 'document3' in result['body']['response']
         ):
-            return None
+            return signal_business_error(
+                result,
+                message="Document3 response was empty or success=False",
+            )
 
         doc_data = result['body']['response']['document3']
         logger.debug(f"document3 : {pformat(doc_data)}")
@@ -98,7 +92,7 @@ class Document3Service:
         logger.info(f"Lecture du document 3 pour l'organisation : {organisation_id}")
         result = self.client_manager.call_service(
             "LireDocument3",
-            id=self._organisation_id_dict(organisation_id),
+            id=organisation_request_id(organisation_id),
         )
         return self._parse_document3_response(result, organisation_id)
 
@@ -114,7 +108,7 @@ class Document3Service:
         logger.info(f"Modification du document 3 pour l'organisation : {organisation_id}")
         result = self.client_manager.call_service(
             "ModifierDocument3",
-            id=self._organisation_id_dict(organisation_id),
-            activiteListe=asdict(activite_liste),
+            id=organisation_request_id(organisation_id),
+            activiteListe=to_soap_dict(activite_liste),
         )
         return self._parse_document3_response(result, organisation_id)

@@ -160,20 +160,3 @@ def test_supprimer_organisation_mock_echec(service, monkeypatch):
     )
 
     assert service.supprimer_organisation(org_id) is False
-
-
-def test_organisation_id_dict(service):
-    """Vérifie que _organisation_id_dict n'inclut pas implId."""
-    org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
-        numAdmFormation=328, numOrganisation=1, implId=6050,
-    )
-    result = service._organisation_id_dict(org_id)
-
-    assert "implId" not in result
-    assert result == {
-        "anneeScolaire": "2023-2024",
-        "etabId": 3052,
-        "numAdmFormation": 328,
-        "numOrganisation": 1,
-    }
