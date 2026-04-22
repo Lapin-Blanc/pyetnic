@@ -1,5 +1,17 @@
 """Namespace public pour les services EPROM (Enseignement de Promotion Sociale)."""
 
+# Exceptions — hiérarchie typée (voir pyetnic.exceptions)
+from ..exceptions import (
+    EtnicError,
+    EtnicTransportError,
+    EtnicBusinessError,
+    EtnicDocumentNotAccessibleError,
+    EtnicNotFoundError,
+    EtnicValidationError,
+)
+from ..error_mode import strict_errors
+from ..soap_client import SoapError  # legacy alias for EtnicTransportError
+
 # Fonctions de service — singletons gérés dans services/
 from ..services import (
     lister_formations,
@@ -16,6 +28,16 @@ from ..services import (
     lire_document_3,
     modifier_document_3,
     TYPES_INTERVENTION_EXTERIEURE,
+)
+
+# Nomenclatures — typed Enums (H9)
+from ..nomenclatures import (
+    TypeInterventionExterieure,
+    CodeAdmission,
+    CodeSanction,
+    MotifAbandon,
+    DureeInoccupation,
+    SituationMenage,
 )
 
 # Modèles — types communs
@@ -69,6 +91,15 @@ from ..services.models import (
 )
 
 __all__ = [
+    # Exceptions
+    "EtnicError",
+    "EtnicTransportError",
+    "EtnicBusinessError",
+    "EtnicDocumentNotAccessibleError",
+    "EtnicNotFoundError",
+    "EtnicValidationError",
+    "SoapError",
+    "strict_errors",
     # Fonctions
     "lister_formations",
     "lister_formations_organisables",
@@ -84,6 +115,13 @@ __all__ = [
     "lire_document_3",
     "modifier_document_3",
     "TYPES_INTERVENTION_EXTERIEURE",
+    # Nomenclatures
+    "TypeInterventionExterieure",
+    "CodeAdmission",
+    "CodeSanction",
+    "MotifAbandon",
+    "DureeInoccupation",
+    "SituationMenage",
     # Modèles communs
     "StatutDocument",
     "OrganisationId",

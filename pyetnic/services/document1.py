@@ -1,5 +1,6 @@
-from dataclasses import asdict
 from typing import Optional
+from ._helpers import organisation_request_id, to_soap_dict
+from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
     FormationDocument1, OrganisationId,
@@ -22,16 +23,6 @@ class Document1Service:
     # Méthodes privées
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _organisation_id_dict(organisation_id: OrganisationId) -> dict:
-        """Retourne les champs attendus par OrganisationReqIdCT (sans implId)."""
-        return {
-            'anneeScolaire': organisation_id.anneeScolaire,
-            'etabId': organisation_id.etabId,
-            'numAdmFormation': organisation_id.numAdmFormation,
-            'numOrganisation': organisation_id.numOrganisation,
-        }
-
     def _parse_document1_response(
         self,
         result: dict,
@@ -44,7 +35,10 @@ class Document1Service:
             and result['body'].get('response')
             and 'document1' in result['body']['response']
         ):
-            return None
+            return signal_business_error(
+                result,
+                message="Document1 response was empty or success=False",
+            )
 
         doc_data = result['body']['response']['document1']
         logger.debug(f"document1 : {pformat(doc_data)}")
@@ -93,7 +87,7 @@ class Document1Service:
         logger.info(f"Lecture du document 1 pour l'organisation : {organisation_id}")
         result = self.client_manager.call_service(
             "LireDocument1",
-            id=self._organisation_id_dict(organisation_id),
+            id=organisation_request_id(organisation_id),
         )
         return self._parse_document1_response(result, organisation_id)
 
@@ -107,9 +101,9 @@ class Document1Service:
         Seules les lignes de population fournies sont envoyées au serveur.
         """
         logger.info(f"Modification du document 1 pour l'organisation : {organisation_id}")
-        request_data: dict = {'id': self._organisation_id_dict(organisation_id)}
+        request_data: dict = {'id': organisation_request_id(organisation_id)}
         if population_liste is not None:
-            request_data['populationListe'] = asdict(population_liste)
+            request_data['populationListe'] = to_soap_dict(population_liste)
         result = self.client_manager.call_service("ModifierDocument1", **request_data)
         return self._parse_document1_response(result, organisation_id)
 
@@ -124,8 +118,8 @@ class Document1Service:
         mettre à jour les données au moment de l'approbation.
         """
         logger.info(f"Approbation du document 1 pour l'organisation : {organisation_id}")
-        request_data: dict = {'id': self._organisation_id_dict(organisation_id)}
+        request_data: dict = {'id': organisation_request_id(organisation_id)}
         if population_liste is not None:
-            request_data['populationListe'] = asdict(population_liste)
+            request_data['populationListe'] = to_soap_dict(population_liste)
         result = self.client_manager.call_service("ApprouverDocument1", **request_data)
         return self._parse_document1_response(result, organisation_id)

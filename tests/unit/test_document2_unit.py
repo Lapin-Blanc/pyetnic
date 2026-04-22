@@ -42,7 +42,7 @@ def _mock_doc2_response(num_adm: int = 328, num_org: int = 1, activites: list | 
                 "document2": {
                     "id": {
                         "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": int(Config.ETAB_ID) if Config.ETAB_ID else 3052,
+                        "etabId": Config.ETAB_ID or 3052,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },
@@ -169,20 +169,3 @@ def test_modifier_document2_mock(service, monkeypatch):
     assert doc.id == org_id
     lignes = doc.activiteEnseignementDetail.activiteEnseignementListe.activiteEnseignement
     assert lignes[0].nbEleveC1 == 20
-
-
-def test_organisation_id_dict(service):
-    """Vérifie que _organisation_id_dict n'inclut pas implId."""
-    org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
-        numAdmFormation=328, numOrganisation=1, implId=6050,
-    )
-    result = service._organisation_id_dict(org_id)
-
-    assert "implId" not in result
-    assert result == {
-        "anneeScolaire": "2023-2024",
-        "etabId": 3052,
-        "numAdmFormation": 328,
-        "numOrganisation": 1,
-    }

@@ -84,6 +84,28 @@ La configuration est **lazy** : rien n'est résolu à l'import. Les overrides pr
 
 ---
 
+## Namespaces
+
+`pyetnic` expose deux namespaces publics :
+
+- **`pyetnic.eprom`** — services EPROM (Enseignement de Promotion Sociale) : formations, organisations, documents 1/2/3.
+  Authentification : WSSE UsernameToken (credentials dev ou prod).
+
+- **`pyetnic.seps`** — services SEPS (registre des étudiants CFWB).
+  Authentification : certificat X509 (PFX). Production uniquement.
+  Nécessite `pip install pyetnic[seps]`.
+
+Toutes les fonctions, modèles et exceptions publiques s'importent directement depuis ces namespaces :
+
+```python
+from pyetnic.eprom import lire_organisation, OrganisationId, EtnicBusinessError
+from pyetnic.seps import lire_etudiant, NissMutationError
+```
+
+L'ancien namespace plat (`pyetnic.lire_organisation`) n'est plus documenté et ne devrait pas être utilisé dans du nouveau code.
+
+---
+
 ## Utilisation
 
 ### Formations
@@ -343,11 +365,45 @@ org_id = OrganisationId(
 
 ## Gestion des erreurs
 
-Toutes les fonctions de service retournent `None` (plutôt qu'une exception) si :
-- Le serveur répond avec `success: False` (accès refusé, document non existant, workflow non respecté, etc.)
-- Le document n'est pas accessible selon le workflow métier
+Par défaut, les fonctions EPROM retournent `None` (ou `FormationsListeResult(success=False)` pour `lister_formations*`) en cas d'échec serveur, pour préserver la compatibilité ascendante.
 
-Les erreurs réseau et SOAP sont encapsulées dans `SoapError` et propagées.
+Pour du nouveau code, préférer le **mode strict** qui lève des exceptions typées :
+
+```python
+from pyetnic import strict_errors, EtnicBusinessError, EtnicDocumentNotAccessibleError
+from pyetnic.eprom import lire_document_3
+
+with strict_errors():
+    try:
+        doc3 = lire_document_3(org_id)
+    except EtnicDocumentNotAccessibleError as e:
+        print(f"Doc 3 pas encore accessible : {e}")
+    except EtnicBusinessError as e:
+        print(f"Erreur ETNIC {e.code} : {e.description}")
+```
+
+Le mode strict peut aussi être activé globalement :
+
+```python
+from pyetnic import Config
+Config.RAISE_ON_ERROR = True
+```
+
+Le flag est stocké dans un `ContextVar` : il est donc sûr en contexte multi-threads et asyncio (chaque thread/tâche voit sa propre valeur).
+
+Le comportement par défaut (retour de `None`) deviendra « lever » en version 0.2.0.
+Les services SEPS lèvent déjà des exceptions typées (`SepsEtnicError` et sous-classes) et ne sont pas affectés par ce flag.
+
+**Hiérarchie des exceptions EPROM :**
+
+```
+EtnicError
+├── EtnicTransportError          # erreurs réseau/SOAP (alias historique : SoapError)
+└── EtnicBusinessError           # refus serveur (success=False)
+    ├── EtnicDocumentNotAccessibleError  # code 20102
+    ├── EtnicNotFoundError               # code 00009
+    └── EtnicValidationError             # entrée invalide
+```
 
 **Codes d'erreur ETNIC courants :**
 

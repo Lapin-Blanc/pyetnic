@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 def _etab_id() -> int:
-    return int(Config.ETAB_ID)
+    return Config.ETAB_ID
 
 
 def _impl_id() -> int:
-    return int(Config.IMPL_ID)
+    return Config.IMPL_ID
 
 
 @pytest.fixture

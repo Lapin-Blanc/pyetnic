@@ -15,9 +15,13 @@ PROD_USERNAME=
 PROD_PASSWORD=
 
 # Parametres par defaut
-DEFAULT_ETABID=3052
-DEFAULT_IMPLID=6050
-DEFAULT_SCHOOLYEAR=2023-2024
+# Renseignez ici les identifiants de votre etablissement.
+# DEFAULT_ETABID est l'identifiant numerique fourni par ETNIC.
+# DEFAULT_IMPLID est l'identifiant d'implantation (optionnel pour certains services).
+# DEFAULT_SCHOOLYEAR au format AAAA-AAAA (ex: 2024-2025).
+DEFAULT_ETABID=
+DEFAULT_IMPLID=
+DEFAULT_SCHOOLYEAR=
 
 # Certificat X509 pour les services SEPS (chemin relatif au repertoire courant)
 # Le fichier PFX est fourni par ETNIC (IAM-PROD).
