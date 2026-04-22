@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from typing import Optional
+from ._helpers import organisation_request_id
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -22,16 +23,6 @@ class Document3Service:
     # ------------------------------------------------------------------
     # Méthodes privées
     # ------------------------------------------------------------------
-
-    @staticmethod
-    def _organisation_id_dict(organisation_id: OrganisationId) -> dict:
-        """Retourne les champs attendus par OrganisationReqIdCT (sans implId)."""
-        return {
-            'anneeScolaire': organisation_id.anneeScolaire,
-            'etabId': organisation_id.etabId,
-            'numAdmFormation': organisation_id.numAdmFormation,
-            'numOrganisation': organisation_id.numOrganisation,
-        }
 
     def _parse_document3_response(
         self,
@@ -102,7 +93,7 @@ class Document3Service:
         logger.info(f"Lecture du document 3 pour l'organisation : {organisation_id}")
         result = self.client_manager.call_service(
             "LireDocument3",
-            id=self._organisation_id_dict(organisation_id),
+            id=organisation_request_id(organisation_id),
         )
         return self._parse_document3_response(result, organisation_id)
 
@@ -118,7 +109,7 @@ class Document3Service:
         logger.info(f"Modification du document 3 pour l'organisation : {organisation_id}")
         result = self.client_manager.call_service(
             "ModifierDocument3",
-            id=self._organisation_id_dict(organisation_id),
+            id=organisation_request_id(organisation_id),
             activiteListe=asdict(activite_liste),
         )
         return self._parse_document3_response(result, organisation_id)

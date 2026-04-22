@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from typing import Optional
+from ._helpers import organisation_request_id
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -25,16 +26,6 @@ class Document2Service:
     # ------------------------------------------------------------------
     # Méthodes privées
     # ------------------------------------------------------------------
-
-    @staticmethod
-    def _organisation_id_dict(organisation_id: OrganisationId) -> dict:
-        """Retourne les champs attendus par OrganisationReqIdCT (sans implId)."""
-        return {
-            'anneeScolaire': organisation_id.anneeScolaire,
-            'etabId': organisation_id.etabId,
-            'numAdmFormation': organisation_id.numAdmFormation,
-            'numOrganisation': organisation_id.numOrganisation,
-        }
 
     def _parse_document2_response(
         self,
@@ -134,7 +125,7 @@ class Document2Service:
         logger.info(f"Lecture du document 2 pour l'organisation : {organisation_id}")
         result = self.client_manager.call_service(
             "LireDocument2",
-            id=self._organisation_id_dict(organisation_id),
+            id=organisation_request_id(organisation_id),
         )
         return self._parse_document2_response(result, organisation_id)
 
@@ -150,7 +141,7 @@ class Document2Service:
         sont pas modifiés.
         """
         logger.info(f"Modification du document 2 pour l'organisation : {organisation_id}")
-        request_data: dict = {'id': self._organisation_id_dict(organisation_id)}
+        request_data: dict = {'id': organisation_request_id(organisation_id)}
         if activite_enseignement_liste is not None:
             request_data['activiteEnseignementListe'] = asdict(activite_enseignement_liste)
         if intervention_exterieure_liste is not None:
