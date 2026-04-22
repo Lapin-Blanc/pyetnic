@@ -17,7 +17,7 @@ from .document3 import Document3Service
 from .seps import RechercheEtudiantsService
 from .enregistrer_etudiant import EnregistrerEtudiantService
 from .inscriptions import InscriptionsService
-from .nomenclatures import TYPES_INTERVENTION_EXTERIEURE
+from ..nomenclatures import TYPES_INTERVENTION_EXTERIEURE
 
 # Importation et exposition des fonctions pour la liste des formations
 # Instanciation du service

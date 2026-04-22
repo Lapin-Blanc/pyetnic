@@ -30,6 +30,16 @@ from ..services import (
     TYPES_INTERVENTION_EXTERIEURE,
 )
 
+# Nomenclatures — typed Enums (H9)
+from ..nomenclatures import (
+    TypeInterventionExterieure,
+    CodeAdmission,
+    CodeSanction,
+    MotifAbandon,
+    DureeInoccupation,
+    SituationMenage,
+)
+
 # Modèles — types communs
 from ..services.models import (
     StatutDocument,
@@ -105,6 +115,13 @@ __all__ = [
     "lire_document_3",
     "modifier_document_3",
     "TYPES_INTERVENTION_EXTERIEURE",
+    # Nomenclatures
+    "TypeInterventionExterieure",
+    "CodeAdmission",
+    "CodeSanction",
+    "MotifAbandon",
+    "DureeInoccupation",
+    "SituationMenage",
     # Modèles communs
     "StatutDocument",
     "OrganisationId",
