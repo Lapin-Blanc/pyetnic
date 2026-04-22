@@ -50,7 +50,7 @@ def _mock_doc1_response(num_adm: int = 328, num_org: int = 1, populations: list 
                 "document1": {
                     "id": {
                         "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": int(Config.ETAB_ID) if Config.ETAB_ID else 3052,
+                        "etabId": Config.ETAB_ID or 3052,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },

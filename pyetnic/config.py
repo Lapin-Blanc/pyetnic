@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 import os
 from contextvars import ContextVar
-from typing import Any, NamedTuple
+from typing import Any, Callable, NamedTuple, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -53,16 +53,18 @@ class ServiceConfig(NamedTuple):
 
 
 # ---------------------------------------------------------------------------
-# Mapping: Config attribute name → (env var name, default value)
+# Mapping: Config attribute name → (env var name, default value, caster)
 # USERNAME and PASSWORD are dynamic (depend on ENV) and handled separately.
+# The caster is applied only to values read from the environment; explicit
+# overrides (``Config.X = value``) are stored as-is.
 # ---------------------------------------------------------------------------
-_SIMPLE_ENV_MAP: dict[str, tuple[str, str | None]] = {
-    "ENV": ("ENV", "dev"),
-    "ANNEE_SCOLAIRE": ("DEFAULT_SCHOOLYEAR", "2023-2024"),
-    "ETAB_ID": ("DEFAULT_ETABID", None),
-    "IMPL_ID": ("DEFAULT_IMPLID", None),
-    "SEPS_PFX_PATH": ("SEPS_PFX_PATH", None),
-    "SEPS_PFX_PASSWORD": ("SEPS_PFX_PASSWORD", None),
+_SIMPLE_ENV_MAP: dict[str, tuple[str, Optional[str], Optional[Callable[[str], Any]]]] = {
+    "ENV": ("ENV", "dev", None),
+    "ANNEE_SCOLAIRE": ("DEFAULT_SCHOOLYEAR", "2023-2024", None),
+    "ETAB_ID": ("DEFAULT_ETABID", None, int),
+    "IMPL_ID": ("DEFAULT_IMPLID", None, int),
+    "SEPS_PFX_PATH": ("SEPS_PFX_PATH", None, None),
+    "SEPS_PFX_PASSWORD": ("SEPS_PFX_PASSWORD", None, None),
 }
 
 _ALL_CONFIG_ATTRS = {*_SIMPLE_ENV_MAP, "USERNAME", "PASSWORD", "SERVICES", "RAISE_ON_ERROR"}
@@ -114,8 +116,17 @@ class _ConfigMeta(type):
             return cls._build_services()
 
         # 4. Simple env lookup
-        env_var, default = _SIMPLE_ENV_MAP[name]
-        return os.getenv(env_var, default)
+        env_var, default, caster = _SIMPLE_ENV_MAP[name]
+        value: Any = os.getenv(env_var, default)
+        if value is not None and caster is not None:
+            try:
+                value = caster(value)
+            except (ValueError, TypeError):
+                # Bad env values (e.g. empty string for int) return None
+                # rather than crash at import time. Config.validate() will
+                # flag the missing value if needed.
+                value = None
+        return value
 
     def __setattr__(cls, name: str, value: Any) -> None:
         if name == "RAISE_ON_ERROR":
