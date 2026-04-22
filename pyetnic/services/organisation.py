@@ -2,6 +2,7 @@ from datetime import date
 from pprint import pformat
 from typing import Optional
 from .models import Organisation, OrganisationId, StatutDocument
+from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 import logging
 
@@ -70,7 +71,10 @@ class OrganisationService:
                 interventionExterieure50p=org_data.get('interventionExterieure50p'),
             )
 
-        return None
+        return signal_business_error(
+            result,
+            message="Organisation response was empty or success=False",
+        )
 
     @staticmethod
     def _organisation_id_dict(organisation_id: OrganisationId) -> dict:
@@ -171,10 +175,17 @@ class OrganisationService:
         """Supprime une organisation de formation.
 
         Retourne True si la suppression a réussi, False sinon.
+        En mode strict, lève une EtnicBusinessError sur échec.
         """
         logger.info(f"Suppression de l'organisation {organisation_id}")
         result = self.client_manager.call_service(
             "SupprimerOrganisation",
             id=self._organisation_id_dict(organisation_id),
         )
-        return bool(result and result.get('body', {}).get('success', False))
+        success = bool(result and result.get('body', {}).get('success', False))
+        if not success:
+            signal_business_error(
+                result,
+                message=f"SupprimerOrganisation failed for {organisation_id}",
+            )
+        return success

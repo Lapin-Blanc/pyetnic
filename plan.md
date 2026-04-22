@@ -79,7 +79,12 @@ This document is the single source of truth for refactoring progress. It is upda
   - 5 regression tests in `tests/regression/test_cache_invalidation.py`
 
 - [x] **Phase 1.2** — EPROM exception hierarchy _(completed 2026-04-13)_
-- [ ] **Phase 1.3** — Strict-mode migration (opt-in raise-on-error)
+- [x] **Phase 1.3** — Strict-mode migration (opt-in raise-on-error) _(completed 2026-04-22)_
+  - `Config.RAISE_ON_ERROR` backed by a `ContextVar` (thread/asyncio-safe)
+  - `strict_errors()` context manager in `pyetnic/error_mode.py`
+  - `signal_business_error()` + `map_etnic_error_code_to_class()` helpers in `pyetnic/exceptions.py`
+  - All EPROM `_parse_*_response` methods migrated; `supprimer_organisation` and `lister_formations*` raise in strict mode
+  - 18 regression tests in `tests/regression/test_strict_mode.py`; default-mode contract unchanged
 - [ ] **Phase 1.4** — AttributeError fix
 - [ ] **Phase 1.5** — Replace `except Exception` blocks
 - [ ] **Phase 1.6** — CLI and README hygiene

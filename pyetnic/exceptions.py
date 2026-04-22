@@ -16,7 +16,7 @@ SEPS exceptions (``SepsEtnicError`` and subclasses) live in
 unified with this hierarchy in a future major version.
 """
 
-from typing import Optional
+from typing import Any, Optional, Tuple, Type
 
 
 class EtnicError(Exception):
@@ -106,3 +106,117 @@ class EtnicValidationError(EtnicBusinessError):
     Raised when ETNIC refuses the request for input-validation reasons:
     missing required fields, invalid format, value out of range, etc.
     """
+
+
+# ---------------------------------------------------------------------------
+# Helpers used by EPROM services to signal errors in strict mode
+# ---------------------------------------------------------------------------
+
+
+def map_etnic_error_code_to_class(code: Optional[str]) -> Type[EtnicBusinessError]:
+    """Map a known ETNIC error code to its specialized exception class.
+
+    Returns :class:`EtnicBusinessError` for unknown codes.
+    """
+    if code is None:
+        return EtnicBusinessError
+    if code == "20102":
+        return EtnicDocumentNotAccessibleError
+    if code == "00009":
+        return EtnicNotFoundError
+    return EtnicBusinessError
+
+
+def extract_error_info(result: Any) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """Extract (code, description, request_id) from a SOAP response dict.
+
+    Tolerant to missing/partial shapes — any field that cannot be found
+    is returned as ``None``.
+    """
+    code: Optional[str] = None
+    description: Optional[str] = None
+    request_id: Optional[str] = None
+
+    if not isinstance(result, dict):
+        return code, description, request_id
+
+    header = result.get("header")
+    if isinstance(header, dict):
+        rid = header.get("requestId")
+        if rid is not None:
+            request_id = str(rid)
+
+    body = result.get("body")
+    if not isinstance(body, dict):
+        return code, description, request_id
+
+    messages = body.get("messages") or {}
+    if not isinstance(messages, dict):
+        return code, description, request_id
+
+    errors = messages.get("error")
+    if not errors:
+        return code, description, request_id
+
+    err = errors[0] if isinstance(errors, list) else errors
+    if isinstance(err, dict):
+        if err.get("code") is not None:
+            code = str(err.get("code"))
+        description = err.get("description")
+
+    return code, description, request_id
+
+
+def signal_business_error(
+    result: Any = None,
+    *,
+    message: Optional[str] = None,
+    code: Optional[str] = None,
+    description: Optional[str] = None,
+    request_id: Optional[str] = None,
+    error_class: Optional[Type[EtnicBusinessError]] = None,
+) -> None:
+    """Raise a typed business error if strict mode is on, else return ``None``.
+
+    Service methods call this when they detect a server-side failure
+    (``success=False``, empty ``response``, etc.).
+
+    - In default mode (``Config.RAISE_ON_ERROR == False``), this function
+      returns ``None`` silently, preserving the legacy "return None on
+      error" contract.
+    - In strict mode, it raises a subclass of :class:`EtnicBusinessError`
+      chosen by :func:`map_etnic_error_code_to_class` (unless
+      ``error_class`` is given explicitly).
+
+    Args:
+        result: The raw SOAP response dict. If provided, error fields
+            (code, description, request_id) missing from the kwargs are
+            extracted from it via :func:`extract_error_info`.
+        message: Human-readable error message. Auto-generated from the
+            code and description if omitted.
+        code: ETNIC error code if already known.
+        description: ETNIC error description if already known.
+        request_id: Request ID for traceability.
+        error_class: Specific exception class to raise. Defaults to the
+            class returned by :func:`map_etnic_error_code_to_class`.
+
+    Returns:
+        ``None`` — but only in default mode. In strict mode, this raises.
+    """
+    # Local import to avoid a circular import at module load time.
+    from .config import Config
+
+    if not Config.RAISE_ON_ERROR:
+        return None
+
+    if result is not None and (code is None or description is None or request_id is None):
+        ex_code, ex_desc, ex_rid = extract_error_info(result)
+        code = code if code is not None else ex_code
+        description = description if description is not None else ex_desc
+        request_id = request_id if request_id is not None else ex_rid
+
+    cls = error_class or map_etnic_error_code_to_class(code)
+    if message is None:
+        message = f"ETNIC business error (code={code}, description={description})"
+
+    raise cls(message, code=code, description=description, request_id=request_id)
