@@ -65,6 +65,27 @@ This document is the single source of truth for refactoring progress. It is upda
 
 ---
 
+## Sprint 1 — Robustness
+
+**Goal**: close the robustness defects flagged in `docs/AUDIT.md` (D1, D3, Q1, Q2, H3, H1) without breaking the stable API.
+
+**Branch**: `refactor/sprint-1`
+
+### Phases
+
+- [x] **Phase 1.1** — Cache invalidation on Config change (D1) _(completed 2026-04-13)_
+  - Cache keyed on `(service_name, Config.ENV, Config.USERNAME)`
+  - New `SoapClientManager.reset_cache()` classmethod
+  - 5 regression tests in `tests/regression/test_cache_invalidation.py`
+
+- [ ] **Phase 1.2** — EPROM exception hierarchy
+- [ ] **Phase 1.3** — Strict-mode migration (opt-in raise-on-error)
+- [ ] **Phase 1.4** — AttributeError fix
+- [ ] **Phase 1.5** — Replace `except Exception` blocks
+- [ ] **Phase 1.6** — CLI and README hygiene
+
+---
+
 ## Notes and decisions
 
 ### Decisions made in Sprint 0 discussion
