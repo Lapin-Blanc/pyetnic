@@ -169,7 +169,7 @@ Completed on: 2026-04-22
   - Zero regression test modifications
   - **Conversation A** (with phase 2.1)
 
-- [ ] **Phase 2.3** — Migrate to_soap_dict in EPROM document services (D2)
+- [x] **Phase 2.3** — Migrate to_soap_dict in EPROM document services (D2) _(completed 2026-04-22)_
   - Replace `asdict()` in document1.py, document2.py, document3.py
   - Add ~3 payload-shape regression tests
   - Stable API — existing tests must pass unmodified
@@ -233,3 +233,4 @@ Completed on: TBD
 - **[Sprint 2, pre-start]** Sprint 2 section added with design decisions and phase breakdown.
 - **[Sprint 2, phase 2.1]** `_helpers.py` module created (D2 + D5 foundations); 14 unit tests added.
 - **[Sprint 2, phase 2.2]** `_organisation_id_dict` deduplicated across 4 services (D5 closed); 4 stale unit tests removed.
+- **[Sprint 2, phase 2.3]** `asdict()` replaced by `to_soap_dict()` in 3 EPROM document services (D2 EPROM side); 4 payload-shape regression tests added.
