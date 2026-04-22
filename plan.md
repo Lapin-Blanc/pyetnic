@@ -85,7 +85,9 @@ This document is the single source of truth for refactoring progress. It is upda
   - `signal_business_error()` + `map_etnic_error_code_to_class()` helpers in `pyetnic/exceptions.py`
   - All EPROM `_parse_*_response` methods migrated; `supprimer_organisation` and `lister_formations*` raise in strict mode
   - 18 regression tests in `tests/regression/test_strict_mode.py`; default-mode contract unchanged
-- [ ] **Phase 1.4** — AttributeError fix
+- [x] **Phase 1.4** — AttributeError fix _(completed 2026-04-22)_
+  - Removed `AttributeError` from `SoapClientManager.call_service` except tuple
+  - 2 regression tests in `tests/regression/test_call_service_errors.py`
 - [ ] **Phase 1.5** — Replace `except Exception` blocks
 - [ ] **Phase 1.6** — CLI and README hygiene
 
