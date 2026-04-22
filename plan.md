@@ -180,7 +180,7 @@ Completed on: 2026-04-22
   - Construction API — free to refactor
   - **Conversation B** (with phase 2.3)
 
-- [ ] **Phase 2.5** — Config int casting for ETAB_ID / IMPL_ID (Q4)
+- [x] **Phase 2.5** — Config int casting for ETAB_ID / IMPL_ID (Q4) _(completed 2026-04-22)_
   - Extend `_SIMPLE_ENV_MAP` with optional caster
   - ~7 regression tests
   - **Conversation C** (with phase 2.6)
@@ -235,3 +235,4 @@ Completed on: TBD
 - **[Sprint 2, phase 2.2]** `_organisation_id_dict` deduplicated across 4 services (D5 closed); 4 stale unit tests removed.
 - **[Sprint 2, phase 2.3]** `asdict()` replaced by `to_soap_dict()` in 3 EPROM document services (D2 EPROM side); 4 payload-shape regression tests added.
 - **[Sprint 2, phase 2.4]** `asdict()` replaced by `to_soap_dict()` in 2 SEPS write services (D2 closed); 4 payload-shape unit tests added.
+- **[Sprint 2, phase 2.5]** `Config.ETAB_ID` / `Config.IMPL_ID` now return `int` from env (Q4 closed); 8 regression tests added; redundant `int()` wrappers removed across tests.

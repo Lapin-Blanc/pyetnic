@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def _etab_id() -> int:
-    return int(Config.ETAB_ID)
+    return Config.ETAB_ID
 
 
 def test_lire_document2_reel():
