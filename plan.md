@@ -185,7 +185,7 @@ Completed on: 2026-04-22
   - ~7 regression tests
   - **Conversation C** (with phase 2.6)
 
-- [ ] **Phase 2.6** — Nomenclature Enums (H9)
+- [x] **Phase 2.6** — Nomenclature Enums (H9) _(completed 2026-04-22)_
   - 6 `(str, Enum)` classes in `nomenclatures.py`
   - Legacy constant preserved
   - Update `PUBLIC_API_SURFACE.md`
@@ -236,3 +236,4 @@ Completed on: TBD
 - **[Sprint 2, phase 2.3]** `asdict()` replaced by `to_soap_dict()` in 3 EPROM document services (D2 EPROM side); 4 payload-shape regression tests added.
 - **[Sprint 2, phase 2.4]** `asdict()` replaced by `to_soap_dict()` in 2 SEPS write services (D2 closed); 4 payload-shape unit tests added.
 - **[Sprint 2, phase 2.5]** `Config.ETAB_ID` / `Config.IMPL_ID` now return `int` from env (Q4 closed); 8 regression tests added; redundant `int()` wrappers removed across tests.
+- **[Sprint 2, phase 2.6]** `pyetnic/nomenclatures.py` promoted to top-level public module with 6 `(str, Enum)` classes (H9 closed); legacy list constant preserved; 13 unit tests added; `PUBLIC_API_SURFACE.md` updated.

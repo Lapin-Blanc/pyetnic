@@ -78,7 +78,20 @@ A symbol is **construction** otherwise. Construction symbols are still exported 
 
 | Symbol | Notes |
 |---|---|
-| `TYPES_INTERVENTION_EXTERIEURE` | Used in form dropdowns |
+| `TYPES_INTERVENTION_EXTERIEURE` | Used in form dropdowns. **Legacy** list constant, deprecated in favor of the `TypeInterventionExterieure` Enum. Will be removed in 1.0.0. |
+
+### Stable — Nomenclatures (Enums)
+
+All use `(str, Enum)` base — members compare equal to their raw string value.
+
+| Symbol | Notes |
+|---|---|
+| `TypeInterventionExterieure` | Intervention types for organisations. Exported from `pyetnic.eprom`. |
+| `CodeAdmission` | Admission codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
+| `CodeSanction` | Sanction codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
+| `MotifAbandon` | Abandon reasons. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
+| `DureeInoccupation` | Inoccupation duration codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
+| `SituationMenage` | Household situation codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
 
 ### Stable — Exceptions
 

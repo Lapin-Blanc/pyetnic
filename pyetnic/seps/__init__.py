@@ -18,6 +18,15 @@ from ..services import (
 # Exceptions
 from ..services.seps import SepsEtnicError, SepsAuthError, NissMutationError, TropDeResultatsError
 
+# Nomenclatures — typed Enums (H9)
+from ..nomenclatures import (
+    CodeAdmission,
+    CodeSanction,
+    MotifAbandon,
+    DureeInoccupation,
+    SituationMenage,
+)
+
 # Modèles
 from ..services.models import (
     # Étudiant
@@ -90,4 +99,10 @@ __all__ = [
     "InscriptionInputSave",
     "SepsUESave",
     "SepsSpecificiteSave",
+    # Nomenclatures
+    "CodeAdmission",
+    "CodeSanction",
+    "MotifAbandon",
+    "DureeInoccupation",
+    "SituationMenage",
 ]
