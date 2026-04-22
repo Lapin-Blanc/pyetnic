@@ -110,8 +110,11 @@ class SoapClientManager:
     en gérant l'authentification, le transport et les bindings.
     """
     
-    _client_cache = {}
-    
+    # NOTE: cache may accumulate entries if (ENV, USERNAME) changes frequently
+    # in long-running processes. Acceptable for typical usage. If this becomes
+    # a problem, consider LRU eviction or explicit reset_cache() calls.
+    _client_cache: dict = {}
+
     def __init__(self, service_name):
         """
         Initialise un gestionnaire de client SOAP pour un service spécifique.
@@ -129,9 +132,30 @@ class SoapClientManager:
             raise ValueError(f"Configuration manquante pour le service: {self.service_name}")
         return config
 
+    def _cache_key(self) -> tuple:
+        """Compute the current cache key based on Config state.
+
+        Sensitive to ENV and USERNAME changes so that runtime reconfiguration
+        invalidates the cached client automatically. The password is
+        deliberately excluded to avoid credentials leaking into log output via
+        the cache structure; credential rotation scenarios should use
+        ``reset_cache()`` explicitly.
+        """
+        return (self.service_name, Config.ENV, Config.USERNAME)
+
+    @classmethod
+    def reset_cache(cls) -> None:
+        """Clear the entire SOAP client cache.
+
+        Useful for tests, credential rotations, or when integration code needs
+        to force re-initialization of all clients.
+        """
+        cls._client_cache.clear()
+
     def _initialize_client(self):
-        if self.service_name in self._client_cache:
-            return self._client_cache[self.service_name]
+        key = self._cache_key()
+        if key in self._client_cache:
+            return self._client_cache[key]
 
         global _ssl_warnings_suppressed
         if not _ssl_warnings_suppressed and not Config.get_verify_ssl():
@@ -156,7 +180,7 @@ class SoapClientManager:
         client = Client(wsdl_path, wsse=wsse, transport=transport)
         service = client.create_service(self.service_config.binding_name, self.service_config.endpoint)
 
-        self._client_cache[self.service_name] = service
+        self._client_cache[key] = service
         return service
 
     def call_service(self, method_name, **kwargs):
