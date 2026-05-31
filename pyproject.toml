@@ -14,7 +14,6 @@ dependencies = [
     "zeep",
     "python-dotenv",
     "requests",
-    "openpyxl",
     "cryptography",
 ]
 classifiers = [
@@ -31,6 +30,7 @@ classifiers = [
 
 [project.optional-dependencies]
 seps = ["xmlsec"]
+excel = ["openpyxl"]
 
 [project.urls]
 Homepage = "https://github.com/Lapin-Blanc/pyetnic"
@@ -44,6 +44,7 @@ exclude = ["tests*"]
 
 [tool.setuptools.package-data]
 pyetnic = [
+    "py.typed",
     "resources/*/*.wsdl",
     "resources/*/xsd/*.xsd",
 ]
