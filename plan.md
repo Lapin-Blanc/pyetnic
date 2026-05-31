@@ -199,12 +199,11 @@ Completed on: 2026-04-23
   - No code changes; 177 tests green
   - **Conversation A** (with phase 3.2)
 
-- [ ] **Phase 3.2** — File cleanup (H5 + H8 + H11)
-  - Delete requirements.txt
-  - Move openpyxl to [excel] extra in pyproject.toml
-  - Delete pyetnic/resources/Codes_Pays.xls
-  - Create pyetnic/py.typed marker (PEP 561)
-  - No Python source changes
+- [x] **Phase 3.2** — File cleanup (H5 + H8 + H11) _(completed 2026-05-31)_
+  - Deleted requirements.txt; moved openpyxl from main deps to the [excel] extra
+  - Deleted pyetnic/resources/Codes_Pays.xls (83 KB unused binary)
+  - Created pyetnic/py.typed (PEP 561); added to package-data and MANIFEST.in
+  - No Python source changes; 177 tests green
   - **Conversation A** (with phase 3.1)
 
 - [ ] **Phase 3.3** — _as_list() helper and parser migration (Q8)
@@ -271,3 +270,4 @@ Completed on: TBD
 - **[Sprint 3, pre-start]** Sprint 3 section added with design decisions and phase breakdown.
 - **[2026-05-31]** Saved Sprint 3 plan to disk; added "Findings from codebase + specs audit" and two new Open questions; recorded two out-of-sprint bugfixes merged to main. See `docs/SOURCES.md`.
 - **[Sprint 3, phase 3.1]** Created `docs/ARCHITECTURE.md`; migrated XSD procedure into `docs/SPEC.md`; deleted `.claude/CLAUDE.md` (413 lines, content preserved in docs/). Fixed two stale doc facts. H2 closed.
+- **[Sprint 3, phase 3.2]** Deleted `requirements.txt` and `Codes_Pays.xls`; moved `openpyxl` to `[excel]` extra; added `pyetnic/py.typed` (PEP 561) to package-data and MANIFEST.in. H5, H8, H11 closed.
