@@ -8,7 +8,7 @@ It is used by schools and school management software to interact programmaticall
 
 - Repository: https://github.com/Lapin-Blanc/pyetnic
 - Author: Fabien Toune (fabien.toune@eica.be)
-- Python ≥ 3.8 (development uses 3.12+)
+- Python ≥ 3.10 (CI matrix 3.10–3.13; development on 3.12+)
 
 ## ETNIC Services Coverage
 
@@ -180,7 +180,7 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 
 **SEPS inscriptions (read).** `SepsUE`, `SepsLieuCours`, `SepsDroitInscription`, `SepsExempteDroitInscription`, `SepsDroitInscriptionSpecifique`, `SepsExempteDroitInscriptionSpec`, `SepsAdmission`, `SepsSanction`, `SepsSpecificite`, `Inscription`.
 
-**SEPS inscriptions (save).** `SepsUESave`, `SepsDroitInscriptionSave`, `SepsAdmissionSave`, `SepsSanctionSave`, `SepsSpecificiteSave`, `InscriptionInputSave`, `InscriptionInputDataSave`.
+**SEPS inscriptions (save).** `SepsUESave`, `SepsSpecificiteSave`, `InscriptionInputSave`, `InscriptionInputDataSave`. (No `*Save` variant exists for `SepsDroitInscription` / `SepsAdmission` / `SepsSanction` — those are read-only models.)
 
 ## Error Codes
 
@@ -223,3 +223,27 @@ Config.PASSWORD = "my_pass"
 - 2025-2026: 2 organisations created (F327, F328), "Encodé école" → Doc 1/2/3 inaccessible
 - 2024-2025: 34 organisations "Approuvé" → Doc 1/2 readable, Doc 3 inaccessible (Doc 1/2 not approved)
 - 2023-2024: 119/158 organisations with Doc 3 accessible — this is the reference vintage for Doc 3 tests.
+
+## XSD Verification Procedure
+
+Before implementing or modifying a service, always check the WSDL/XSD in
+`pyetnic/resources/` (each service has its own folder, e.g.
+`pyetnic/resources/EPROM_Document_3_1.0/xsd/`). Verify:
+
+1. **Required fields** — elements without `minOccurs="0"` must NOT be `Optional` in the
+   dataclass (no default value).
+2. **Optional fields** — elements with `minOccurs="0"` are `Optional[T] = None`.
+3. **`OrganisationReqIdCT` vs `OrganisationResIdCT`** — the request id has 4 fields (no
+   `implId`); the response id adds `implId`. Never send `implId` in Lire/Modifier/Supprimer.
+4. **Exact element names** — Python attribute names keep the XSD camelCase verbatim
+   (e.g. `activiteListe`, not `activiteList`).
+
+Python class names mirror the XSD type names exactly (e.g. `Doc2ActiviteEnseignementLine`
+← `Doc2ActiviteEnseignementLineCT`). Method parameters use `snake_case` even though the SOAP
+fields are `camelCase`.
+
+```bash
+# Read a service's WSDL and matching XSD:
+cat "pyetnic/resources/EPROM_Document_3_1.0/EpromFormationDocument3Service_external_v1.wsdl"
+cat "pyetnic/resources/EPROM_Document_3_1.0/xsd/EpromFormationDocument3_external_v1.xsd"
+```

@@ -191,11 +191,12 @@ Completed on: 2026-04-23
 
 ### Phases
 
-- [ ] **Phase 3.1** — Split .claude/CLAUDE.md, create ARCHITECTURE.md (H2)
-  - Migrate remaining business rules to docs/SPEC.md
-  - Create docs/ARCHITECTURE.md
-  - Delete .claude/CLAUDE.md (413 lines)
-  - No code changes
+- [x] **Phase 3.1** — Split .claude/CLAUDE.md, create ARCHITECTURE.md (H2) _(completed 2026-05-31)_
+  - Created docs/ARCHITECTURE.md (77 lines); migrated the XSD-verification procedure to docs/SPEC.md
+  - Deleted .claude/CLAUDE.md (413 lines); content confirmed present in docs/ by an adversarial completeness check
+  - Fixed two stale doc facts: Python floor 3.8 → 3.10; removed 3 non-existent SEPS inscription Save types from SPEC.md
+  - Updated docs/SOURCES.md to reflect the consolidation
+  - No code changes; 177 tests green
   - **Conversation A** (with phase 3.2)
 
 - [ ] **Phase 3.2** — File cleanup (H5 + H8 + H11)
@@ -269,3 +270,4 @@ Completed on: TBD
 - **[Sprint 2, post-merge]** Sprint 2 marked complete; retrospective added.
 - **[Sprint 3, pre-start]** Sprint 3 section added with design decisions and phase breakdown.
 - **[2026-05-31]** Saved Sprint 3 plan to disk; added "Findings from codebase + specs audit" and two new Open questions; recorded two out-of-sprint bugfixes merged to main. See `docs/SOURCES.md`.
+- **[Sprint 3, phase 3.1]** Created `docs/ARCHITECTURE.md`; migrated XSD procedure into `docs/SPEC.md`; deleted `.claude/CLAUDE.md` (413 lines, content preserved in docs/). Fixed two stale doc facts. H2 closed.
