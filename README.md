@@ -278,8 +278,7 @@ etudiant = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave
 ```python
 from pyetnic.seps import (
     rechercher_inscriptions, enregistrer_inscription, modifier_inscription,
-    InscriptionInputDataSave, InscriptionInputSave, SepsUESave, SepsSpecificiteSave,
-    SepsDroitInscriptionSave, SepsAdmissionSave, SepsSanctionSave,
+    InscriptionInputDataSave, InscriptionInputSave, SepsUESave,
 )
 
 # Recherche des inscriptions d'un étudiant
