@@ -6,6 +6,7 @@ Do not import from outside pyetnic.services.
 Contents:
 - to_soap_dict: None-stripping serialization for SOAP payloads (D2)
 - organisation_request_id: OrganisationReqIdCT dict builder (D5)
+- _as_list: normalize zeep's single-dict | list collection results (Q8)
 """
 
 from __future__ import annotations
@@ -105,3 +106,38 @@ def organisation_request_id(org_id: OrganisationId) -> dict:
         'numAdmFormation': org_id.numAdmFormation,
         'numOrganisation': org_id.numOrganisation,
     }
+
+
+def _as_list(value: Any) -> list:
+    """Normalize a zeep collection result to always be a list.
+
+    zeep deserializes unbounded XML elements (``maxOccurs="unbounded"``) as a
+    list when there are multiple results, but as a single dict when there is
+    exactly one. Iterating such a result with ``for item in value`` then walks
+    the dict's *keys* instead of its single element. This helper normalizes
+    both cases (and the empty case) to a list (Q8).
+
+    Args:
+        value: The raw value from zeep's serialized output. Can be:
+            - None → returns []
+            - a dict (single element) → returns [dict]
+            - a list → returns as-is
+
+    Returns:
+        A list, always.
+
+    Examples:
+        # Multiple results → already a list, returned as-is
+        _as_list([{'name': 'A'}, {'name': 'B'}])  # → [{'name': 'A'}, {'name': 'B'}]
+
+        # Single result → zeep returned a dict, wrapped in a list
+        _as_list({'name': 'A'})  # → [{'name': 'A'}]
+
+        # No results → empty list
+        _as_list(None)  # → []
+    """
+    if value is None:
+        return []
+    if isinstance(value, dict):
+        return [value]
+    return list(value)

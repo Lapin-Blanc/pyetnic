@@ -4,7 +4,7 @@ import logging
 from typing import List, Optional
 
 from ..soap_client import SoapClientManager
-from ._helpers import to_soap_dict
+from ._helpers import _as_list, to_soap_dict
 from .models import (
     Inscription, SepsUE, SepsLieuCours, SepsSpecificite,
     SepsDroitInscription, SepsExempteDroitInscription,
@@ -177,9 +177,8 @@ class InscriptionsService:
             and result["body"].get("response")
         ):
             return []
-        inscriptions_raw = result["body"]["response"].get("inscription") or []
-        if isinstance(inscriptions_raw, dict):
-            inscriptions_raw = [inscriptions_raw]
+        # zeep peut retourner un seul dict ou une liste selon le nombre de résultats
+        inscriptions_raw = _as_list(result["body"]["response"].get("inscription"))
         return [self._parse_inscription(i) for i in inscriptions_raw if i]
 
     # ------------------------------------------------------------------
