@@ -11,6 +11,7 @@ from typing import Any, Optional
 from ..soap_client import SoapClientManager, SoapError
 from ..config import Config
 from ..exceptions import extract_error_info, map_etnic_error_code_to_class
+from ._helpers import _as_list
 from .models import Formation, FormationsListeResult, OrganisationApercu, OrganisationId, StatutDocument
 import logging
 from pprint import pprint, pformat
@@ -43,7 +44,7 @@ class FormationsListeService:
 
             if result['body']['success']:
                 formations = []
-                for f in result['body']['response'].get('formation', []):
+                for f in _as_list(result['body']['response'].get('formation')):
                     formations.append(Formation(
                         numAdmFormation=f['numAdmFormation'],
                         libelleFormation=f['libelleFormation'],
@@ -92,10 +93,10 @@ class FormationsListeService:
             if result['body']['success']:
                 logger.debug(f"Résultat : {pformat(result)}")
                 formations = []
-                for f in result['body']['response'].get('formation', []):
+                for f in _as_list(result['body']['response'].get('formation')):
                     logger.debug(f"Formation : {pformat(f)}")
                     organisations = []
-                    for org_data in f.get('organisation', []):
+                    for org_data in _as_list(f.get('organisation')):
                         logger.debug(f"Organisation : {pformat(org_data)}")
                         org_id = OrganisationId(
                             anneeScolaire=annee_scolaire,

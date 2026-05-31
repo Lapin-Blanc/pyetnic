@@ -1,5 +1,5 @@
 from typing import Optional
-from ._helpers import organisation_request_id, to_soap_dict
+from ._helpers import _as_list, organisation_request_id, to_soap_dict
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -68,7 +68,7 @@ class Document2Service:
                             coBraReg=line['coBraReg'],
                             coEtuReg=line['coEtuReg'],
                         )
-                        for line in ae.get('activiteEnseignementListe', {}).get('activiteEnseignement', [])
+                        for line in _as_list(ae.get('activiteEnseignementListe', {}).get('activiteEnseignement'))
                     ]
                 ),
                 nbTotPeriodePrevueAn1=ae['nbTotPeriodePrevueAn1'],
@@ -98,11 +98,11 @@ class Document2Service:
                                     nbPerAn1=p['nbPerAn1'],
                                     nbPerAn2=p['nbPerAn2'],
                                 )
-                                for p in ie.get('periodeListe', {}).get('periode', [])
+                                for p in _as_list(ie.get('periodeListe', {}).get('periode'))
                             ]
                         ) if ie.get('periodeListe') else None,
                     )
-                    for ie in ie_list.get('interventionExterieure', [])
+                    for ie in _as_list(ie_list.get('interventionExterieure'))
                 ]
             )
 

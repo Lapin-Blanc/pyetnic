@@ -1,5 +1,5 @@
 from typing import Optional
-from ._helpers import organisation_request_id, to_soap_dict
+from ._helpers import _as_list, organisation_request_id, to_soap_dict
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -69,7 +69,7 @@ class Document1Service:
                         tsMaj=p.get('tsMaj'),
                         teUserMaj=p.get('teUserMaj'),
                     )
-                    for p in doc_data['populationListe'].get('population', [])
+                    for p in _as_list(doc_data['populationListe'].get('population'))
                 ]
             )
 

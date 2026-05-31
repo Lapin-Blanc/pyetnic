@@ -206,11 +206,19 @@ Completed on: 2026-04-23
   - No Python source changes; 177 tests green
   - **Conversation A** (with phase 3.1)
 
-- [ ] **Phase 3.3** — _as_list() helper and parser migration (Q8)
-  - Add _as_list() to _helpers.py
-  - Migrate ~10 parser sites across document1/2/3, formations_liste, seps, inscriptions
-  - Replace inline isinstance guards
-  - Add ~5 unit tests + ~3 regression tests with single-element fixtures
+- [x] **Phase 3.3** — _as_list() helper and parser migration (Q8) _(completed 2026-05-31)_
+  - Added `_as_list()` to `_helpers.py` (None → [], dict → [dict], list → list)
+  - Migrated 11 collection-iteration sites: document1 (1), document2 (3), document3 (2),
+    formations_liste (3 — incl. `lister_formations_organisables`, same latent bug), seps (1),
+    inscriptions (1). Dropped the now-redundant `, []` getter defaults.
+  - Replaced the inline `isinstance(.., dict)` result guards in seps.py and inscriptions.py
+  - Added 5 unit tests (`TestAsList`) + 4 regression tests with single-element fixtures
+    (document1/2/3 + lister_formations); empirically confirmed they fail on the pre-migration code
+  - **Out of scope (deliberate):** the `isinstance(errors, list)` error-message guards in
+    seps.py/inscriptions.py (error path, not result parsing) and the two
+    `messages=...get('messages', [])` defaults in formations_liste.py (separate latent bug —
+    dict-where-`List[str]`-expected, tracked in the audit findings)
+  - 177 → 186 tests green
   - **Conversation B** (alone — touches many parser files)
 
 - [ ] **Phase 3.4** — soap_client.py cleanup (Q5 + Q6 + Q3)
@@ -271,3 +279,4 @@ Completed on: TBD
 - **[2026-05-31]** Saved Sprint 3 plan to disk; added "Findings from codebase + specs audit" and two new Open questions; recorded two out-of-sprint bugfixes merged to main. See `docs/SOURCES.md`.
 - **[Sprint 3, phase 3.1]** Created `docs/ARCHITECTURE.md`; migrated XSD procedure into `docs/SPEC.md`; deleted `.claude/CLAUDE.md` (413 lines, content preserved in docs/). Fixed two stale doc facts. H2 closed.
 - **[Sprint 3, phase 3.2]** Deleted `requirements.txt` and `Codes_Pays.xls`; moved `openpyxl` to `[excel]` extra; added `pyetnic/py.typed` (PEP 561) to package-data and MANIFEST.in. H5, H8, H11 closed.
+- **[Sprint 3, phase 3.3]** Added `_as_list()` to `_helpers.py`; migrated 11 zeep collection-iteration sites (document1/2/3, formations_liste, seps, inscriptions) and replaced the inline `isinstance(dict)` result guards. Added 5 unit + 4 single-element regression tests (177 → 186). Q8 closed.
