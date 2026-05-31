@@ -1,8 +1,8 @@
 # pyetnic — Refactoring Plan
 
-> **Current sprint**: Sprint 2 — Structural refactoring
+> **Current sprint**: Sprint 3 — Quality and hygiene
 > **Target version**: 0.1.0 beta (end of Sprint 4)
-> **Current branch**: `refactor/sprint-2`
+> **Current branch**: `refactor/sprint-3`
 
 This document is the single source of truth for refactoring progress. It is updated by Claude Code at the end of each phase. Read it first before starting any new phase.
 
@@ -12,25 +12,19 @@ This document is the single source of truth for refactoring progress. It is upda
 
 - [x] **Sprint 0** — Preparation (structure, regression tests, CI) _(completed 2026-04-13)_
 - [x] **Sprint 1** — Robustness (D1, D3, Q1, Q2, H3, H1) _(completed 2026-04-22)_
-- [ ] **Sprint 2** — Structural refactoring (D2, D5, Q4, H9)
-- [ ] **Sprint 3** — Quality and hygiene (H2, H5, H8, Q5, Q6, Q7, Q8, H11)
+- [x] **Sprint 2** — Structural refactoring (D2, D5, Q4, H9) _(completed 2026-04-23)_
+- [ ] **Sprint 3** — Quality and hygiene (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7)
 - [ ] **Sprint 4** — Publication (CHANGELOG, bump, PyPI)
 
 ---
 
 ## Sprint 0 — Preparation
 
-**Goal**: Put the scaffolding in place so that all subsequent sprints can proceed safely. No refactoring yet.
+**Branch**: `refactor/sprint-0` — [x] All 5 phases completed 2026-04-13.
 
-**Branch**: `refactor/sprint-0`
+## Sprint 1 — Robustness
 
-### Phases
-
-- [x] **Phase 0.1** — Structure setup _(completed 2026-04-13)_
-- [x] **Phase 0.2** — Backwards compatibility policy _(completed 2026-04-13)_
-- [x] **Phase 0.3** — Regression tests _(completed 2026-04-13)_
-- [x] **Phase 0.4** — CI setup _(completed 2026-04-13)_
-- [x] **Phase 0.5** — Branch setup and sprint 0 merge _(completed 2026-04-13)_
+**Branch**: `refactor/sprint-1` — [x] All 6 phases completed 2026-04-22.
 
 ---
 
@@ -46,14 +40,45 @@ This document is the single source of truth for refactoring progress. It is upda
 
 ### Decisions made in Sprint 1 → Sprint 2 transition
 
-- **D2 helper form**: free function `to_soap_dict()` in private module `pyetnic/services/_helpers.py` (not a method on dataclass, not Pydantic).
-- **D5 helper form**: free function `organisation_request_id()` in the same private module (not a public method `as_request_key()` on `OrganisationId`). Avoids adding to the public API surface a method that would become obsolete when D6 is implemented in 1.0.0.
-- **Single private module**: both helpers in `pyetnic/services/_helpers.py` (underscore prefix = internal, not exported).
-- **H9 Enums**: use `(str, Enum)` base so Enum members compare equal to raw strings. Dataclass field types remain `Optional[str]` — Enums are convenience, not enforcement. `TYPES_INTERVENTION_EXTERIEURE` legacy constant preserved.
+- **D2 helper form**: free function `to_soap_dict()` in private module `pyetnic/services/_helpers.py`.
+- **D5 helper form**: free function `organisation_request_id()` in same module (not public).
+- **H9 Enums**: `(str, Enum)` base for transparent string comparison. Dataclass fields unchanged.
+
+### Decisions made in Sprint 2 → Sprint 3 transition
+
+- **Q7 strategy**: mechanical `f"..." → "%s", args` substitution. `pformat()` calls guarded with `isEnabledFor(DEBUG)`. No `LazyPformat` wrapper (over-engineering for 20 sites).
+- **Q8 helper**: `_as_list()` goes in `_helpers.py` (not a new file).
+- **H5**: delete `requirements.txt` entirely. Move `openpyxl` from main deps to `[excel]` extra.
+- **H8**: delete `Codes_Pays.xls` directly (no DeprecationWarning — unused binary).
+- **Q5**: SSL flag → class attribute on `SoapClientManager` (not ContextVar — process-wide flag doesn't need per-thread isolation).
+- **Q3**: include as documentation-only fix in the soap_client cleanup phase.
+- **H7** (lazy PEP 562): deferred post-1.0 (low impact, non-trivial risk).
+- **H2**: create `docs/ARCHITECTURE.md` (60-80 lines, minimal, records existing decisions).
+
+### Findings from codebase + specs audit (2026-05-31)
+
+A full codebase state-audit (verifying the documented plan against the actual code) and a cross-reference of the new `specs/` business specifications (see `docs/SOURCES.md`, Piste B) surfaced items not in the original Sprint 3 brief.
+
+**Two out-of-sprint bugfixes — already merged to `main`** (commit `3f2a195`, before this branch):
+- `fix(readme)`: the SEPS Inscriptions example imported three non-existent Save symbols (`SepsDroitInscriptionSave`, `SepsAdmissionSave`, `SepsSanctionSave`) → `ImportError` on copy-paste.
+- `test(regression)`: `Config._reset()` re-read the developer's on-disk `.env`, so `test_etab_id_returns_none_when_unset` passed in CI but failed locally. An autouse `block_dotenv` fixture now isolates the regression suite.
+
+**Candidate Sprint 3 addition (high value) — error-code mapping enrichment:**
+- `map_etnic_error_code_to_class` (`exceptions.py:116`) maps only 2 codes (20102, 00009). The `specs/` files catalogue ~60 codes across 4 services with labels and operation scope, and `EtnicValidationError` already exists but is never routed. Proposed new phase: wire 30001/30002/30007/1113/1114/2106/4004-4012/20015-17 → `EtnicValidationError`; 1530/1545 → new `EtnicAlreadyApprovedError`; 00011 → new `EtnicConcurrencyError`; 30003/30006 → `EtnicDocumentNotAccessibleError`. Red→green, one commit per code group. **Not yet scheduled — see Open questions.**
+
+**Needs empirical resolution:**
+- `typeInterventionExterieure`: the code's `TypeInterventionExterieure` Enum (`nomenclatures.py`) uses long French labels (`"Convention"`); the Organisation v7 PDF manual lists single-letter codes (`"C"`). The XSD is a free `xs:string`, so neither is contract-validated. One real `lire_organisation` call on an org with this field populated decides which is correct. The H9 Enum may be wrong for this field.
+
+**Latent bugs (backlog / fold into the relevant phase):**
+- `lister_formations_organisables` passes a `dict` where `FormationsListeResult.messages` is typed `List[str]` (`formations_liste.py`).
+- `creer/modifier_organisation` still build dicts with `None` values (never migrated to `to_soap_dict` — out of the original D2 scope; latent partial-update risk).
+- `Doc2ActiviteEnseignementLine` read-field order diverges from the XSD and has misleading `=0` defaults on required fields (positional-construction hazard).
+- Common_v2 (Organisation v7) puts `requestId`/`transactionId` as XML attributes; `extract_error_info` reads `header['requestId']` only — `request_id` may always be `None` for that service. To test.
 
 ### Open questions
 
-- (none at this point)
+- **Error-mapping phase**: add a Sprint 3 phase 3.6 to wire the ~60 specs-catalogued error codes into `map_etnic_error_code_to_class`, or keep Sprint 3 scoped to the original 9 defects and defer error-mapping to its own mini-sprint? (High value, but widens Sprint 3.)
+- **`typeInterventionExterieure`**: resolve labels-vs-letters empirically before any further nomenclature work touches it.
 
 ---
 
@@ -63,45 +88,17 @@ Completed on: 2026-04-13
 
 **What went well**:
 - Phases 0.1 and 0.2 were quasi-mechanical thanks to the bundled documents and a clear scope.
-- Phase 0.3 regression suite came together cleanly: class-level patching of `SoapClientManager.call_service` lets every singleton be intercepted without per-service plumbing, and the `mock_soap_call` + `isolate_config` pair keeps tests fully hermetic.
+- Phase 0.3 regression suite came together cleanly: class-level patching of `SoapClientManager.call_service` lets every singleton be intercepted without per-service plumbing.
 - 4-version Python matrix on CI passed first try with no fixups.
-- Zero changes to `pyetnic/` code — Sprint 0 stayed pure scaffolding as intended.
+- Zero changes to `pyetnic/` code — Sprint 0 stayed pure scaffolding.
 
 **What took longer than expected**:
-- Phase 0.3 reconciliation between SOAP response shapes and parsers required reading every service module to build canonical fixtures rich enough to detect future regressions silently dropping fields.
-- Test-file migration (`git mv` + heavy edits) lost the default 50 % similarity threshold, so `git log --follow` now needs `-M30%` to trace the unit-side history. Documented as a footnote.
-
-**Surprises / discoveries**:
-- The metaclass-driven lazy `Config` is friendly to tests: `Config._reset()` + a few attribute writes give you a clean, dotenv-free environment.
-- `rechercher_etudiants` uses a regex to extract the new NISS from the error description (code 30401). The regression test pins this contract explicitly.
-- `_CT.serialize_object(result, dict)` shape sometimes returns a single dict where a list was expected (one match in `rechercherEtudiants`); a regression test guards against this corner case.
+- Phase 0.3 reconciliation between SOAP response shapes and parsers.
+- Test-file migration lost git similarity threshold (`git log --follow -M30%` needed).
 
 **Metrics**:
-- Lines added: 4812 (mostly tests + docs)
-- Lines removed: 1316
-- Tests added: 69 regression (50 EPROM + 19 SEPS read)
-- Tests migrated: 26 unit + 14 integration
-- Total local suite: 95 passed in 0.19s + 14 skipped
-- CI runtime: ~33-37 s per Python version
-
----
-
-## Sprint 1 — Robustness
-
-**Goal**: Make the EPROM error handling consistent and predictable. Fix the silent SOAP cache bug. Clean up the catch-all exception handlers and the hardcoded establishment IDs.
-
-**Branch**: `refactor/sprint-1`
-
-**Audit defects addressed**: D1, D3, Q1, Q2, H3, H1.
-
-### Phases
-
-- [x] **Phase 1.1** — Cache invalidation on Config change (D1) _(completed 2026-04-22)_
-- [x] **Phase 1.2** — Create EPROM exception hierarchy (D3a) _(completed 2026-04-22)_
-- [x] **Phase 1.3** — Migrate EPROM services to typed exceptions (D3b) _(completed 2026-04-22)_
-- [x] **Phase 1.4** — Remove AttributeError from call_service catch (Q1) _(completed 2026-04-22)_
-- [x] **Phase 1.5** — Remove except Exception from formations_liste (Q2) _(completed 2026-04-22)_
-- [x] **Phase 1.6** — De-hardcode CLI and update README (H3 + H1) _(completed 2026-04-22)_
+- Lines: +4812 / -1316. Tests: 69 regression + 26 unit + 14 integration = 95 total.
+- CI: ~33-37 s per Python version.
 
 ---
 
@@ -110,97 +107,135 @@ Completed on: 2026-04-13
 Completed on: 2026-04-22
 
 **What went well**:
-- The "one commit per phase" discipline held cleanly: each of 1.1→1.6 is a single, reviewable diff, and CI stayed green on every push across the 3.10-3.13 matrix.
-- Phase 1.1 → 1.3 sequencing paid off: cache invalidation first (D1), then the typed hierarchy as a pure-additive module (D3a), then the opt-in strict switch (D3b). Nothing had to be revisited.
-- `contextvars.ContextVar` for `RAISE_ON_ERROR` turned out to be the right choice for both thread and asyncio isolation, with no extra plumbing in the metaclass.
-- Centralizing the raise/return-None decision in `signal_business_error()` kept every `_parse_*_response` small and uniform.
-- The Sprint 0 regression harness did its job: the default-mode contract was never broken by accident.
+- One commit per phase discipline held. CI green on every push.
+- Phase 1.1 → 1.3 sequencing paid off. `ContextVar` for `RAISE_ON_ERROR` was the right choice.
+- `signal_business_error()` centralized the raise/return-None decision cleanly.
+- Sprint 0 regression harness did its job — default-mode contract never broken.
 
 **What took longer than expected**:
-- Phase 1.3 design iteration: the first sketch used a plain class attribute on `Config`; realizing it had to survive `_reset()`, not be stored in `_overrides`, and still be thread-safe forced the move to `ContextVar`.
-- Phase 1.5: removing `except Exception` in `formations_liste` required updating regression fixtures to assert the absence of the wrapping behavior for non-`SoapError` exceptions.
-- Documenting the 0.2.0 default-switch plan in README (phase 1.6) took more drafting than the code change itself.
-
-**Surprises / discoveries**:
-- `formations_liste` is structurally a special case and cannot be normalized without a breaking change.
-- `PASSWORD` intentionally excluded from the cache key (no secrets in loggable structures) — worth a docstring comment.
-- `AttributeError` removal (phase 1.4) changed two lines of production code and zero pre-existing test lines.
-- The typed-hierarchy module was used by tests before any production code raised from it — pure API surface first is a pattern worth reusing.
+- Phase 1.3 design iteration (plain class attr → ContextVar).
+- Phase 1.5 regression fixtures needed rework for the `except Exception` removal.
+- README documentation in phase 1.6.
 
 **Metrics**:
-- Commits on branch: 8 (2 chore + 6 phases), linear.
-- Diff vs main: 27 files, +2918 / -48 lines.
-- Tests: 95 → 138 passed (+43).
-- Local suite runtime: ~0.19 s, unchanged from Sprint 0.
-- CI: green on every push, 3.10-3.13 matrix.
-
-**Notes for Sprint 2**:
-- D5 has 5 call sites. Migration mechanical but keep separate commits from signal_business_error changes.
-- D2 touches 7 call sites: 3 EPROM (stable), 2+2 SEPS write (construction).
-- Strict-mode semantics are load-bearing: D2/D5 must preserve both default-mode None and strict-mode raise.
-- Default-mode switch to raise (0.2.0) is NOT scheduled in Sprints 1-4.
+- Commits: 8 (2 chore + 6 phases). Diff: 27 files, +2918 / -48.
+- Tests: 95 → 138 (+43). Local suite: ~0.19 s.
 
 ---
 
 ## Sprint 2 — Structural refactoring
 
-**Goal**: Eliminate code duplication and improve serialization safety. Deduplicate the `_organisation_id_dict` pattern, replace `asdict()` with None-stripping serialization, add proper typing to Config numeric attributes, and introduce nomenclature Enums.
-
-**Branch**: `refactor/sprint-2`
+**Branch**: `refactor/sprint-2` — [x] All 6 phases completed 2026-04-23.
 
 **Audit defects addressed**: D2, D5, Q4, H9.
 
-**Key design decisions** (made in Atelier Analyse before sprint start):
-- **D2**: `to_soap_dict()` free function in `pyetnic/services/_helpers.py`.
-- **D5**: `organisation_request_id()` free function in same module. Not a public method.
-- **H9**: `(str, Enum)` base. Dataclass fields unchanged. Legacy constant preserved.
-- **No Pydantic**: Sprint 0 decision holds.
-
 ### Phases
 
-- [x] **Phase 2.1** — Create private helpers module (D2 + D5 foundations) _(completed 2026-04-22)_
-  - `pyetnic/services/_helpers.py` with `to_soap_dict` and `organisation_request_id`
-  - ~14 unit tests
-  - No service code modified
-  - **Conversation A** (with phase 2.2)
-
-- [x] **Phase 2.2** — Migrate organisation_request_id across services (D5) _(completed 2026-04-22)_
-  - Replace 4 copy-pasted `_organisation_id_dict` with shared helper
-  - Zero regression test modifications
-  - **Conversation A** (with phase 2.1)
-
-- [x] **Phase 2.3** — Migrate to_soap_dict in EPROM document services (D2) _(completed 2026-04-22)_
-  - Replace `asdict()` in document1.py, document2.py, document3.py
-  - Add ~3 payload-shape regression tests
-  - Stable API — existing tests must pass unmodified
-  - **Conversation B** (with phase 2.4)
-
-- [x] **Phase 2.4** — Migrate to_soap_dict in SEPS write services (D2) _(completed 2026-04-22)_
-  - Replace `asdict()` in enregistrer_etudiant.py and inscriptions.py
-  - Construction API — free to refactor
-  - **Conversation B** (with phase 2.3)
-
-- [x] **Phase 2.5** — Config int casting for ETAB_ID / IMPL_ID (Q4) _(completed 2026-04-22)_
-  - Extend `_SIMPLE_ENV_MAP` with optional caster
-  - ~7 regression tests
-  - **Conversation C** (with phase 2.6)
-
-- [x] **Phase 2.6** — Nomenclature Enums (H9) _(completed 2026-04-22)_
-  - 6 `(str, Enum)` classes in `nomenclatures.py`
-  - Legacy constant preserved
-  - Update `PUBLIC_API_SURFACE.md`
-  - ~7 unit tests
-  - **Conversation C** (with phase 2.5)
-
-### Conversation segmentation
-
-- **Conversation A** — Phases 2.1 + 2.2 (create helpers, then wire in)
-- **Conversation B** — Phases 2.3 + 2.4 (to_soap_dict migration)
-- **Conversation C** — Phases 2.5 + 2.6 (Config casting + Enums)
+- [x] **Phase 2.1** — Create private helpers module (D2 + D5 foundations) _(completed)_
+- [x] **Phase 2.2** — Migrate organisation_request_id across services (D5) _(completed)_
+- [x] **Phase 2.3** — Migrate to_soap_dict in EPROM document services (D2) _(completed)_
+- [x] **Phase 2.4** — Migrate to_soap_dict in SEPS write services (D2) _(completed)_
+- [x] **Phase 2.5** — Config int casting for ETAB_ID / IMPL_ID (Q4) _(completed)_
+- [x] **Phase 2.6** — Nomenclature Enums (H9) _(completed)_
 
 ---
 
 ## Sprint 2 retrospective
+
+Completed on: 2026-04-23
+
+**What went well**:
+- `_helpers.py` (107 lines) cleanly centralizes `to_soap_dict()` and `organisation_request_id()`. Replaced 4 copies of `_organisation_id_dict` + 7 `asdict()` call sites.
+- H9: `nomenclatures.py` promoted to top-level with 6 `(str, Enum)` classes; legacy constant preserved. Clean addition to public surface.
+- Q4: `_SIMPLE_ENV_MAP` caster extension was minimal and clean — `int()` wrappers removed from callers.
+- No regression test from S0/S1 was modified (only Config type change was natural).
+- One commit per phase discipline maintained.
+
+**What took longer than expected**:
+- (to be filled by Fabien after Sprint 2 retrospective)
+
+**Surprises / discoveries**:
+- `nomenclatures.py` needed to be at top-level (`pyetnic/nomenclatures.py`) rather than under `services/` because both `eprom` and `seps` namespaces export from it.
+- `openpyxl` is in main deps but unused — flagged for cleanup in Sprint 3 (H5).
+- **(post-audit 2026-05-31)** D2 was applied to document1/2/3 + SEPS writes but **not** to `creer/modifier_organisation`, which still serialize `None` fields. See "Findings from codebase + specs audit".
+
+**Metrics**:
+- Diff: 34 files changed, +2518 / -252.
+- Tests added: ~45 (test_helpers, test_nomenclatures, test_seps_write_unit, test_config, test_soap_payload_shape).
+- CI: green on every push, 3.10-3.13 matrix.
+
+**Notes for Sprint 3**:
+- Strict-mode semantics are load-bearing across all EPROM services.
+- `PASSWORD` exclusion from cache key needs a docstring comment (noted in Sprint 1 retro, still pending — can do in Sprint 3 alongside Q5/Q6 soap_client work).
+- Default-mode switch to raise (0.2.0) NOT scheduled in Sprints 1-4.
+
+---
+
+## Sprint 3 — Quality and hygiene
+
+**Goal**: Clean up documentation, remove dead files, fix parser inconsistencies, and standardize logging across the codebase.
+
+**Branch**: `refactor/sprint-3`
+
+**Audit defects addressed**: H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7.
+
+**Key design decisions** (made in Atelier Analyse before sprint start):
+- **Q7**: mechanical f-string → `%s` substitution. `pformat()` guarded with `isEnabledFor(DEBUG)`. No LazyPformat wrapper.
+- **Q8**: `_as_list()` helper in `_helpers.py` (existing private module, no new file).
+- **H5**: delete `requirements.txt`. Move `openpyxl` to `[excel]` extra.
+- **H8**: delete `Codes_Pays.xls` directly (unused, no deprecation period).
+- **Q5**: SSL flag → class attribute on `SoapClientManager` (not ContextVar).
+- **Q3**: documentation-only fix (docstring on `verify()` no-op), bundled with Q5/Q6.
+- **H2**: create `docs/ARCHITECTURE.md` (60-80 lines). Delete `.claude/CLAUDE.md`.
+- **H7**: deferred post-1.0 (lazy PEP 562).
+
+### Phases
+
+- [ ] **Phase 3.1** — Split .claude/CLAUDE.md, create ARCHITECTURE.md (H2)
+  - Migrate remaining business rules to docs/SPEC.md
+  - Create docs/ARCHITECTURE.md
+  - Delete .claude/CLAUDE.md (413 lines)
+  - No code changes
+  - **Conversation A** (with phase 3.2)
+
+- [ ] **Phase 3.2** — File cleanup (H5 + H8 + H11)
+  - Delete requirements.txt
+  - Move openpyxl to [excel] extra in pyproject.toml
+  - Delete pyetnic/resources/Codes_Pays.xls
+  - Create pyetnic/py.typed marker (PEP 561)
+  - No Python source changes
+  - **Conversation A** (with phase 3.1)
+
+- [ ] **Phase 3.3** — _as_list() helper and parser migration (Q8)
+  - Add _as_list() to _helpers.py
+  - Migrate ~10 parser sites across document1/2/3, formations_liste, seps, inscriptions
+  - Replace inline isinstance guards
+  - Add ~5 unit tests + ~3 regression tests with single-element fixtures
+  - **Conversation B** (alone — touches many parser files)
+
+- [ ] **Phase 3.4** — soap_client.py cleanup (Q5 + Q6 + Q3)
+  - Q5: move _ssl_warnings_suppressed to SoapClientManager class attribute
+  - Q6: log request_id on success (DEBUG level)
+  - Q3: document _EtnicBinarySignature.verify() rationale
+  - Add ~3 unit tests
+  - **Conversation C** (with phase 3.5)
+
+- [ ] **Phase 3.5** — Logger formatting: f-strings → lazy %s (Q7)
+  - Mechanical substitution across ~20 call sites
+  - Add isEnabledFor(DEBUG) guards around pformat() calls
+  - Clean up unused pprint imports
+  - No new tests (cosmetic change)
+  - **Conversation C** (with phase 3.4)
+
+### Conversation segmentation
+
+- **Conversation A** — Phases 3.1 + 3.2 (docs and files, zero code logic)
+- **Conversation B** — Phase 3.3 alone (Q8 parser migration, many files)
+- **Conversation C** — Phases 3.4 + 3.5 (soap_client + loggers, related cleanup)
+
+---
+
+## Sprint 3 retrospective
 
 Completed on: TBD
 
@@ -219,8 +254,8 @@ Completed on: TBD
 - Total local suite: (X passed in Y seconds)
 - CI runtime: (from GitHub Actions)
 
-**Notes for Sprint 3**:
-- (anything that came up during Sprint 2 that changes the plan for Sprint 3)
+**Notes for Sprint 4**:
+- (anything that came up during Sprint 3 that changes the plan for Sprint 4)
 
 ---
 
@@ -228,12 +263,9 @@ Completed on: TBD
 
 - **[Sprint 0, phase 0.1]** Initial creation.
 - **[Sprint 0, phase 0.5]** Sprint 0 marked complete; retrospective added.
-- **[Sprint 1, pre-start]** Sprint 1 section and retrospective template added.
+- **[Sprint 1, pre-start]** Sprint 1 section added.
 - **[Sprint 1, post-merge]** Sprint 1 marked complete; retrospective added.
-- **[Sprint 2, pre-start]** Sprint 2 section added with design decisions and phase breakdown.
-- **[Sprint 2, phase 2.1]** `_helpers.py` module created (D2 + D5 foundations); 14 unit tests added.
-- **[Sprint 2, phase 2.2]** `_organisation_id_dict` deduplicated across 4 services (D5 closed); 4 stale unit tests removed.
-- **[Sprint 2, phase 2.3]** `asdict()` replaced by `to_soap_dict()` in 3 EPROM document services (D2 EPROM side); 4 payload-shape regression tests added.
-- **[Sprint 2, phase 2.4]** `asdict()` replaced by `to_soap_dict()` in 2 SEPS write services (D2 closed); 4 payload-shape unit tests added.
-- **[Sprint 2, phase 2.5]** `Config.ETAB_ID` / `Config.IMPL_ID` now return `int` from env (Q4 closed); 8 regression tests added; redundant `int()` wrappers removed across tests.
-- **[Sprint 2, phase 2.6]** `pyetnic/nomenclatures.py` promoted to top-level public module with 6 `(str, Enum)` classes (H9 closed); legacy list constant preserved; 13 unit tests added; `PUBLIC_API_SURFACE.md` updated.
+- **[Sprint 2, pre-start]** Sprint 2 section added.
+- **[Sprint 2, post-merge]** Sprint 2 marked complete; retrospective added.
+- **[Sprint 3, pre-start]** Sprint 3 section added with design decisions and phase breakdown.
+- **[2026-05-31]** Saved Sprint 3 plan to disk; added "Findings from codebase + specs audit" and two new Open questions; recorded two out-of-sprint bugfixes merged to main. See `docs/SOURCES.md`.
