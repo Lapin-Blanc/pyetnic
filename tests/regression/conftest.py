@@ -26,6 +26,23 @@ def mock_soap_call():
 
 
 @pytest.fixture(autouse=True)
+def block_dotenv():
+    """Keep the whole regression suite hermetic w.r.t. the developer's .env.
+
+    ``Config._reset()`` clears the "dotenv loaded" flag, so the next attribute
+    access re-runs ``load_dotenv()`` and re-populates ``os.environ`` from the
+    on-disk ``.env`` — silently undoing any ``monkeypatch.delenv(...)`` a test
+    performed. That makes tests like ``test_etab_id_returns_none_when_unset``
+    pass in CI (no .env) but fail on a developer machine that has one. Patch
+    the loader to a no-op so behavior is identical everywhere. Integration
+    tests live under tests/integration/ — out of this conftest's scope — so
+    they keep reading the real .env.
+    """
+    with patch("pyetnic.config._load_dotenv_compat", lambda: None):
+        yield
+
+
+@pytest.fixture(autouse=True)
 def isolate_config():
     """Each regression test starts with a clean Config state.
 
