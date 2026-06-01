@@ -221,11 +221,15 @@ Completed on: 2026-04-23
   - 177 → 186 tests green
   - **Conversation B** (alone — touches many parser files)
 
-- [ ] **Phase 3.4** — soap_client.py cleanup (Q5 + Q6 + Q3)
-  - Q5: move _ssl_warnings_suppressed to SoapClientManager class attribute
-  - Q6: log request_id on success (DEBUG level)
-  - Q3: document _EtnicBinarySignature.verify() rationale
-  - Add ~3 unit tests
+- [x] **Phase 3.4** — soap_client.py cleanup (Q5 + Q6 + Q3) _(completed 2026-06-01)_
+  - Q5: moved `_ssl_warnings_suppressed` from module global to a `SoapClientManager`
+    class attribute; `reset_cache()` now resets it too
+  - Q6: log `request_id` on success at DEBUG level; rewrote the error-path log to `%s`
+    formatting; hoisted `serialize_object` to a module-level import (needed to patch it)
+  - Q3: documented `_EtnicBinarySignature.verify()` rationale (TLS makes the WS-Security
+    response signature check redundant)
+  - Added `tests/unit/test_soap_client_unit.py` (4 unit tests)
+  - 186 → 190 tests green
   - **Conversation C** (with phase 3.5)
 
 - [ ] **Phase 3.5** — Logger formatting: f-strings → lazy %s (Q7)
@@ -280,3 +284,4 @@ Completed on: TBD
 - **[Sprint 3, phase 3.1]** Created `docs/ARCHITECTURE.md`; migrated XSD procedure into `docs/SPEC.md`; deleted `.claude/CLAUDE.md` (413 lines, content preserved in docs/). Fixed two stale doc facts. H2 closed.
 - **[Sprint 3, phase 3.2]** Deleted `requirements.txt` and `Codes_Pays.xls`; moved `openpyxl` to `[excel]` extra; added `pyetnic/py.typed` (PEP 561) to package-data and MANIFEST.in. H5, H8, H11 closed.
 - **[Sprint 3, phase 3.3]** Added `_as_list()` to `_helpers.py`; migrated 11 zeep collection-iteration sites (document1/2/3, formations_liste, seps, inscriptions) and replaced the inline `isinstance(dict)` result guards. Added 5 unit + 4 single-element regression tests (177 → 186). Q8 closed.
+- **[Sprint 3, phase 3.4]** Moved `_ssl_warnings_suppressed` to a `SoapClientManager` class attribute reset by `reset_cache()` (Q5); logged `request_id` on success + rewrote the error log to `%s` (Q6); documented `_EtnicBinarySignature.verify()` (Q3). Added `test_soap_client_unit.py` (190 tests). Q5, Q6, Q3 closed.
