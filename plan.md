@@ -356,13 +356,22 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
   - Integration-probe promotion (optional step 5) skipped — empirical basis already established
   - Empirical basis: live dev-server probe — `"Convention"` → `30004`, `"C"` accepted (Sprint 3 Findings)
 
-- [ ] **Phase 4.2** — Error-code mapping enrichment (correctness)
-  - Wire the ~60 specs-catalogued codes into `map_etnic_error_code_to_class`
-  - New exception classes: `EtnicValidationError` (30001/30002/30004/30005/30007 + 20xxx, 1113/1114,
-    2106, 4004-4012, 20015-17 …), `EtnicAlreadyApprovedError` (1530/1545),
-    `EtnicConcurrencyError` (00011), `EtnicDocumentNotAccessibleError` (30003/30006)
-  - Surface the real ETNIC message instead of the generic "response was empty or success=False"
-  - Red→green, one commit per code group
+- [x] **Phase 4.2** — Error-code mapping enrichment (correctness) _(completed 2026-06-01)_
+  - Added two exception classes (`EtnicAlreadyApprovedError` 1530/1545, `EtnicConcurrencyError` 00011),
+    exported from the top-level + `eprom` namespaces (4.2a)
+  - Replaced the 2-code if-chain with a table-driven `map_etnic_error_code_to_class` wiring the full
+    `specs/00_REGISTRE.md` §4 catalogue: discrete dict + inclusive numeric ranges (4004-4012,
+    1527-1528, 1598-1604, 20015-20036, 30016-30017). `EtnicValidationError` now routed (30001/30002/
+    30004/30005/30007/30008/30009 + 20xxx, 1113/1114, 2106/2118); `EtnicDocumentNotAccessibleError`
+    extended to 30003/30006; 00025 (security) and 00999 (SQL) deliberately left on the base class (4.2b)
+  - Unmasked the real ETNIC message: `signal_business_error` auto-builds `"ETNIC error {code}:
+    {description}"`; the four parse helpers + `supprimer_organisation` dropped their static `message=`.
+    `30004` now reads "ETNIC error 30004: Le type d'intervention extérieure est incorrect" (4.2c)
+  - 191 → 230 tests green; `docs/PUBLIC_API_SURFACE.md` updated with the two new classes
+  - Common_v2 `requestId` (step 4): investigated by reasoning (serialized v7 carries requestId as an
+    XML attribute on the body root, not a SOAP header, so `extract_error_info` likely returns `None`
+    there) but **not empirically confirmed** without a live v7 error response — kept as a 0.1.x backlog
+    item rather than shipping an unverified speculative fix, per the recipe's "log it as backlog" rule
 
 - [ ] **Phase 4.3** — CHANGELOG.md (publication)
   - Create `CHANGELOG.md` (Keep a Changelog format); document the `0.1.0b1` release covering
@@ -397,3 +406,4 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
 - **[Sprint 3, post-merge]** Sprint 3 marked complete (9/9 defects); retrospective filled in. Empirically resolved `typeInterventionExterieure` via a live dev-server write/echo probe — ETNIC wants single-letter codes (`"Convention"` → `30004`, `"C"` accepted); the H9 Enum is wrong. Both the Enum value fix and the error-code mapping enrichment scheduled into Sprint 4 (phases 4.1 / 4.2, before the version bump). 190 tests green. PR #5 merged to main (merge commit `79ddad5`).
 - **[Sprint 4, pre-start]** Sprint 4 section added with phase breakdown (4.1 Enum fix, 4.2 error-code mapping, 4.3 CHANGELOG, 4.4 bump to `0.1.0b1`, 4.5 PyPI). Decisions: `0.1.0b1` (PEP 440 beta), full ~60-code catalogue, TestPyPI dry-run before PyPI.
 - **[Sprint 4, phase 4.1]** Corrected `TypeInterventionExterieure` Enum values from long French labels to the single-letter codes ETNIC accepts (A,B,C,D,E,F,I,J,K,P,Q,U,V); member names unchanged, `TYPES_INTERVENTION_EXTERIEURE` auto-derives. Fixed the falsified docstrings, updated 3 unit assertions to `"C"` and added a drift-guard test (190 → 191 green). Optional integration-probe promotion skipped (empirical basis already established).
+- **[Sprint 4, phase 4.2]** Enriched the error-code mapping. Added `EtnicAlreadyApprovedError` (1530/1545) and `EtnicConcurrencyError` (00011); table-driven `map_etnic_error_code_to_class` wires the full `specs/00_REGISTRE.md` §4 catalogue (~60 codes: discrete dict + numeric ranges), routing `EtnicValidationError` (30xxx/20xxx, 1113/1114, 2106/2118, 4004-4012, …) and extending `EtnicDocumentNotAccessibleError` to 30003/30006; 00025/00999 stay on the base class. Unmasked the real ETNIC message (`signal_business_error` auto-builds `"ETNIC error {code}: {description}"`; static `message=` dropped from the 4 parse helpers + `supprimer_organisation`) — `30004` no longer reads "response was empty or success=False". 3 commits (4.2a/b/c), 191 → 230 green, `PUBLIC_API_SURFACE.md` updated. Common_v2 `requestId` attribute (step 4) reasoned-through but left as a 0.1.x backlog item (no live v7 error to confirm the serialized shape).
