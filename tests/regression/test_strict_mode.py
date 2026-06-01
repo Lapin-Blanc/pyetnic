@@ -18,9 +18,12 @@ import pytest
 
 from pyetnic import Config, strict_errors
 from pyetnic.eprom import (
+    EtnicAlreadyApprovedError,
     EtnicBusinessError,
+    EtnicConcurrencyError,
     EtnicDocumentNotAccessibleError,
     EtnicNotFoundError,
+    EtnicValidationError,
     OrganisationId,
     SoapError,
     lire_document_1,
@@ -30,6 +33,7 @@ from pyetnic.eprom import (
     lister_formations,
     supprimer_organisation,
 )
+from pyetnic.exceptions import map_etnic_error_code_to_class
 
 
 # ---------------------------------------------------------------------------
@@ -182,6 +186,85 @@ def test_strict_mode_raises_not_found_on_00009(mock_soap_call):
             lire_organisation(SAMPLE_ORG_ID)
 
     assert exc_info.value.code == "00009"
+
+
+# ---------------------------------------------------------------------------
+# Full catalogue routing (map_etnic_error_code_to_class)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "code,expected",
+    [
+        # Discrete codes
+        ("00009", EtnicNotFoundError),
+        ("20102", EtnicDocumentNotAccessibleError),
+        ("30003", EtnicDocumentNotAccessibleError),
+        ("30006", EtnicDocumentNotAccessibleError),
+        ("1530", EtnicAlreadyApprovedError),
+        ("1545", EtnicAlreadyApprovedError),
+        ("00011", EtnicConcurrencyError),
+        ("30001", EtnicValidationError),
+        ("30002", EtnicValidationError),
+        ("30004", EtnicValidationError),  # the 2026-06-01 masked-symptom code
+        ("30005", EtnicValidationError),
+        ("30007", EtnicValidationError),
+        ("30008", EtnicValidationError),
+        ("30009", EtnicValidationError),
+        ("20005", EtnicValidationError),
+        ("20016", EtnicValidationError),
+        ("20038", EtnicValidationError),
+        ("1113", EtnicValidationError),
+        ("1114", EtnicValidationError),
+        ("2106", EtnicValidationError),
+        ("2118", EtnicValidationError),
+        # Numeric ranges
+        ("4004", EtnicValidationError),
+        ("4012", EtnicValidationError),
+        ("1527", EtnicValidationError),
+        ("1600", EtnicValidationError),
+        ("20020", EtnicValidationError),
+        ("30016", EtnicValidationError),
+        ("30017", EtnicValidationError),
+        # Unmapped / not client-fixable → base class
+        ("00025", EtnicBusinessError),
+        ("00999", EtnicBusinessError),
+        ("99999", EtnicBusinessError),
+        (None, EtnicBusinessError),
+    ],
+)
+def test_map_etnic_error_code_to_class(code, expected):
+    assert map_etnic_error_code_to_class(code) is expected
+
+
+def test_map_handles_non_numeric_code():
+    """A non-numeric, unknown code must not raise — falls back to base."""
+    assert map_etnic_error_code_to_class("ABC") is EtnicBusinessError
+
+
+def test_strict_mode_raises_validation_on_30004(mock_soap_call):
+    """ETNIC code 30004 must raise EtnicValidationError, not a generic error."""
+    mock_soap_call.return_value = _error_response(
+        "30004", "Le type d'intervention extérieure est incorrect"
+    )
+    with strict_errors():
+        with pytest.raises(EtnicValidationError) as exc_info:
+            lire_organisation(SAMPLE_ORG_ID)
+    assert exc_info.value.code == "30004"
+
+
+def test_strict_mode_raises_already_approved_on_1530(mock_soap_call):
+    mock_soap_call.return_value = _error_response("1530", "Document déjà approuvé")
+    with strict_errors():
+        with pytest.raises(EtnicAlreadyApprovedError):
+            lire_document_1(SAMPLE_ORG_ID)
+
+
+def test_strict_mode_raises_concurrency_on_00011(mock_soap_call):
+    mock_soap_call.return_value = _error_response("00011", "Modifié par un autre utilisateur")
+    with strict_errors():
+        with pytest.raises(EtnicConcurrencyError):
+            lire_document_2(SAMPLE_ORG_ID)
 
 
 def test_strict_mode_unknown_code_raises_generic_business_error(mock_soap_call):
