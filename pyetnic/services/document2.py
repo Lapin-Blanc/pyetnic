@@ -38,10 +38,8 @@ class Document2Service:
             and result['body'].get('response')
             and 'document2' in result['body']['response']
         ):
-            return signal_business_error(
-                result,
-                message="Document2 response was empty or success=False",
-            )
+            # Let signal_business_error surface the real ETNIC code + description.
+            return signal_business_error(result)
 
         doc_data = result['body']['response']['document2']
         if logger.isEnabledFor(logging.DEBUG):

@@ -304,6 +304,11 @@ def signal_business_error(
 
     cls = error_class or map_etnic_error_code_to_class(code)
     if message is None:
-        message = f"ETNIC business error (code={code}, description={description})"
+        if code is not None:
+            # Surface the real ETNIC code + description instead of a generic
+            # placeholder, so str(exc) is actionable for callers.
+            message = f"ETNIC error {code}: {description}"
+        else:
+            message = "ETNIC business error (empty response or success=False)"
 
     raise cls(message, code=code, description=description, request_id=request_id)
