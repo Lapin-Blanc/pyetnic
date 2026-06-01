@@ -15,22 +15,47 @@ from pyetnic.nomenclatures import (
 
 class TestTypeInterventionExterieure:
 
-    def test_enum_value_is_verbatim_string(self):
-        assert TypeInterventionExterieure.CONVENTION.value == "Convention"
-        assert TypeInterventionExterieure.EHR.value == "EHR"
+    def test_enum_value_is_letter_code(self):
+        assert TypeInterventionExterieure.CONVENTION.value == "C"
+        assert TypeInterventionExterieure.EHR.value == "E"
 
     def test_enum_member_is_a_str_subclass(self):
         assert isinstance(TypeInterventionExterieure.CONVENTION, str)
 
     def test_bidirectional_string_comparison(self):
         """(str, Enum) members must compare equal to raw strings both ways."""
-        assert TypeInterventionExterieure.CONVENTION == "Convention"
-        assert "Convention" == TypeInterventionExterieure.CONVENTION
+        assert TypeInterventionExterieure.CONVENTION == "C"
+        assert "C" == TypeInterventionExterieure.CONVENTION
 
     def test_covers_all_legacy_values(self):
-        """Every label in the legacy constant must be representable as an Enum member."""
+        """Every value in the legacy constant must be representable as an Enum member."""
         enum_values = {m.value for m in TypeInterventionExterieure}
         assert set(TYPES_INTERVENTION_EXTERIEURE) == enum_values
+
+    def test_values_are_the_exact_letter_codes(self):
+        """Drift guard: pin the full name->letter mapping so a future edit cannot
+        silently reintroduce the long French labels (which ETNIC rejects, code 30004).
+
+        Authoritative source: specs/02_formation_organisation_v7.md
+        §"Valeurs de typeInterventionExterieure" (validated 2025-06-10).
+        Codes R and S were removed by ETNIC and have no member here.
+        """
+        expected = {
+            "PERSONNEL_NON_CHARGE_DE_COURS": "A",
+            "OCTROI_PERIODES_SUPPLEMENTAIRES_BONUS": "B",
+            "CONVENTION": "C",
+            "DISCRIMINATIONS_POSITIVES": "D",
+            "EHR": "E",
+            "FONDS_EUROPEENS": "F",
+            "FORMATION_PUBLICS_INFRA_SCOLARISES": "I",
+            "REORIENTATION_7TQ_7P": "J",
+            "OCTROI_PERIODES_CABINET_PROJETS_TRANSVER": "K",
+            "FORMATIONS_CONTINUEES": "P",
+            "AGENCE_QUALITE": "Q",
+            "UNION_EUROPEENNE": "U",
+            "VALIDATION_DES_COMPETENCES": "V",
+        }
+        assert {m.name: m.value for m in TypeInterventionExterieure} == expected
 
 
 class TestCodeAdmission:
