@@ -44,7 +44,8 @@ class Document2Service:
             )
 
         doc_data = result['body']['response']['document2']
-        logger.debug(f"document2 : {pformat(doc_data)}")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("document2 : %s", pformat(doc_data))
 
         activite_enseignement_detail = None
         if doc_data.get('activiteEnseignementDetail'):
@@ -121,7 +122,7 @@ class Document2Service:
 
     def lire_document_2(self, organisation_id: OrganisationId) -> Optional[FormationDocument2]:
         """Lit les informations d'un document 2."""
-        logger.info(f"Lecture du document 2 pour l'organisation : {organisation_id}")
+        logger.info("Lecture du document 2 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
             "LireDocument2",
             id=organisation_request_id(organisation_id),
@@ -139,7 +140,7 @@ class Document2Service:
         Seuls les champs fournis sont envoyés au serveur ; les champs absents ne
         sont pas modifiés.
         """
-        logger.info(f"Modification du document 2 pour l'organisation : {organisation_id}")
+        logger.info("Modification du document 2 pour l'organisation : %s", organisation_id)
         request_data: dict = {'id': organisation_request_id(organisation_id)}
         if activite_enseignement_liste is not None:
             request_data['activiteEnseignementListe'] = to_soap_dict(activite_enseignement_liste)

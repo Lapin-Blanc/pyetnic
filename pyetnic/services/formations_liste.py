@@ -14,7 +14,7 @@ from ..exceptions import extract_error_info, map_etnic_error_code_to_class
 from ._helpers import _as_list
 from .models import Formation, FormationsListeResult, OrganisationApercu, OrganisationId, StatutDocument
 import logging
-from pprint import pprint, pformat
+from pprint import pformat
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
@@ -91,13 +91,16 @@ class FormationsListeService:
             
             result = self.client_manager.call_service("ListerFormations", **request_data)
             if result['body']['success']:
-                logger.debug(f"Résultat : {pformat(result)}")
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug("Résultat : %s", pformat(result))
                 formations = []
                 for f in _as_list(result['body']['response'].get('formation')):
-                    logger.debug(f"Formation : {pformat(f)}")
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug("Formation : %s", pformat(f))
                     organisations = []
                     for org_data in _as_list(f.get('organisation')):
-                        logger.debug(f"Organisation : {pformat(org_data)}")
+                        if logger.isEnabledFor(logging.DEBUG):
+                            logger.debug("Organisation : %s", pformat(org_data))
                         org_id = OrganisationId(
                             anneeScolaire=annee_scolaire,
                             etabId=etab_id,

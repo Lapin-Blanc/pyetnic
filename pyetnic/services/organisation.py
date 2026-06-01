@@ -40,7 +40,8 @@ class OrganisationService:
             and 'organisation' in result['body']['response']
         ):
             org_data = result['body']['response']['organisation']
-            logger.debug(f"Organisation : {pformat(org_data)}")
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug("Organisation : %s", pformat(org_data))
 
             if organisation_id is None:
                 id_data = org_data.get('id', {})
@@ -83,7 +84,7 @@ class OrganisationService:
 
     def lire_organisation(self, organisation_id: OrganisationId) -> Optional[Organisation]:
         """Lit les informations d'une organisation de formation existante."""
-        logger.info(f"Lecture de l'organisation {organisation_id}")
+        logger.info("Lecture de l'organisation %s", organisation_id)
         result = self.client_manager.call_service(
             "LireOrganisation",
             id=organisation_request_id(organisation_id),
@@ -113,7 +114,7 @@ class OrganisationService:
 
         Le numOrganisation est attribué par le serveur et renvoyé dans la réponse.
         """
-        logger.info(f"Création d'une organisation pour la formation {num_adm_formation}")
+        logger.info("Création d'une organisation pour la formation %s", num_adm_formation)
         request_data = {
             'id': {
                 'anneeScolaire': annee_scolaire,
@@ -140,7 +141,7 @@ class OrganisationService:
 
     def modifier_organisation(self, organisation: Organisation) -> Optional[Organisation]:
         """Modifie une organisation de formation existante."""
-        logger.info(f"Modification de l'organisation {organisation.id}")
+        logger.info("Modification de l'organisation %s", organisation.id)
         request_data = {
             'id': organisation_request_id(organisation.id),
             'dateDebutOrganisation': organisation.dateDebutOrganisation,
@@ -165,7 +166,7 @@ class OrganisationService:
         Retourne True si la suppression a réussi, False sinon.
         En mode strict, lève une EtnicBusinessError sur échec.
         """
-        logger.info(f"Suppression de l'organisation {organisation_id}")
+        logger.info("Suppression de l'organisation %s", organisation_id)
         result = self.client_manager.call_service(
             "SupprimerOrganisation",
             id=organisation_request_id(organisation_id),
