@@ -253,6 +253,24 @@ def test_strict_mode_raises_validation_on_30004(mock_soap_call):
     assert exc_info.value.code == "30004"
 
 
+def test_strict_mode_surfaces_real_etnic_message(mock_soap_call):
+    """str(exc) must carry the real ETNIC code + description, not the generic
+    "response was empty or success=False" placeholder (the 2026-06-01 masking
+    bug)."""
+    mock_soap_call.return_value = _error_response(
+        "30004", "Le type d'intervention extérieure est incorrect"
+    )
+    with strict_errors():
+        with pytest.raises(EtnicValidationError) as exc_info:
+            lire_organisation(SAMPLE_ORG_ID)
+    message = str(exc_info.value)
+    assert "30004" in message
+    assert "Le type d'intervention extérieure est incorrect" in message
+    assert "empty or success=False" not in message
+    # The description attribute must always be populated when ETNIC provided one.
+    assert exc_info.value.description == "Le type d'intervention extérieure est incorrect"
+
+
 def test_strict_mode_raises_already_approved_on_1530(mock_soap_call):
     mock_soap_call.return_value = _error_response("1530", "Document déjà approuvé")
     with strict_errors():
