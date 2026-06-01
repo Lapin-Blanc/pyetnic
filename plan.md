@@ -316,11 +316,62 @@ Completed on: 2026-06-01
 **Notes for Sprint 4**:
 - Rationalize the `specs/` and `docs/phases/` reference material so it stops inflating the diff
   (decision deferred to post-publication, per the Sprint 3 retro discussion).
-- Two Open questions are unresolved (error-mapping phase scheduling; `typeInterventionExterieure`
-  empirical resolution) — settle their home before locking Sprint 4 scope. See Open questions above.
-- CI has not run on this branch — confirm the 3.10–3.13 matrix is green at push, before merge.
+- Both Open questions resolved in the transition: the `typeInterventionExterieure` Enum fix and the
+  error-code mapping land as Sprint 4 phases 4.1 / 4.2, before the version bump.
+- CI confirmed green on the 3.10–3.13 matrix at push; PR #5 merged to main (merge commit, no squash).
 - Latent-bug backlog (`formations_liste`, `creer/modifier_organisation` None-serialization, `Doc2`
   field order, Common_v2 `requestId`) to triage into Sprint 4 or a 0.1.x backlog.
+
+---
+
+## Sprint 4 — Publication
+
+**Goal**: Make the public contract correct, then ship `0.1.0b1` (beta) to PyPI.
+
+**Branch**: `refactor/sprint-4`
+
+**Scope**: the two correctness fixes surfaced by the 2026-05-31 audit + the 2026-06-01 empirical
+probe (`typeInterventionExterieure` Enum, error-code mapping), then the publication mechanics
+(CHANGELOG, version bump, packaging, PyPI).
+
+**Key design decisions** (Atelier Analyse, Sprint 3 → Sprint 4 transition, 2026-06-01):
+- **Version scheme**: `0.0.12` → `0.1.0b1` (PEP 440 beta), not `0.1.0` + Beta classifier only.
+- **4.2 scope**: wire the full ~60-code catalogue now (red→green), not a minimal subset — the first
+  public release is the right moment to stabilize the exception hierarchy (it is public contract).
+- **PyPI**: TestPyPI dry-run (verify a clean install) before the real PyPI upload — safety net.
+- **Correctness before publication**: 4.1 and 4.2 land before the version bump (4.4).
+
+### Phases
+
+- [ ] **Phase 4.1** — Fix `typeInterventionExterieure` Enum (correctness)
+  - Swap the 13 Enum values from long labels to single-letter codes
+    (A, B, C, D, E, F, I, J, K, P, Q, U, V) per `specs/02_formation_organisation_v7.md`
+    §"Valeurs de typeInterventionExterieure" (validated 2025-06-10)
+  - Fix the falsified `nomenclatures.py` docstring ("these labels are what ETNIC expects verbatim")
+  - Add a regression test pinning the letter values; consider promoting `/tmp/probe_tie.py` into a
+    guarded integration test
+  - Empirical basis: live dev-server probe — `"Convention"` → `30004`, `"C"` accepted (Sprint 3 Findings)
+
+- [ ] **Phase 4.2** — Error-code mapping enrichment (correctness)
+  - Wire the ~60 specs-catalogued codes into `map_etnic_error_code_to_class`
+  - New exception classes: `EtnicValidationError` (30001/30002/30004/30005/30007 + 20xxx, 1113/1114,
+    2106, 4004-4012, 20015-17 …), `EtnicAlreadyApprovedError` (1530/1545),
+    `EtnicConcurrencyError` (00011), `EtnicDocumentNotAccessibleError` (30003/30006)
+  - Surface the real ETNIC message instead of the generic "response was empty or success=False"
+  - Red→green, one commit per code group
+
+- [ ] **Phase 4.3** — CHANGELOG.md (publication)
+  - Create `CHANGELOG.md` (Keep a Changelog format); document the `0.1.0b1` release covering
+    Sprints 0→4, emphasizing public-surface changes (Enum values, exception hierarchy, extras)
+
+- [ ] **Phase 4.4** — Version bump + packaging metadata (publication)
+  - Bump `0.0.12` → `0.1.0b1`; set `Development Status :: 4 - Beta` classifier
+  - Verify `py.typed`, extras `[seps]` / `[excel]`, long_description from README
+  - `python -m build` + `twine check dist/*`
+
+- [ ] **Phase 4.5** — PyPI publication (publication)
+  - Upload to TestPyPI; verify a clean install in a fresh venv (incl. extras)
+  - Upload to PyPI; tag `v0.1.0b1` and push the tag
 
 ---
 
@@ -339,4 +390,5 @@ Completed on: 2026-06-01
 - **[Sprint 3, phase 3.3]** Added `_as_list()` to `_helpers.py`; migrated 11 zeep collection-iteration sites (document1/2/3, formations_liste, seps, inscriptions) and replaced the inline `isinstance(dict)` result guards. Added 5 unit + 4 single-element regression tests (177 → 186). Q8 closed.
 - **[Sprint 3, phase 3.4]** Moved `_ssl_warnings_suppressed` to a `SoapClientManager` class attribute reset by `reset_cache()` (Q5); logged `request_id` on success + rewrote the error log to `%s` (Q6); documented `_EtnicBinarySignature.verify()` (Q3). Added `test_soap_client_unit.py` (190 tests). Q5, Q6, Q3 closed.
 - **[Sprint 3, phase 3.5]** Converted all 20 f-string logger calls to lazy `%s`; guarded the 7 `pformat()` debug calls with `isEnabledFor(DEBUG)`; dropped the unused `pprint` import. Q7 closed — **all 9 Sprint 3 defects addressed** (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7). Retrospective + PR/merge pending in the transition conversation.
-- **[Sprint 3, post-merge]** Sprint 3 marked complete (9/9 defects); retrospective filled in. Empirically resolved `typeInterventionExterieure` via a live dev-server write/echo probe — ETNIC wants single-letter codes (`"Convention"` → `30004`, `"C"` accepted); the H9 Enum is wrong. Both the Enum value fix and the error-code mapping enrichment scheduled into Sprint 4 (phases 4.1 / 4.2, before the version bump). 190 tests green.
+- **[Sprint 3, post-merge]** Sprint 3 marked complete (9/9 defects); retrospective filled in. Empirically resolved `typeInterventionExterieure` via a live dev-server write/echo probe — ETNIC wants single-letter codes (`"Convention"` → `30004`, `"C"` accepted); the H9 Enum is wrong. Both the Enum value fix and the error-code mapping enrichment scheduled into Sprint 4 (phases 4.1 / 4.2, before the version bump). 190 tests green. PR #5 merged to main (merge commit `79ddad5`).
+- **[Sprint 4, pre-start]** Sprint 4 section added with phase breakdown (4.1 Enum fix, 4.2 error-code mapping, 4.3 CHANGELOG, 4.4 bump to `0.1.0b1`, 4.5 PyPI). Decisions: `0.1.0b1` (PEP 440 beta), full ~60-code catalogue, TestPyPI dry-run before PyPI.
