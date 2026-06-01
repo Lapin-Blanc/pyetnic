@@ -105,6 +105,23 @@ class EtnicValidationError(EtnicBusinessError):
 
     Raised when ETNIC refuses the request for input-validation reasons:
     missing required fields, invalid format, value out of range, etc.
+    Covers the bulk of the ETNIC catalogue (most ``20xxx``/``30xxx`` codes,
+    the population-consistency ``4004``-``4012`` range, etc.).
+    """
+
+
+class EtnicAlreadyApprovedError(EtnicBusinessError):
+    """The document is already approved by the administration.
+
+    Raised when an edit/approve operation targets a document ETNIC has
+    already locked as approved (codes 1530, 1545).
+    """
+
+
+class EtnicConcurrencyError(EtnicBusinessError):
+    """The record was modified by another user since it was read.
+
+    Optimistic-concurrency violation (code 00011) — re-read and retry.
     """
 
 

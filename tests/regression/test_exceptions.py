@@ -7,7 +7,9 @@ They do NOT test that any service actually raises these — that's phase 1.3.
 import pytest
 
 from pyetnic import (
+    EtnicAlreadyApprovedError,
     EtnicBusinessError,
+    EtnicConcurrencyError,
     EtnicDocumentNotAccessibleError,
     EtnicError,
     EtnicNotFoundError,
@@ -44,6 +46,14 @@ def test_not_found_inherits_from_business_error():
 
 def test_validation_inherits_from_business_error():
     assert issubclass(EtnicValidationError, EtnicBusinessError)
+
+
+def test_already_approved_inherits_from_business_error():
+    assert issubclass(EtnicAlreadyApprovedError, EtnicBusinessError)
+
+
+def test_concurrency_inherits_from_business_error():
+    assert issubclass(EtnicConcurrencyError, EtnicBusinessError)
 
 
 # ---------------------------------------------------------------------------
