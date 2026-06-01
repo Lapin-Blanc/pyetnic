@@ -130,17 +130,87 @@ class EtnicConcurrencyError(EtnicBusinessError):
 # ---------------------------------------------------------------------------
 
 
+# Discrete ETNIC error codes → exception class. String keys preserve the
+# leading zeros ETNIC uses (e.g. "00009", "00011"). Source: specs/00_REGISTRE.md
+# §4 "Codes d'erreur communs". Codes 00025 (security) and 00999 (internal SQL)
+# are intentionally left on the base class: they are not client-fixable.
+_CODE_TO_CLASS: dict[str, Type[EtnicBusinessError]] = {
+    "00009": EtnicNotFoundError,
+    # Workflow / document not accessible
+    "20102": EtnicDocumentNotAccessibleError,
+    "30003": EtnicDocumentNotAccessibleError,
+    "30006": EtnicDocumentNotAccessibleError,
+    # Already approved by the administration
+    "1530": EtnicAlreadyApprovedError,
+    "1545": EtnicAlreadyApprovedError,
+    # Optimistic-concurrency violation
+    "00011": EtnicConcurrencyError,
+    # Input validation — Organisation (30xxx)
+    "30001": EtnicValidationError,
+    "30002": EtnicValidationError,
+    "30004": EtnicValidationError,
+    "30005": EtnicValidationError,
+    "30007": EtnicValidationError,
+    "30008": EtnicValidationError,
+    "30009": EtnicValidationError,
+    # Input validation — Organisation (20xxx)
+    "20005": EtnicValidationError,
+    "20006": EtnicValidationError,
+    "20007": EtnicValidationError,
+    "20010": EtnicValidationError,
+    "20011": EtnicValidationError,
+    "20012": EtnicValidationError,
+    "20013": EtnicValidationError,
+    "20016": EtnicValidationError,
+    "20019": EtnicValidationError,
+    "20023": EtnicValidationError,
+    "20024": EtnicValidationError,
+    "20025": EtnicValidationError,
+    "20026": EtnicValidationError,
+    "20027": EtnicValidationError,
+    "20028": EtnicValidationError,
+    "20029": EtnicValidationError,
+    "20030": EtnicValidationError,
+    "20031": EtnicValidationError,
+    "20034": EtnicValidationError,
+    "20037": EtnicValidationError,
+    "20038": EtnicValidationError,
+    # Input validation — Documents 1 & 2
+    "1113": EtnicValidationError,
+    "1114": EtnicValidationError,
+    "2106": EtnicValidationError,
+    "2118": EtnicValidationError,
+}
+
+# (low, high, class) — inclusive ranges, matched on int(code) when the code is
+# not in _CODE_TO_CLASS. The same code number can mean different things per
+# service, but every code in these ranges maps to the same class, so no service
+# disambiguation is needed. Source: specs/00_REGISTRE.md §4.
+_CODE_RANGES: list[Tuple[int, int, Type[EtnicBusinessError]]] = [
+    (4004, 4012, EtnicValidationError),   # population consistency (Doc 1)
+    (1527, 1528, EtnicValidationError),   # invalid grouping (Doc 2)
+    (1598, 1604, EtnicValidationError),   # external-intervention type/subtype (Doc 2)
+    (20015, 20036, EtnicValidationError),  # external-intervention errors (Doc 2)
+    (30016, 30017, EtnicValidationError),  # business constraints (Doc 2)
+]
+
+
 def map_etnic_error_code_to_class(code: Optional[str]) -> Type[EtnicBusinessError]:
     """Map a known ETNIC error code to its specialized exception class.
 
-    Returns :class:`EtnicBusinessError` for unknown codes.
+    Returns :class:`EtnicBusinessError` for unknown or not-client-fixable codes.
     """
     if code is None:
         return EtnicBusinessError
-    if code == "20102":
-        return EtnicDocumentNotAccessibleError
-    if code == "00009":
-        return EtnicNotFoundError
+    if code in _CODE_TO_CLASS:
+        return _CODE_TO_CLASS[code]
+    try:
+        n = int(code)
+    except (TypeError, ValueError):
+        return EtnicBusinessError
+    for low, high, cls in _CODE_RANGES:
+        if low <= n <= high:
+            return cls
     return EtnicBusinessError
 
 
