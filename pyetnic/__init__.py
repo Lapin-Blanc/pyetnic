@@ -21,6 +21,8 @@ from .exceptions import (
     EtnicDocumentNotAccessibleError,
     EtnicNotFoundError,
     EtnicValidationError,
+    EtnicAlreadyApprovedError,
+    EtnicConcurrencyError,
 )
 from .soap_client import SoapError  # legacy alias for EtnicTransportError
 
@@ -37,6 +39,8 @@ __all__ = [
     "EtnicDocumentNotAccessibleError",
     "EtnicNotFoundError",
     "EtnicValidationError",
+    "EtnicAlreadyApprovedError",
+    "EtnicConcurrencyError",
     "SoapError",
 ]
 
