@@ -13,8 +13,8 @@ This document is the single source of truth for refactoring progress. It is upda
 - [x] **Sprint 0** — Preparation (structure, regression tests, CI) _(completed 2026-04-13)_
 - [x] **Sprint 1** — Robustness (D1, D3, Q1, Q2, H3, H1) _(completed 2026-04-22)_
 - [x] **Sprint 2** — Structural refactoring (D2, D5, Q4, H9) _(completed 2026-04-23)_
-- [ ] **Sprint 3** — Quality and hygiene (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7)
-- [ ] **Sprint 4** — Publication (CHANGELOG, bump, PyPI)
+- [x] **Sprint 3** — Quality and hygiene (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7) _(completed 2026-06-01)_
+- [ ] **Sprint 4** — Publication (correctness fixes, CHANGELOG, bump, PyPI)
 
 ---
 
@@ -66,8 +66,21 @@ A full codebase state-audit (verifying the documented plan against the actual co
 **Candidate Sprint 3 addition (high value) — error-code mapping enrichment:**
 - `map_etnic_error_code_to_class` (`exceptions.py:116`) maps only 2 codes (20102, 00009). The `specs/` files catalogue ~60 codes across 4 services with labels and operation scope, and `EtnicValidationError` already exists but is never routed. Proposed new phase: wire 30001/30002/30007/1113/1114/2106/4004-4012/20015-17 → `EtnicValidationError`; 1530/1545 → new `EtnicAlreadyApprovedError`; 00011 → new `EtnicConcurrencyError`; 30003/30006 → `EtnicDocumentNotAccessibleError`. Red→green, one commit per code group. **Not yet scheduled — see Open questions.**
 
-**Needs empirical resolution:**
-- `typeInterventionExterieure`: the code's `TypeInterventionExterieure` Enum (`nomenclatures.py`) uses long French labels (`"Convention"`); the Organisation v7 PDF manual lists single-letter codes (`"C"`). The XSD is a free `xs:string`, so neither is contract-validated. One real `lire_organisation` call on an org with this field populated decides which is correct. The H9 Enum may be wrong for this field.
+**Empirically resolved (2026-06-01) — `typeInterventionExterieure` Enum is wrong:**
+- A live write/echo probe against `ws-tq.etnic.be` (create→read→delete, `/tmp/probe_tie.py`) is
+  decisive: `typeInterventionExterieure="Convention"` (current Enum value) is **rejected with code
+  `30004`** ("Le type d'intervention extérieure est incorrect"); `"C"` is **accepted and echoed back**.
+  ETNIC wants the single-letter code, not the long label. The v7 manual was right; the H9 Enum is wrong.
+- Authoritative full nomenclature: `specs/02_formation_organisation_v7.md` §"Valeurs de
+  typeInterventionExterieure" (validated 2025-06-10): 13 active single-letter codes
+  (A,B,C,D,E,F,I,J,K,P,Q,U,V) + 2 removed (R,S). All 13 current Enum members keep their *names*
+  but need their *values* swapped from labels to letters (e.g. `CONVENTION = "C"`, `AGENCE_QUALITE = "Q"`).
+- **Not a real breaking change**: the old label values never worked against ETNIC, and we are pre-release
+  (0.0.12). Fixing before 0.1.0 avoids shipping a broken Enum in the first public release.
+- Also fix the now-falsified `nomenclatures.py` docstring ("these labels are what ETNIC expects verbatim").
+- **Bonus discovery**: code `30004` was masked by the generic "response was empty or success=False"
+  message — concrete evidence for the error-mapping phase (Q-A). The v7 spec also catalogues the full
+  Organisation error set (20005-20038, 30001-30009, 00009/00025/00999) incl. `20025`/`20016`/`20034`.
 
 **Latent bugs (backlog / fold into the relevant phase):**
 - `lister_formations_organisables` passes a `dict` where `FormationsListeResult.messages` is typed `List[str]` (`formations_liste.py`).
@@ -77,8 +90,13 @@ A full codebase state-audit (verifying the documented plan against the actual co
 
 ### Open questions
 
-- **Error-mapping phase**: add a Sprint 3 phase 3.6 to wire the ~60 specs-catalogued error codes into `map_etnic_error_code_to_class`, or keep Sprint 3 scoped to the original 9 defects and defer error-mapping to its own mini-sprint? (High value, but widens Sprint 3.)
-- **`typeInterventionExterieure`**: resolve labels-vs-letters empirically before any further nomenclature work touches it.
+- **Error-mapping phase**: where to wire the ~60 specs-catalogued error codes into
+  `map_etnic_error_code_to_class` — a Sprint 3 phase 3.6 (reopens a closed, hygiene-themed sprint),
+  a dedicated pre-0.1.0 mini-sprint, or deferred post-0.1.0 (the enrichment is non-breaking)?
+  Reinforced by the probe: code `30004` is currently masked behind a generic message.
+- **`typeInterventionExterieure`**: ~~resolve labels-vs-letters empirically~~ **RESOLVED 2026-06-01**
+  (single-letter codes; see Findings above). Remaining decision: schedule the Enum value fix —
+  bundle it with the error-mapping work in a pre-0.1.0 correctness phase, or its own small fix.
 
 ---
 
@@ -250,25 +268,59 @@ Completed on: 2026-04-23
 
 ## Sprint 3 retrospective
 
-Completed on: TBD
+Completed on: 2026-06-01
 
 **What went well**:
-- (fill in)
+- All 9 targeted defects closed across 5 phases (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7).
+  One-commit-per-phase discipline held for the 4th sprint running; CI green history intact.
+- Phase 3.3 (Q8): the empirical-TDD loop paid off — single-element fixtures written first,
+  confirmed failing on pre-migration code, then migrated. `_as_list()` unified 11 scattered
+  zeep list|dict sites behind one helper and incidentally covered the latent
+  `lister_formations_organisables` bug.
+- Phase 3.1 was net-negative (+120/-431): the 413-line `.claude/CLAUDE.md` was deleted only
+  after an adversarial completeness check confirmed its content survived in `docs/`.
+- The 2026-05-31 codebase+specs audit (unplanned) caught real issues — the 2-of-~60 error-code
+  mapping gap, `typeInterventionExterieure` labels-vs-letters, and four latent bugs — and fed
+  the Open questions cleanly instead of letting them rot.
+- Conversation segmentation (A: 3.1+3.2 docs/files, B: 3.3 alone, C: 3.4+3.5 soap_client/loggers)
+  kept context clean; `/clear` between segments worked as intended.
 
 **What took longer than expected**:
-- (fill in)
+- The 2026-05-31 audit was out-of-plan scope: verifying the documented plan against the actual
+  code and cross-referencing `specs/` took real time, but surfaced the Open questions now driving
+  the Sprint 3→4 transition.
+- Phase 3.4 (Q6): `serialize_object` had to be hoisted from a local to a module-level import
+  purely to make it patchable — a test-seam constraint discovered mid-phase, not anticipated.
 
 **Surprises / discoveries**:
-- (fill in)
+- D2 was never applied to `creer/modifier_organisation` — they still serialize `None` fields
+  (out of the original D2 scope; now a tracked latent partial-update risk).
+- `map_etnic_error_code_to_class` maps only 2 codes (20102, 00009) while `specs/` catalogues ~60
+  across 4 services, and `EtnicValidationError` exists but is never routed — high-value phase candidate.
+- `typeInterventionExterieure`: the code Enum uses long labels (`"Convention"`), the v7 PDF manual
+  single letters (`"C"`); the XSD is a free `xs:string`, so neither is contract-validated.
+- Further latent bugs logged: `formations_liste` dict-where-`List[str]`, `Doc2` read-field order vs
+  XSD, Common_v2 `requestId` as an XML attribute (`extract_error_info` may always return `None`).
+- `specs/` (+2574) and `docs/phases/` (+1414) reference material lives on the branch and inflates
+  the raw diff ~6×; the real sprint footprint is much smaller.
 
 **Metrics**:
-- Lines added: (git diff stat)
-- Tests added: (count)
-- Total local suite: (X passed in Y seconds)
-- CI runtime: (from GitHub Actions)
+- Commits: 8 (5 phases 3.1–3.5 + 3 prep: phase-prompts, SOURCES.md, specs/ reference).
+- Diff (excluding `specs/`): 29 files, +2182 / -616 — of which ~+1414 is phase-prompt scaffolding
+  under `docs/phases/`; the core sprint work is ≈ +768 / -616 (net-negative, as befits a hygiene
+  sprint). Full tree including the `specs/` v2 reference is +4756 / -616 — to be rationalized post-merge.
+- Tests: 177 → 190 (+13: phase 3.3 +9 via `_as_list` fixtures, phase 3.4 +4 soap_client unit).
+- Total local suite: 190 passed in ~0.26 s.
+- CI runtime: pending first push (not yet run on this branch).
 
 **Notes for Sprint 4**:
-- (anything that came up during Sprint 3 that changes the plan for Sprint 4)
+- Rationalize the `specs/` and `docs/phases/` reference material so it stops inflating the diff
+  (decision deferred to post-publication, per the Sprint 3 retro discussion).
+- Two Open questions are unresolved (error-mapping phase scheduling; `typeInterventionExterieure`
+  empirical resolution) — settle their home before locking Sprint 4 scope. See Open questions above.
+- CI has not run on this branch — confirm the 3.10–3.13 matrix is green at push, before merge.
+- Latent-bug backlog (`formations_liste`, `creer/modifier_organisation` None-serialization, `Doc2`
+  field order, Common_v2 `requestId`) to triage into Sprint 4 or a 0.1.x backlog.
 
 ---
 
@@ -287,3 +339,4 @@ Completed on: TBD
 - **[Sprint 3, phase 3.3]** Added `_as_list()` to `_helpers.py`; migrated 11 zeep collection-iteration sites (document1/2/3, formations_liste, seps, inscriptions) and replaced the inline `isinstance(dict)` result guards. Added 5 unit + 4 single-element regression tests (177 → 186). Q8 closed.
 - **[Sprint 3, phase 3.4]** Moved `_ssl_warnings_suppressed` to a `SoapClientManager` class attribute reset by `reset_cache()` (Q5); logged `request_id` on success + rewrote the error log to `%s` (Q6); documented `_EtnicBinarySignature.verify()` (Q3). Added `test_soap_client_unit.py` (190 tests). Q5, Q6, Q3 closed.
 - **[Sprint 3, phase 3.5]** Converted all 20 f-string logger calls to lazy `%s`; guarded the 7 `pformat()` debug calls with `isEnabledFor(DEBUG)`; dropped the unused `pprint` import. Q7 closed — **all 9 Sprint 3 defects addressed** (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7). Retrospective + PR/merge pending in the transition conversation.
+- **[Sprint 3, post-merge]** Sprint 3 marked complete (9/9 defects); retrospective filled in. Empirically resolved `typeInterventionExterieure` via a live dev-server write/echo probe — ETNIC wants single-letter codes (`"Convention"` → `30004`, `"C"` accepted); the H9 Enum is wrong. Both the Enum value fix and the error-code mapping enrichment scheduled into Sprint 4 (phases 4.1 / 4.2, before the version bump). 190 tests green.
