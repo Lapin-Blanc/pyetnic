@@ -186,7 +186,7 @@ class SoapClientManager:
             logger.warning("Vérification SSL désactivée (mode développement). Ne pas utiliser en production.")
             SoapClientManager._ssl_warnings_suppressed = True
 
-        logger.debug(f"Création d'un nouveau client SOAP pour {self.service_name}")
+        logger.debug("Création d'un nouveau client SOAP pour %s", self.service_name)
         session = Session()
         auth_type = self.service_config.auth_type
 

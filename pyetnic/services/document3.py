@@ -41,7 +41,8 @@ class Document3Service:
             )
 
         doc_data = result['body']['response']['document3']
-        logger.debug(f"document3 : {pformat(doc_data)}")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("document3 : %s", pformat(doc_data))
 
         activite_liste = None
         if doc_data.get('activiteListe'):
@@ -89,7 +90,7 @@ class Document3Service:
 
     def lire_document_3(self, organisation_id: OrganisationId) -> Optional[FormationDocument3]:
         """Lit les informations d'un document 3."""
-        logger.info(f"Lecture du document 3 pour l'organisation : {organisation_id}")
+        logger.info("Lecture du document 3 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
             "LireDocument3",
             id=organisation_request_id(organisation_id),
@@ -105,7 +106,7 @@ class Document3Service:
 
         activite_liste est obligatoire (contrat XSD : activiteListe requis).
         """
-        logger.info(f"Modification du document 3 pour l'organisation : {organisation_id}")
+        logger.info("Modification du document 3 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
             "ModifierDocument3",
             id=organisation_request_id(organisation_id),

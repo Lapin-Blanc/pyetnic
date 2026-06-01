@@ -232,11 +232,12 @@ Completed on: 2026-04-23
   - 186 → 190 tests green
   - **Conversation C** (with phase 3.5)
 
-- [ ] **Phase 3.5** — Logger formatting: f-strings → lazy %s (Q7)
-  - Mechanical substitution across ~20 call sites
-  - Add isEnabledFor(DEBUG) guards around pformat() calls
-  - Clean up unused pprint imports
-  - No new tests (cosmetic change)
+- [x] **Phase 3.5** — Logger formatting: f-strings → lazy %s (Q7) _(completed 2026-06-01)_
+  - Converted all 20 f-string logger calls to `%s` lazy formatting across soap_client,
+    organisation, document1/2/3 and formations_liste
+  - Wrapped the 7 `pformat()` debug calls in `if logger.isEnabledFor(logging.DEBUG)` guards
+  - Removed the unused `pprint` import in formations_liste.py (kept `pformat`)
+  - No new tests (cosmetic); 190 tests still green; smoke-tested log interpolation
   - **Conversation C** (with phase 3.4)
 
 ### Conversation segmentation
@@ -285,3 +286,4 @@ Completed on: TBD
 - **[Sprint 3, phase 3.2]** Deleted `requirements.txt` and `Codes_Pays.xls`; moved `openpyxl` to `[excel]` extra; added `pyetnic/py.typed` (PEP 561) to package-data and MANIFEST.in. H5, H8, H11 closed.
 - **[Sprint 3, phase 3.3]** Added `_as_list()` to `_helpers.py`; migrated 11 zeep collection-iteration sites (document1/2/3, formations_liste, seps, inscriptions) and replaced the inline `isinstance(dict)` result guards. Added 5 unit + 4 single-element regression tests (177 → 186). Q8 closed.
 - **[Sprint 3, phase 3.4]** Moved `_ssl_warnings_suppressed` to a `SoapClientManager` class attribute reset by `reset_cache()` (Q5); logged `request_id` on success + rewrote the error log to `%s` (Q6); documented `_EtnicBinarySignature.verify()` (Q3). Added `test_soap_client_unit.py` (190 tests). Q5, Q6, Q3 closed.
+- **[Sprint 3, phase 3.5]** Converted all 20 f-string logger calls to lazy `%s`; guarded the 7 `pformat()` debug calls with `isEnabledFor(DEBUG)`; dropped the unused `pprint` import. Q7 closed — **all 9 Sprint 3 defects addressed** (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7). Retrospective + PR/merge pending in the transition conversation.
