@@ -343,13 +343,17 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
 
 ### Phases
 
-- [ ] **Phase 4.1** — Fix `typeInterventionExterieure` Enum (correctness)
-  - Swap the 13 Enum values from long labels to single-letter codes
+- [x] **Phase 4.1** — Fix `typeInterventionExterieure` Enum (correctness) _(completed 2026-06-01)_
+  - Swapped the 13 Enum values from long labels to single-letter codes
     (A, B, C, D, E, F, I, J, K, P, Q, U, V) per `specs/02_formation_organisation_v7.md`
-    §"Valeurs de typeInterventionExterieure" (validated 2025-06-10)
-  - Fix the falsified `nomenclatures.py` docstring ("these labels are what ETNIC expects verbatim")
-  - Add a regression test pinning the letter values; consider promoting `/tmp/probe_tie.py` into a
-    guarded integration test
+    §"Valeurs de typeInterventionExterieure" (validated 2025-06-10); member names unchanged
+  - Fixed the falsified module + class docstrings (dropped "labels are what ETNIC expects verbatim";
+    documented the removed R/S codes and the legacy-read behaviour)
+  - `TYPES_INTERVENTION_EXTERIEURE` auto-derives the letters (verified, not hand-edited)
+  - Updated 3 `test_nomenclatures.py` assertions to `"C"` (red→green); renamed the now-misleading
+    `test_enum_value_is_verbatim_string`; added a `test_values_are_the_exact_letter_codes` drift guard
+    pinning the full name→letter mapping. 190 → 191 tests green
+  - Integration-probe promotion (optional step 5) skipped — empirical basis already established
   - Empirical basis: live dev-server probe — `"Convention"` → `30004`, `"C"` accepted (Sprint 3 Findings)
 
 - [ ] **Phase 4.2** — Error-code mapping enrichment (correctness)
@@ -392,3 +396,4 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
 - **[Sprint 3, phase 3.5]** Converted all 20 f-string logger calls to lazy `%s`; guarded the 7 `pformat()` debug calls with `isEnabledFor(DEBUG)`; dropped the unused `pprint` import. Q7 closed — **all 9 Sprint 3 defects addressed** (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7). Retrospective + PR/merge pending in the transition conversation.
 - **[Sprint 3, post-merge]** Sprint 3 marked complete (9/9 defects); retrospective filled in. Empirically resolved `typeInterventionExterieure` via a live dev-server write/echo probe — ETNIC wants single-letter codes (`"Convention"` → `30004`, `"C"` accepted); the H9 Enum is wrong. Both the Enum value fix and the error-code mapping enrichment scheduled into Sprint 4 (phases 4.1 / 4.2, before the version bump). 190 tests green. PR #5 merged to main (merge commit `79ddad5`).
 - **[Sprint 4, pre-start]** Sprint 4 section added with phase breakdown (4.1 Enum fix, 4.2 error-code mapping, 4.3 CHANGELOG, 4.4 bump to `0.1.0b1`, 4.5 PyPI). Decisions: `0.1.0b1` (PEP 440 beta), full ~60-code catalogue, TestPyPI dry-run before PyPI.
+- **[Sprint 4, phase 4.1]** Corrected `TypeInterventionExterieure` Enum values from long French labels to the single-letter codes ETNIC accepts (A,B,C,D,E,F,I,J,K,P,Q,U,V); member names unchanged, `TYPES_INTERVENTION_EXTERIEURE` auto-derives. Fixed the falsified docstrings, updated 3 unit assertions to `"C"` and added a drift-guard test (190 → 191 green). Optional integration-probe promotion skipped (empirical basis already established).
