@@ -5,6 +5,7 @@ import logging
 from typing import List, Optional
 
 from ..soap_client import SoapClientManager, SoapError
+from ._helpers import _as_list
 from .models import Etudiant, EtudiantDetails, SepsAdresse, SepsLocalite, SepsNaissance, SepsDeces
 
 logger = logging.getLogger(__name__)
@@ -185,10 +186,8 @@ class RechercheEtudiantsService:
             and result["body"].get("response")
         ):
             return []
-        etudiants_raw = result["body"]["response"].get("etudiant") or []
         # zeep peut retourner un seul dict ou une liste selon le nombre de résultats
-        if isinstance(etudiants_raw, dict):
-            etudiants_raw = [etudiants_raw]
+        etudiants_raw = _as_list(result["body"]["response"].get("etudiant"))
         return [self._parse_etudiant(e) for e in etudiants_raw if e]
 
     # ------------------------------------------------------------------

@@ -12,6 +12,7 @@ import urllib3
 from importlib.resources import files, as_file
 
 from zeep import Client
+from zeep.helpers import serialize_object
 from zeep.wsse.username import UsernameToken
 from zeep.transports import Transport
 from zeep.exceptions import Fault, TransportError
@@ -26,9 +27,26 @@ try:
     from zeep.wsse.signature import MemorySignature as _MemorySignature
 
     class _EtnicBinarySignature(_MemorySignature):
-        """Signature X509 ETNIC : signe les requêtes, ignore la vérification des réponses."""
+        """X509 signature for ETNIC SEPS services.
+
+        Signs outgoing requests with the PFX certificate. Deliberately
+        skips verification of incoming response signatures.
+        """
 
         def verify(self, envelope):
+            """Skip response signature verification.
+
+            ETNIC's SEPS servers sign their responses with a certificate
+            that is not in the standard CA chain and whose verification
+            fails with zeep's default xmlsec-based verifier. Since we
+            communicate over TLS (server identity already verified at the
+            transport layer), skipping the WS-Security signature check on
+            responses is an acceptable trade-off.
+
+            If ETNIC changes their response signing in the future, this
+            method should be revisited. For now it returns the envelope
+            unmodified, which tells zeep to accept the response as-is.
+            """
             return envelope
 
     _x509_available = True
@@ -39,7 +57,6 @@ except ImportError:
 # Configuration du logging
 logger = logging.getLogger(__name__)
 
-_ssl_warnings_suppressed = False
 
 def get_wsdl_path(package, resource):
     """Obtient le chemin absolu d'un fichier WSDL depuis les ressources du package.
@@ -117,6 +134,10 @@ class SoapClientManager:
     # a problem, consider LRU eviction or explicit reset_cache() calls.
     _client_cache: dict = {}
 
+    # Process-wide flag: urllib3 warning filters are global, so per-thread
+    # isolation (ContextVar) would be wrong here. Reset via reset_cache().
+    _ssl_warnings_suppressed: bool = False
+
     def __init__(self, service_name):
         """
         Initialise un gestionnaire de client SOAP pour un service spécifique.
@@ -147,25 +168,25 @@ class SoapClientManager:
 
     @classmethod
     def reset_cache(cls) -> None:
-        """Clear the entire SOAP client cache.
+        """Clear the SOAP client cache and reset the SSL-warning state.
 
         Useful for tests, credential rotations, or when integration code needs
         to force re-initialization of all clients.
         """
         cls._client_cache.clear()
+        cls._ssl_warnings_suppressed = False
 
     def _initialize_client(self):
         key = self._cache_key()
         if key in self._client_cache:
             return self._client_cache[key]
 
-        global _ssl_warnings_suppressed
-        if not _ssl_warnings_suppressed and not Config.get_verify_ssl():
+        if not SoapClientManager._ssl_warnings_suppressed and not Config.get_verify_ssl():
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             logger.warning("Vérification SSL désactivée (mode développement). Ne pas utiliser en production.")
-            _ssl_warnings_suppressed = True
+            SoapClientManager._ssl_warnings_suppressed = True
 
-        logger.debug(f"Création d'un nouveau client SOAP pour {self.service_name}")
+        logger.debug("Création d'un nouveau client SOAP pour %s", self.service_name)
         session = Session()
         auth_type = self.service_config.auth_type
 
@@ -204,13 +225,19 @@ class SoapClientManager:
             request_id = generate_request_id()
             method = getattr(service, method_name)
             result = method(_soapheaders={"requestId": request_id}, **kwargs)
-            
-            from zeep.helpers import serialize_object
+
+            logger.debug(
+                "SOAP call succeeded: service=%s method=%s request_id=%s",
+                self.service_name, method_name, request_id,
+            )
             return serialize_object(result, dict)
-            
+
         except (Fault, TransportError, RequestException) as e:
             error_msg = f"Erreur lors de l'appel à {method_name} sur {self.service_name}: {str(e)}"
-            logger.error(f"{error_msg} (request_id: {request_id})")
+            logger.error(
+                "SOAP call failed: service=%s method=%s request_id=%s error=%s",
+                self.service_name, method_name, request_id, str(e),
+            )
             raise SoapError(error_msg, soap_fault=e, request_id=request_id)
 
     def get_service(self):

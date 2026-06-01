@@ -1,5 +1,5 @@
 from typing import Optional
-from ._helpers import organisation_request_id, to_soap_dict
+from ._helpers import _as_list, organisation_request_id, to_soap_dict
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -41,7 +41,8 @@ class Document1Service:
             )
 
         doc_data = result['body']['response']['document1']
-        logger.debug(f"document1 : {pformat(doc_data)}")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("document1 : %s", pformat(doc_data))
 
         population_liste = None
         if doc_data.get('populationListe'):
@@ -69,7 +70,7 @@ class Document1Service:
                         tsMaj=p.get('tsMaj'),
                         teUserMaj=p.get('teUserMaj'),
                     )
-                    for p in doc_data['populationListe'].get('population', [])
+                    for p in _as_list(doc_data['populationListe'].get('population'))
                 ]
             )
 
@@ -84,7 +85,7 @@ class Document1Service:
 
     def lire_document_1(self, organisation_id: OrganisationId) -> Optional[FormationDocument1]:
         """Lit les informations d'un document 1."""
-        logger.info(f"Lecture du document 1 pour l'organisation : {organisation_id}")
+        logger.info("Lecture du document 1 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
             "LireDocument1",
             id=organisation_request_id(organisation_id),
@@ -100,7 +101,7 @@ class Document1Service:
 
         Seules les lignes de population fournies sont envoyées au serveur.
         """
-        logger.info(f"Modification du document 1 pour l'organisation : {organisation_id}")
+        logger.info("Modification du document 1 pour l'organisation : %s", organisation_id)
         request_data: dict = {'id': organisation_request_id(organisation_id)}
         if population_liste is not None:
             request_data['populationListe'] = to_soap_dict(population_liste)
@@ -117,7 +118,7 @@ class Document1Service:
         Une liste de populations peut optionnellement être fournie pour
         mettre à jour les données au moment de l'approbation.
         """
-        logger.info(f"Approbation du document 1 pour l'organisation : {organisation_id}")
+        logger.info("Approbation du document 1 pour l'organisation : %s", organisation_id)
         request_data: dict = {'id': organisation_request_id(organisation_id)}
         if population_liste is not None:
             request_data['populationListe'] = to_soap_dict(population_liste)
