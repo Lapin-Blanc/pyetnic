@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import pytest
 
-from pyetnic.services._helpers import organisation_request_id, to_soap_dict
+from pyetnic.services._helpers import _as_list, organisation_request_id, to_soap_dict
 from pyetnic.services.models import OrganisationId
 
 
@@ -167,3 +167,31 @@ class TestOrganisationRequestId:
         )
         result = organisation_request_id(org_id)
         assert len(result) == 4
+
+
+# ---------------------------------------------------------------------------
+# _as_list
+# ---------------------------------------------------------------------------
+
+class TestAsList:
+
+    def test_none_returns_empty_list(self):
+        assert _as_list(None) == []
+
+    def test_dict_returns_single_element_list(self):
+        d = {'name': 'A', 'value': 1}
+        result = _as_list(d)
+        assert result == [d]
+        assert isinstance(result, list)
+
+    def test_list_returned_as_is(self):
+        items = [{'name': 'A'}, {'name': 'B'}]
+        assert _as_list(items) == items
+
+    def test_empty_list_returned_as_is(self):
+        assert _as_list([]) == []
+
+    def test_single_element_list_stays_list(self):
+        """A list with one element must NOT be unwrapped."""
+        items = [{'name': 'A'}]
+        assert _as_list(items) == [{'name': 'A'}]

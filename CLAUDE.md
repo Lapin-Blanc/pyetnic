@@ -6,7 +6,7 @@ Python client for ETNIC SOAP web services (Belgian promotion sociale education).
 
 ## Tech Stack
 
-- Python 3.12+ (minimum 3.8 for packaging)
+- Python 3.10+ (CI matrix 3.10–3.13)
 - `zeep` — SOAP client
 - `requests` — HTTP transport
 - `python-dotenv` — config loading
@@ -38,7 +38,7 @@ All specification and architecture details live in `docs/`:
 
 - **`docs/SPEC.md`** — full functional and technical specification (ETNIC workflow rules, implId gotchas, error codes)
 - **`docs/AUDIT.md`** — reference audit (defect IDs D1-D6, Q1-Q10, H1-H11)
-- **`docs/ARCHITECTURE.md`** — target architecture post-refactoring
+- **`docs/ARCHITECTURE.md`** — architecture decisions (layering, lazy config, strict mode, helpers)
 - **`docs/BACKWARDS_COMPAT.md`** — backwards compatibility policy
 - **`docs/PUBLIC_API_SURFACE.md`** — authoritative list of stable vs construction symbols
 - **`docs/phases/`** — phased implementation prompts per sprint
@@ -53,7 +53,7 @@ All specification and architecture details live in `docs/`:
 
 ## Current Status
 
-See `plan.md` for refactoring progress. Currently in: **Sprint 0 — Preparation**.
+See `plan.md` for the current sprint and refactoring progress.
 
 ## Coding Conventions
 
