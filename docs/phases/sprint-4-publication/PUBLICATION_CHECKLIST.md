@@ -12,13 +12,20 @@ exploratory).
 
 ## Prerequisites (gather before 4.5)
 
+> **Publishing model (piste A)**: prod **PyPI upload is automated** by
+> `.github/workflows/publish-pypi.yml` — it fires on a `v*` tag and authenticates with
+> **OIDC Trusted Publishing** (no API token). We keep that for prod; the **TestPyPI dry-run is
+> manual** (local `twine`). See the OIDC check in Phase 4.5 before tagging.
+
 - [x] `pyetnic` on PyPI is **ours** (already published at `0.0.12`) — so 4.5 is an *update*.
 - [x] `pyetnic` is **free on TestPyPI** (claim it for the dry-run).
-- [ ] **Regenerate a PyPI API token** scoped to the `pyetnic` project (the 0.0.12-era token may be stale).
-- [ ] **Create a TestPyPI account + token** (separate credentials from PyPI).
-- [ ] Choose token storage: `~/.pypirc` (`[pypi]` / `[testpypi]` sections) **or** env
+- [x] Build tooling installed in the venv (`build` 1.5.0 + `twine` 6.2.0 — done in phase 4.4).
+- [ ] **Verify the PyPI Trusted Publisher** is registered for this repo (see "OIDC check" in
+      Phase 4.5). With OIDC in place a prod **PyPI API token is NOT needed** — the 0.0.12-era
+      token can be retired rather than regenerated.
+- [ ] **Create a TestPyPI account + token** (still required: the TestPyPI dry-run uses manual twine).
+- [ ] Store the TestPyPI token: `~/.pypirc` (`[testpypi]` section) **or** env
       (`TWINE_USERNAME=__token__`, `TWINE_PASSWORD=pypi-…`). **Never commit tokens.**
-- [ ] Install build tooling in the venv: `.venv/bin/pip install build twine` (neither is present).
 
 ---
 
@@ -45,15 +52,40 @@ exploratory).
 - [ ] Verify `README.md` (484 lines) renders as the PyPI long description; check no broken local links.
 - [ ] Build + check: `.venv/bin/python -m build` then `.venv/bin/twine check dist/*`.
 
-## Phase 4.5 — Publish (from `main`, post-merge)
+## Phase 4.5 — Publish (piste A: manual TestPyPI dry-run → tag → CI publishes to PyPI)
 
-- [ ] TestPyPI dry-run: `twine upload --repository testpypi dist/*`.
-- [ ] Verify a **clean install in a fresh venv**:
+> **Split of responsibility (piste A)**: the **TestPyPI** upload is **manual** (local twine);
+> the **prod PyPI** upload is performed **by the workflow** when the `v0.1.0b1` tag is pushed.
+> Do **not** `twine upload` to prod yourself — that would collide with the tag-triggered run
+> (PyPI rejects the duplicate, whichever lands second).
+
+### OIDC Trusted Publishing — verify once before tagging
+
+- [ ] **PyPI side** — open `https://pypi.org/manage/project/pyetnic/settings/publishing/`. Under
+      "Trusted Publishers", confirm a **GitHub** publisher with **exactly**: owner `Lapin-Blanc`,
+      repository `pyetnic`, workflow **filename** `publish-pypi.yml` (not the workflow's `name:`),
+      environment `pypi`. If absent → "Add a new publisher" with those four fields.
+- [ ] **GitHub side** — repo **Settings → Environments**: an environment named **`pypi`** exists
+      (case-sensitive; must match `environment: name: pypi` in the workflow). Optional hardening:
+      required reviewer and/or restrict deployments to the `v*` tag pattern.
+- [ ] Confirm **no stale `PYPI_API_TOKEN` secret** is wired into the publish step — OIDC needs none.
+- [ ] Safe failure mode: if OIDC is misconfigured the publish step fails at the auth handshake and
+      **nothing is uploaded** — fix the publisher registration, then re-run the job / re-push the tag.
+
+### Release steps
+
+- [ ] Merge `refactor/sprint-4` → `main` (PR), so the tag lands on the merge commit.
+- [ ] From `main`: clean build — `rm -rf dist/ && .venv/bin/python -m build`, then
+      `.venv/bin/twine check dist/*`.
+- [ ] **TestPyPI dry-run (manual)**: `.venv/bin/twine upload --repository testpypi dist/*`.
+- [ ] Verify a **clean install in a fresh venv** from TestPyPI:
       `pip install --pre --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pyetnic[seps]`
       then smoke-import and a no-network sanity call.
-- [ ] Real upload: `twine upload dist/*`.
-- [ ] Tag and push: `git tag v0.1.0b1 && git push origin v0.1.0b1` (tag on the `main` merge commit).
-- [ ] Post-check: `pip install --pre pyetnic` from PyPI in a fresh venv.
+- [ ] **Tag → triggers the prod publish**: `git tag v0.1.0b1 && git push origin v0.1.0b1`
+      (on the `main` merge commit). The workflow rebuilds in a clean room, re-runs `twine check`,
+      and publishes to **prod PyPI** via OIDC. **No manual prod `twine upload`.**
+- [ ] Watch the Actions run go green, then post-check: `pip install --pre pyetnic` from PyPI in a
+      fresh venv.
 
 ---
 
