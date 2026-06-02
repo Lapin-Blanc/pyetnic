@@ -447,7 +447,9 @@ Completed on: 2026-06-02 — **`0.1.0b1` published to PyPI.**
   the base `pip install --pre pyetnic` pulls neither `xmlsec` nor `cryptography`.
 
 **What took longer than expected**:
-- (to be filled by Fabien after the Sprint 4 retrospective)
+- Nothing of note — the sprint ran to plan. The two correctness fixes (4.1/4.2) and the whole
+  publication chain (merge → clean build → local install rehearsal → OIDC tag publish → post-check)
+  each landed without friction, and the OIDC Trusted-Publishing handshake worked first try.
 
 **Surprises / discoveries**:
 - `xmlsec` now ships a prebuilt cp313 manylinux wheel, so the `[seps]` install needed no
