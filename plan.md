@@ -14,7 +14,7 @@ This document is the single source of truth for refactoring progress. It is upda
 - [x] **Sprint 1** — Robustness (D1, D3, Q1, Q2, H3, H1) _(completed 2026-04-22)_
 - [x] **Sprint 2** — Structural refactoring (D2, D5, Q4, H9) _(completed 2026-04-23)_
 - [x] **Sprint 3** — Quality and hygiene (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7) _(completed 2026-06-01)_
-- [ ] **Sprint 4** — Publication (correctness fixes, CHANGELOG, bump, PyPI)
+- [x] **Sprint 4** — Publication (correctness fixes, CHANGELOG, bump, PyPI) _(completed 2026-06-02 — `0.1.0b1` live on PyPI)_
 
 ---
 
@@ -406,9 +406,70 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
   - Backlog note: `CHANGELOG.md` is not in the sdist (MANIFEST.in omits it); the Changelog
     Project-URL covers PyPI discoverability — consider `include CHANGELOG.md` in 4.5
 
-- [ ] **Phase 4.5** — PyPI publication (publication)
-  - Upload to TestPyPI; verify a clean install in a fresh venv (incl. extras)
-  - Upload to PyPI; tag `v0.1.0b1` and push the tag
+- [x] **Phase 4.5** — PyPI publication (publication) _(completed 2026-06-02)_
+  - Decision (asked Fabien): **did not** add `include CHANGELOG.md` to `MANIFEST.in` — the
+    `Changelog` Project-URL covers PyPI discoverability; kept as a 0.1.x backlog item
+  - Merged `refactor/sprint-4` → `main` via **PR #6** (merge commit `ccdb8a9`, parents `79ddad5` +
+    `b0b8247`, **no squash** — consistent with PR #5); `tests.yml` green on the 3.10–3.13 matrix
+    for the `pull_request` event before merging
+  - Date reconciliation unneeded: published on 2026-06-02, matching the `CHANGELOG.md` header
+  - Clean build from up-to-date `main`: `twine check` → both sdist + wheel **PASSED**; wheel carries
+    `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`
+  - **Local install rehearsal (piste A, no upload)**: installed both the wheel and the sdist with
+    `[seps]` in throwaway venvs — `xmlsec` resolved as a prebuilt cp313 wheel (no compile),
+    `import pyetnic` → `0.1.0b1`, `TypeInterventionExterieure.CONVENTION == "C"`, `pyetnic --help` OK
+  - **Published via OIDC**: pushed annotated tag `v0.1.0b1` on `ccdb8a9` → `publish-pypi.yml`
+    rebuilt in a clean room, re-ran `twine check`, and published to **prod PyPI** through Trusted
+    Publishing (run `26810820326`, 37 s, green; no API token). No manual `twine upload`.
+  - **Post-check**: `pip install --pre pyetnic` from PyPI in a fresh venv → `0.1.0b1`; the base
+    install pulls **neither** `xmlsec` **nor** `cryptography` (confirming the 4.4 move of
+    `cryptography` into `[seps]` lightened the base); smoke import + new exceptions + CLI all OK;
+    `https://pypi.org/project/pyetnic/0.1.0b1/` returns HTTP 200
+
+---
+
+## Sprint 4 retrospective
+
+Completed on: 2026-06-02 — **`0.1.0b1` published to PyPI.**
+
+**What went well**:
+- The sprint did what it set out to: land the two audit-surfaced correctness fixes _before_ the
+  bump (4.1 Enum letter-codes, 4.2 ~60-code error routing), then ship. One-commit-per-phase and
+  green-CI discipline held for the 5th sprint running.
+- **Piste A paid off**: the OIDC Trusted Publishing handshake worked first try (run 37 s, no token,
+  no manual `twine upload`) — the tag push was the only release action. Dropping TestPyPI in favour
+  of a local fresh-venv install rehearsal (wheel _and_ sdist, with `[seps]`) caught nothing broken
+  and removed a whole token/account surface.
+- The pre-publish safety net stacked cleanly — `twine check` (metadata/README) + local install
+  (deps/extras/import/CLI) + the post-publish `--pre` install from PyPI — so the irreversible step
+  was reached with high confidence.
+- The 4.4 decision to move `cryptography` into `[seps]` was empirically vindicated at post-check:
+  the base `pip install --pre pyetnic` pulls neither `xmlsec` nor `cryptography`.
+
+**What took longer than expected**:
+- (to be filled by Fabien after the Sprint 4 retrospective)
+
+**Surprises / discoveries**:
+- `xmlsec` now ships a prebuilt cp313 manylinux wheel, so the `[seps]` install needed no
+  `libxml2-dev`/`libxmlsec1-dev` compile locally — the documented compile fallback was a no-op here.
+- CI annotation: `actions/checkout@v4` + `actions/setup-python@v5` run on Node.js 20, deprecated
+  from 2026-06-16. Non-blocking now; bump the action versions in a 0.1.x chore.
+- `CHANGELOG.md` is still absent from the sdist (MANIFEST.in omits it) — decided _not_ to add it in
+  4.5; the `Changelog` Project-URL covers discoverability. 0.1.x backlog.
+
+**Metrics**:
+- Phases: 5 (4.1–4.5). Commits to `main`: 11 via PR #6 (merge commit `ccdb8a9`, no squash).
+- Tests: 190 → 230 (+40, all from 4.1 Enum drift-guard + 4.2 error-mapping suite). No new tests
+  in the publication phases (4.3–4.5).
+- Release: `0.0.12` → `0.1.0b1` (PEP 440 beta), tag `v0.1.0b1`, published via OIDC.
+
+**Notes / backlog after publication** (not done in Sprint 4):
+- Rationalize `specs/` and `docs/phases/` so they stop inflating the diff ~6×.
+- Four latent bugs: `formations_liste` dict-where-`List[str]`; `creer/modifier_organisation`
+  `None`-serialization; `Doc2` read-field order vs XSD; Common_v2 `requestId` as an XML attribute.
+- Dedup the version to a single source (`dynamic = ["version"]`).
+- Bump the deprecated Node 20 GitHub Actions; consider `include CHANGELOG.md` in MANIFEST.in.
+- Default-mode flip to "raise" + `0.1.0` final / `0.2.0` planning.
 
 ---
 
@@ -433,3 +494,5 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
 - **[Sprint 4, phase 4.2]** Enriched the error-code mapping. Added `EtnicAlreadyApprovedError` (1530/1545) and `EtnicConcurrencyError` (00011); table-driven `map_etnic_error_code_to_class` wires the full `specs/00_REGISTRE.md` §4 catalogue (~60 codes: discrete dict + numeric ranges), routing `EtnicValidationError` (30xxx/20xxx, 1113/1114, 2106/2118, 4004-4012, …) and extending `EtnicDocumentNotAccessibleError` to 30003/30006; 00025/00999 stay on the base class. Unmasked the real ETNIC message (`signal_business_error` auto-builds `"ETNIC error {code}: {description}"`; static `message=` dropped from the 4 parse helpers + `supprimer_organisation`) — `30004` no longer reads "response was empty or success=False". 3 commits (4.2a/b/c), 191 → 230 green, `PUBLIC_API_SURFACE.md` updated. Common_v2 `requestId` attribute (step 4) reasoned-through but left as a 0.1.x backlog item (no live v7 error to confirm the serialized shape).
 - **[Sprint 4, phase 4.3]** Created `CHANGELOG.md` (Keep a Changelog 1.1.0, English, sections Added/Changed/Fixed/Removed/Deprecated) with a single `0.1.0b1` entry spanning the whole `0.0.12` → `0.1.0` delta (Sprints 0→4). Emphasized public-surface changes: `TypeInterventionExterieure` letter codes, enriched exception hierarchy + `EtnicAlreadyApprovedError`/`EtnicConcurrencyError` + ~60-code routing, opt-in strict mode, the 6 `(str, Enum)` nomenclatures, `py.typed`, `[seps]`/`[excel]` extras, deprecated `SoapError` alias + flat namespace. Pre-release install noted (`pip install --pre`); compare links + empty `[Unreleased]` added. Version **not** bumped (phase 4.4); header dated 2026-06-02. Every entry adversarially fact-checked against the source — all claims confirmed.
 - **[Sprint 4, phase 4.4]** Bumped `0.0.12` → `0.1.0b1` in both `pyproject.toml` and `pyetnic/__init__.py` (single-source dedup deferred per checklist); classifier `3 - Alpha` → `4 - Beta`. **Decision (with Fabien): moved `cryptography` from base deps to the `[seps]` extra** (`["xmlsec", "cryptography"]`) since it is SEPS-only (lazy-imported, guarded) — lighter base install. Enriched `[project.urls]` with Repository/Issues/Changelog. Verified README renders as long_description (no local links). Built sdist + wheel; `twine check dist/*` → both PASSED; wheel confirmed to carry `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`. No upload, no merge (4.5). Backlog: `CHANGELOG.md` absent from sdist (MANIFEST.in omits it).
+- **[Sprint 4, phase 4.5]** **Published `0.1.0b1` to PyPI.** Decided (asked Fabien) _not_ to add `CHANGELOG.md` to the sdist (kept as backlog). Merged `refactor/sprint-4` → `main` via PR #6 (merge commit `ccdb8a9`, no squash; `tests.yml` green on `pull_request`). Clean build from `main`; `twine check` PASSED (sdist + wheel). Local install rehearsal (no upload): wheel + sdist with `[seps]` in fresh venvs — `xmlsec` resolved as a prebuilt cp313 wheel, `import pyetnic` → `0.1.0b1`, `CONVENTION == "C"`, CLI OK. Pushed annotated tag `v0.1.0b1` on `ccdb8a9` → `publish-pypi.yml` published to prod PyPI via OIDC Trusted Publishing (run `26810820326`, 37 s green, no token). Post-check: `pip install --pre pyetnic` → `0.1.0b1` (base install pulls neither `xmlsec` nor `cryptography`); project page HTTP 200.
+- **[Sprint 4, post-publication]** Sprint 4 marked complete (Global progress); phase 4.5 detailed; Sprint 4 retrospective drafted (subjective sections pending Fabien). Backlog carried forward: rationalize `specs/`/`docs/phases/`, the four latent bugs, version single-source, Node 20 action bump, `CHANGELOG.md` in MANIFEST.in.
