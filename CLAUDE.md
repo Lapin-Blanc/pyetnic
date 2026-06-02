@@ -41,8 +41,9 @@ All specification and architecture details live in `docs/`:
 - **`docs/ARCHITECTURE.md`** — architecture decisions (layering, lazy config, strict mode, helpers)
 - **`docs/BACKWARDS_COMPAT.md`** — backwards compatibility policy
 - **`docs/PUBLIC_API_SURFACE.md`** — authoritative list of stable vs construction symbols
-- **`docs/phases/`** — phased implementation prompts per sprint
-- **`plan.md`** — current refactoring progress
+- **`docs/SOURCES.md`** — orientation map: how the docs and specs fit together (read first if unsure)
+- **`specs/`** — exhaustive per-service ETNIC reference (Track B, for the future v2 rewrite)
+- **`plan.md`** — refactoring progress (Sprints 0–4 complete; `0.1.0b1` published)
 
 ## Architecture Decisions
 
