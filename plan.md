@@ -388,10 +388,23 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
   - Adversarially fact-checked every entry against the source (exceptions.py, __init__.py,
     nomenclatures.py, pyproject.toml, _helpers.py, soap_client.py, config.py): all claims confirmed
 
-- [ ] **Phase 4.4** — Version bump + packaging metadata (publication)
-  - Bump `0.0.12` → `0.1.0b1`; set `Development Status :: 4 - Beta` classifier
-  - Verify `py.typed`, extras `[seps]` / `[excel]`, long_description from README
-  - `python -m build` + `twine check dist/*`
+- [x] **Phase 4.4** — Version bump + packaging metadata (publication) _(completed 2026-06-02)_
+  - Bumped `0.0.12` → `0.1.0b1` in **both** `pyproject.toml` and `pyetnic/__init__.py`
+    (dedup to `dynamic = ["version"]` deliberately deferred — "later" per the checklist)
+  - `classifiers`: `Development Status :: 3 - Alpha` → `4 - Beta`
+  - **Decision (asked Fabien): moved `cryptography` from base `dependencies` into `[seps]`**
+    (`["xmlsec", "cryptography"]`) — it is SEPS-only (lazy-imported in `_build_x509_wsse`,
+    guarded by `_x509_available`); lightens the base install, matches CLAUDE.md and the
+    existing X509 error message
+  - Enriched `[project.urls]`: added `Repository`, `Issues`, `Changelog` (only `Homepage` before)
+  - Verified README (484 lines) renders as long_description: no relative/local links, the one
+    image is an absolute GitHub CI badge, `Description-Content-Type: text/markdown`
+  - Built sdist + wheel; `twine check dist/*` → both **PASSED**. Confirmed in the wheel:
+    `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`; base deps = zeep/python-dotenv/requests,
+    `[seps]` = xmlsec+cryptography, `[excel]` = openpyxl
+  - **Not** uploaded and **not** merged (TestPyPI/PyPI = 4.5; merge before publishing)
+  - Backlog note: `CHANGELOG.md` is not in the sdist (MANIFEST.in omits it); the Changelog
+    Project-URL covers PyPI discoverability — consider `include CHANGELOG.md` in 4.5
 
 - [ ] **Phase 4.5** — PyPI publication (publication)
   - Upload to TestPyPI; verify a clean install in a fresh venv (incl. extras)
@@ -419,3 +432,4 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
 - **[Sprint 4, phase 4.1]** Corrected `TypeInterventionExterieure` Enum values from long French labels to the single-letter codes ETNIC accepts (A,B,C,D,E,F,I,J,K,P,Q,U,V); member names unchanged, `TYPES_INTERVENTION_EXTERIEURE` auto-derives. Fixed the falsified docstrings, updated 3 unit assertions to `"C"` and added a drift-guard test (190 → 191 green). Optional integration-probe promotion skipped (empirical basis already established).
 - **[Sprint 4, phase 4.2]** Enriched the error-code mapping. Added `EtnicAlreadyApprovedError` (1530/1545) and `EtnicConcurrencyError` (00011); table-driven `map_etnic_error_code_to_class` wires the full `specs/00_REGISTRE.md` §4 catalogue (~60 codes: discrete dict + numeric ranges), routing `EtnicValidationError` (30xxx/20xxx, 1113/1114, 2106/2118, 4004-4012, …) and extending `EtnicDocumentNotAccessibleError` to 30003/30006; 00025/00999 stay on the base class. Unmasked the real ETNIC message (`signal_business_error` auto-builds `"ETNIC error {code}: {description}"`; static `message=` dropped from the 4 parse helpers + `supprimer_organisation`) — `30004` no longer reads "response was empty or success=False". 3 commits (4.2a/b/c), 191 → 230 green, `PUBLIC_API_SURFACE.md` updated. Common_v2 `requestId` attribute (step 4) reasoned-through but left as a 0.1.x backlog item (no live v7 error to confirm the serialized shape).
 - **[Sprint 4, phase 4.3]** Created `CHANGELOG.md` (Keep a Changelog 1.1.0, English, sections Added/Changed/Fixed/Removed/Deprecated) with a single `0.1.0b1` entry spanning the whole `0.0.12` → `0.1.0` delta (Sprints 0→4). Emphasized public-surface changes: `TypeInterventionExterieure` letter codes, enriched exception hierarchy + `EtnicAlreadyApprovedError`/`EtnicConcurrencyError` + ~60-code routing, opt-in strict mode, the 6 `(str, Enum)` nomenclatures, `py.typed`, `[seps]`/`[excel]` extras, deprecated `SoapError` alias + flat namespace. Pre-release install noted (`pip install --pre`); compare links + empty `[Unreleased]` added. Version **not** bumped (phase 4.4); header dated 2026-06-02. Every entry adversarially fact-checked against the source — all claims confirmed.
+- **[Sprint 4, phase 4.4]** Bumped `0.0.12` → `0.1.0b1` in both `pyproject.toml` and `pyetnic/__init__.py` (single-source dedup deferred per checklist); classifier `3 - Alpha` → `4 - Beta`. **Decision (with Fabien): moved `cryptography` from base deps to the `[seps]` extra** (`["xmlsec", "cryptography"]`) since it is SEPS-only (lazy-imported, guarded) — lighter base install. Enriched `[project.urls]` with Repository/Issues/Changelog. Verified README renders as long_description (no local links). Built sdist + wheel; `twine check dist/*` → both PASSED; wheel confirmed to carry `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`. No upload, no merge (4.5). Backlog: `CHANGELOG.md` absent from sdist (MANIFEST.in omits it).
