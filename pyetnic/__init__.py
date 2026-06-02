@@ -26,7 +26,7 @@ from .exceptions import (
 )
 from .soap_client import SoapError  # legacy alias for EtnicTransportError
 
-__version__ = "0.0.12"
+__version__ = "0.1.0b1"
 __author__ = "Fabien Toune"
 __all__ = [
     "eprom",
