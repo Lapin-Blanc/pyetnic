@@ -373,9 +373,20 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
     there) but **not empirically confirmed** without a live v7 error response — kept as a 0.1.x backlog
     item rather than shipping an unverified speculative fix, per the recipe's "log it as backlog" rule
 
-- [ ] **Phase 4.3** — CHANGELOG.md (publication)
-  - Create `CHANGELOG.md` (Keep a Changelog format); document the `0.1.0b1` release covering
-    Sprints 0→4, emphasizing public-surface changes (Enum values, exception hierarchy, extras)
+- [x] **Phase 4.3** — CHANGELOG.md (publication) _(completed 2026-06-02)_
+  - Created `CHANGELOG.md` (Keep a Changelog 1.1.0 format: Added / Changed / Fixed / Removed /
+    Deprecated), in English to match `docs/` and the standard headings; one `0.1.0b1` entry
+    covering the whole `0.0.12` → `0.1.0` delta (Sprints 0→4)
+  - Emphasized the public-surface changes: `TypeInterventionExterieure` letter codes (4.1),
+    enriched exception hierarchy + the two new classes + ~60-code routing (4.2), opt-in strict
+    mode (`strict_errors()` / `RAISE_ON_ERROR`), the 6 `(str, Enum)` nomenclatures, `py.typed`,
+    the `[seps]` / `[excel]` extras, and the deprecated `SoapError` alias + flat namespace
+  - Noted the pre-release install (`pip install --pre pyetnic`); added Keep a Changelog compare
+    links (`v0.0.12...v0.1.0b1`) + an empty `[Unreleased]` section
+  - Did **not** bump the version (that is phase 4.4); the dated `0.1.0b1` header is authored-on
+    today — 4.5 adjusts if the publish slips
+  - Adversarially fact-checked every entry against the source (exceptions.py, __init__.py,
+    nomenclatures.py, pyproject.toml, _helpers.py, soap_client.py, config.py): all claims confirmed
 
 - [ ] **Phase 4.4** — Version bump + packaging metadata (publication)
   - Bump `0.0.12` → `0.1.0b1`; set `Development Status :: 4 - Beta` classifier
@@ -407,3 +418,4 @@ probe (`typeInterventionExterieure` Enum, error-code mapping), then the publicat
 - **[Sprint 4, pre-start]** Sprint 4 section added with phase breakdown (4.1 Enum fix, 4.2 error-code mapping, 4.3 CHANGELOG, 4.4 bump to `0.1.0b1`, 4.5 PyPI). Decisions: `0.1.0b1` (PEP 440 beta), full ~60-code catalogue, TestPyPI dry-run before PyPI.
 - **[Sprint 4, phase 4.1]** Corrected `TypeInterventionExterieure` Enum values from long French labels to the single-letter codes ETNIC accepts (A,B,C,D,E,F,I,J,K,P,Q,U,V); member names unchanged, `TYPES_INTERVENTION_EXTERIEURE` auto-derives. Fixed the falsified docstrings, updated 3 unit assertions to `"C"` and added a drift-guard test (190 → 191 green). Optional integration-probe promotion skipped (empirical basis already established).
 - **[Sprint 4, phase 4.2]** Enriched the error-code mapping. Added `EtnicAlreadyApprovedError` (1530/1545) and `EtnicConcurrencyError` (00011); table-driven `map_etnic_error_code_to_class` wires the full `specs/00_REGISTRE.md` §4 catalogue (~60 codes: discrete dict + numeric ranges), routing `EtnicValidationError` (30xxx/20xxx, 1113/1114, 2106/2118, 4004-4012, …) and extending `EtnicDocumentNotAccessibleError` to 30003/30006; 00025/00999 stay on the base class. Unmasked the real ETNIC message (`signal_business_error` auto-builds `"ETNIC error {code}: {description}"`; static `message=` dropped from the 4 parse helpers + `supprimer_organisation`) — `30004` no longer reads "response was empty or success=False". 3 commits (4.2a/b/c), 191 → 230 green, `PUBLIC_API_SURFACE.md` updated. Common_v2 `requestId` attribute (step 4) reasoned-through but left as a 0.1.x backlog item (no live v7 error to confirm the serialized shape).
+- **[Sprint 4, phase 4.3]** Created `CHANGELOG.md` (Keep a Changelog 1.1.0, English, sections Added/Changed/Fixed/Removed/Deprecated) with a single `0.1.0b1` entry spanning the whole `0.0.12` → `0.1.0` delta (Sprints 0→4). Emphasized public-surface changes: `TypeInterventionExterieure` letter codes, enriched exception hierarchy + `EtnicAlreadyApprovedError`/`EtnicConcurrencyError` + ~60-code routing, opt-in strict mode, the 6 `(str, Enum)` nomenclatures, `py.typed`, `[seps]`/`[excel]` extras, deprecated `SoapError` alias + flat namespace. Pre-release install noted (`pip install --pre`); compare links + empty `[Unreleased]` added. Version **not** bumped (phase 4.4); header dated 2026-06-02. Every entry adversarially fact-checked against the source — all claims confirmed.
