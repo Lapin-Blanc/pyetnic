@@ -119,6 +119,9 @@ venv.bak.tar.gz
 # mkdocs documentation
 /site
 
+# Claude Code local settings (personal, not shared)
+.claude/settings.local.json
+
 # mypy
 .mypy_cache/
 .dmypy.json
