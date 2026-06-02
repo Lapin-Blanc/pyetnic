@@ -316,11 +316,99 @@ Completed on: 2026-06-01
 **Notes for Sprint 4**:
 - Rationalize the `specs/` and `docs/phases/` reference material so it stops inflating the diff
   (decision deferred to post-publication, per the Sprint 3 retro discussion).
-- Two Open questions are unresolved (error-mapping phase scheduling; `typeInterventionExterieure`
-  empirical resolution) — settle their home before locking Sprint 4 scope. See Open questions above.
-- CI has not run on this branch — confirm the 3.10–3.13 matrix is green at push, before merge.
+- Both Open questions resolved in the transition: the `typeInterventionExterieure` Enum fix and the
+  error-code mapping land as Sprint 4 phases 4.1 / 4.2, before the version bump.
+- CI confirmed green on the 3.10–3.13 matrix at push; PR #5 merged to main (merge commit, no squash).
 - Latent-bug backlog (`formations_liste`, `creer/modifier_organisation` None-serialization, `Doc2`
   field order, Common_v2 `requestId`) to triage into Sprint 4 or a 0.1.x backlog.
+
+---
+
+## Sprint 4 — Publication
+
+**Goal**: Make the public contract correct, then ship `0.1.0b1` (beta) to PyPI.
+
+**Branch**: `refactor/sprint-4`
+
+**Scope**: the two correctness fixes surfaced by the 2026-05-31 audit + the 2026-06-01 empirical
+probe (`typeInterventionExterieure` Enum, error-code mapping), then the publication mechanics
+(CHANGELOG, version bump, packaging, PyPI).
+
+**Key design decisions** (Atelier Analyse, Sprint 3 → Sprint 4 transition, 2026-06-01):
+- **Version scheme**: `0.0.12` → `0.1.0b1` (PEP 440 beta), not `0.1.0` + Beta classifier only.
+- **4.2 scope**: wire the full ~60-code catalogue now (red→green), not a minimal subset — the first
+  public release is the right moment to stabilize the exception hierarchy (it is public contract).
+- **PyPI**: TestPyPI dry-run (verify a clean install) before the real PyPI upload — safety net.
+- **Correctness before publication**: 4.1 and 4.2 land before the version bump (4.4).
+
+### Phases
+
+- [x] **Phase 4.1** — Fix `typeInterventionExterieure` Enum (correctness) _(completed 2026-06-01)_
+  - Swapped the 13 Enum values from long labels to single-letter codes
+    (A, B, C, D, E, F, I, J, K, P, Q, U, V) per `specs/02_formation_organisation_v7.md`
+    §"Valeurs de typeInterventionExterieure" (validated 2025-06-10); member names unchanged
+  - Fixed the falsified module + class docstrings (dropped "labels are what ETNIC expects verbatim";
+    documented the removed R/S codes and the legacy-read behaviour)
+  - `TYPES_INTERVENTION_EXTERIEURE` auto-derives the letters (verified, not hand-edited)
+  - Updated 3 `test_nomenclatures.py` assertions to `"C"` (red→green); renamed the now-misleading
+    `test_enum_value_is_verbatim_string`; added a `test_values_are_the_exact_letter_codes` drift guard
+    pinning the full name→letter mapping. 190 → 191 tests green
+  - Integration-probe promotion (optional step 5) skipped — empirical basis already established
+  - Empirical basis: live dev-server probe — `"Convention"` → `30004`, `"C"` accepted (Sprint 3 Findings)
+
+- [x] **Phase 4.2** — Error-code mapping enrichment (correctness) _(completed 2026-06-01)_
+  - Added two exception classes (`EtnicAlreadyApprovedError` 1530/1545, `EtnicConcurrencyError` 00011),
+    exported from the top-level + `eprom` namespaces (4.2a)
+  - Replaced the 2-code if-chain with a table-driven `map_etnic_error_code_to_class` wiring the full
+    `specs/00_REGISTRE.md` §4 catalogue: discrete dict + inclusive numeric ranges (4004-4012,
+    1527-1528, 1598-1604, 20015-20036, 30016-30017). `EtnicValidationError` now routed (30001/30002/
+    30004/30005/30007/30008/30009 + 20xxx, 1113/1114, 2106/2118); `EtnicDocumentNotAccessibleError`
+    extended to 30003/30006; 00025 (security) and 00999 (SQL) deliberately left on the base class (4.2b)
+  - Unmasked the real ETNIC message: `signal_business_error` auto-builds `"ETNIC error {code}:
+    {description}"`; the four parse helpers + `supprimer_organisation` dropped their static `message=`.
+    `30004` now reads "ETNIC error 30004: Le type d'intervention extérieure est incorrect" (4.2c)
+  - 191 → 230 tests green; `docs/PUBLIC_API_SURFACE.md` updated with the two new classes
+  - Common_v2 `requestId` (step 4): investigated by reasoning (serialized v7 carries requestId as an
+    XML attribute on the body root, not a SOAP header, so `extract_error_info` likely returns `None`
+    there) but **not empirically confirmed** without a live v7 error response — kept as a 0.1.x backlog
+    item rather than shipping an unverified speculative fix, per the recipe's "log it as backlog" rule
+
+- [x] **Phase 4.3** — CHANGELOG.md (publication) _(completed 2026-06-02)_
+  - Created `CHANGELOG.md` (Keep a Changelog 1.1.0 format: Added / Changed / Fixed / Removed /
+    Deprecated), in English to match `docs/` and the standard headings; one `0.1.0b1` entry
+    covering the whole `0.0.12` → `0.1.0` delta (Sprints 0→4)
+  - Emphasized the public-surface changes: `TypeInterventionExterieure` letter codes (4.1),
+    enriched exception hierarchy + the two new classes + ~60-code routing (4.2), opt-in strict
+    mode (`strict_errors()` / `RAISE_ON_ERROR`), the 6 `(str, Enum)` nomenclatures, `py.typed`,
+    the `[seps]` / `[excel]` extras, and the deprecated `SoapError` alias + flat namespace
+  - Noted the pre-release install (`pip install --pre pyetnic`); added Keep a Changelog compare
+    links (`v0.0.12...v0.1.0b1`) + an empty `[Unreleased]` section
+  - Did **not** bump the version (that is phase 4.4); the dated `0.1.0b1` header is authored-on
+    today — 4.5 adjusts if the publish slips
+  - Adversarially fact-checked every entry against the source (exceptions.py, __init__.py,
+    nomenclatures.py, pyproject.toml, _helpers.py, soap_client.py, config.py): all claims confirmed
+
+- [x] **Phase 4.4** — Version bump + packaging metadata (publication) _(completed 2026-06-02)_
+  - Bumped `0.0.12` → `0.1.0b1` in **both** `pyproject.toml` and `pyetnic/__init__.py`
+    (dedup to `dynamic = ["version"]` deliberately deferred — "later" per the checklist)
+  - `classifiers`: `Development Status :: 3 - Alpha` → `4 - Beta`
+  - **Decision (asked Fabien): moved `cryptography` from base `dependencies` into `[seps]`**
+    (`["xmlsec", "cryptography"]`) — it is SEPS-only (lazy-imported in `_build_x509_wsse`,
+    guarded by `_x509_available`); lightens the base install, matches CLAUDE.md and the
+    existing X509 error message
+  - Enriched `[project.urls]`: added `Repository`, `Issues`, `Changelog` (only `Homepage` before)
+  - Verified README (484 lines) renders as long_description: no relative/local links, the one
+    image is an absolute GitHub CI badge, `Description-Content-Type: text/markdown`
+  - Built sdist + wheel; `twine check dist/*` → both **PASSED**. Confirmed in the wheel:
+    `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`; base deps = zeep/python-dotenv/requests,
+    `[seps]` = xmlsec+cryptography, `[excel]` = openpyxl
+  - **Not** uploaded and **not** merged (TestPyPI/PyPI = 4.5; merge before publishing)
+  - Backlog note: `CHANGELOG.md` is not in the sdist (MANIFEST.in omits it); the Changelog
+    Project-URL covers PyPI discoverability — consider `include CHANGELOG.md` in 4.5
+
+- [ ] **Phase 4.5** — PyPI publication (publication)
+  - Upload to TestPyPI; verify a clean install in a fresh venv (incl. extras)
+  - Upload to PyPI; tag `v0.1.0b1` and push the tag
 
 ---
 
@@ -339,4 +427,9 @@ Completed on: 2026-06-01
 - **[Sprint 3, phase 3.3]** Added `_as_list()` to `_helpers.py`; migrated 11 zeep collection-iteration sites (document1/2/3, formations_liste, seps, inscriptions) and replaced the inline `isinstance(dict)` result guards. Added 5 unit + 4 single-element regression tests (177 → 186). Q8 closed.
 - **[Sprint 3, phase 3.4]** Moved `_ssl_warnings_suppressed` to a `SoapClientManager` class attribute reset by `reset_cache()` (Q5); logged `request_id` on success + rewrote the error log to `%s` (Q6); documented `_EtnicBinarySignature.verify()` (Q3). Added `test_soap_client_unit.py` (190 tests). Q5, Q6, Q3 closed.
 - **[Sprint 3, phase 3.5]** Converted all 20 f-string logger calls to lazy `%s`; guarded the 7 `pformat()` debug calls with `isEnabledFor(DEBUG)`; dropped the unused `pprint` import. Q7 closed — **all 9 Sprint 3 defects addressed** (H2, H5, H8, H11, Q8, Q5, Q6, Q3, Q7). Retrospective + PR/merge pending in the transition conversation.
-- **[Sprint 3, post-merge]** Sprint 3 marked complete (9/9 defects); retrospective filled in. Empirically resolved `typeInterventionExterieure` via a live dev-server write/echo probe — ETNIC wants single-letter codes (`"Convention"` → `30004`, `"C"` accepted); the H9 Enum is wrong. Both the Enum value fix and the error-code mapping enrichment scheduled into Sprint 4 (phases 4.1 / 4.2, before the version bump). 190 tests green.
+- **[Sprint 3, post-merge]** Sprint 3 marked complete (9/9 defects); retrospective filled in. Empirically resolved `typeInterventionExterieure` via a live dev-server write/echo probe — ETNIC wants single-letter codes (`"Convention"` → `30004`, `"C"` accepted); the H9 Enum is wrong. Both the Enum value fix and the error-code mapping enrichment scheduled into Sprint 4 (phases 4.1 / 4.2, before the version bump). 190 tests green. PR #5 merged to main (merge commit `79ddad5`).
+- **[Sprint 4, pre-start]** Sprint 4 section added with phase breakdown (4.1 Enum fix, 4.2 error-code mapping, 4.3 CHANGELOG, 4.4 bump to `0.1.0b1`, 4.5 PyPI). Decisions: `0.1.0b1` (PEP 440 beta), full ~60-code catalogue, TestPyPI dry-run before PyPI.
+- **[Sprint 4, phase 4.1]** Corrected `TypeInterventionExterieure` Enum values from long French labels to the single-letter codes ETNIC accepts (A,B,C,D,E,F,I,J,K,P,Q,U,V); member names unchanged, `TYPES_INTERVENTION_EXTERIEURE` auto-derives. Fixed the falsified docstrings, updated 3 unit assertions to `"C"` and added a drift-guard test (190 → 191 green). Optional integration-probe promotion skipped (empirical basis already established).
+- **[Sprint 4, phase 4.2]** Enriched the error-code mapping. Added `EtnicAlreadyApprovedError` (1530/1545) and `EtnicConcurrencyError` (00011); table-driven `map_etnic_error_code_to_class` wires the full `specs/00_REGISTRE.md` §4 catalogue (~60 codes: discrete dict + numeric ranges), routing `EtnicValidationError` (30xxx/20xxx, 1113/1114, 2106/2118, 4004-4012, …) and extending `EtnicDocumentNotAccessibleError` to 30003/30006; 00025/00999 stay on the base class. Unmasked the real ETNIC message (`signal_business_error` auto-builds `"ETNIC error {code}: {description}"`; static `message=` dropped from the 4 parse helpers + `supprimer_organisation`) — `30004` no longer reads "response was empty or success=False". 3 commits (4.2a/b/c), 191 → 230 green, `PUBLIC_API_SURFACE.md` updated. Common_v2 `requestId` attribute (step 4) reasoned-through but left as a 0.1.x backlog item (no live v7 error to confirm the serialized shape).
+- **[Sprint 4, phase 4.3]** Created `CHANGELOG.md` (Keep a Changelog 1.1.0, English, sections Added/Changed/Fixed/Removed/Deprecated) with a single `0.1.0b1` entry spanning the whole `0.0.12` → `0.1.0` delta (Sprints 0→4). Emphasized public-surface changes: `TypeInterventionExterieure` letter codes, enriched exception hierarchy + `EtnicAlreadyApprovedError`/`EtnicConcurrencyError` + ~60-code routing, opt-in strict mode, the 6 `(str, Enum)` nomenclatures, `py.typed`, `[seps]`/`[excel]` extras, deprecated `SoapError` alias + flat namespace. Pre-release install noted (`pip install --pre`); compare links + empty `[Unreleased]` added. Version **not** bumped (phase 4.4); header dated 2026-06-02. Every entry adversarially fact-checked against the source — all claims confirmed.
+- **[Sprint 4, phase 4.4]** Bumped `0.0.12` → `0.1.0b1` in both `pyproject.toml` and `pyetnic/__init__.py` (single-source dedup deferred per checklist); classifier `3 - Alpha` → `4 - Beta`. **Decision (with Fabien): moved `cryptography` from base deps to the `[seps]` extra** (`["xmlsec", "cryptography"]`) since it is SEPS-only (lazy-imported, guarded) — lighter base install. Enriched `[project.urls]` with Repository/Issues/Changelog. Verified README renders as long_description (no local links). Built sdist + wheel; `twine check dist/*` → both PASSED; wheel confirmed to carry `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`. No upload, no merge (4.5). Backlog: `CHANGELOG.md` absent from sdist (MANIFEST.in omits it).
