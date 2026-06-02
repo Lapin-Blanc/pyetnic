@@ -1,10 +1,9 @@
 # pyetnic — Refactoring Plan
 
-> **Current sprint**: Sprint 3 — Quality and hygiene
-> **Target version**: 0.1.0 beta (end of Sprint 4)
-> **Current branch**: `refactor/sprint-3`
+> **Status**: Sprints 0–4 complete — `0.1.0b1` published to PyPI on 2026-06-02.
+> **Next horizon**: Track B v2 rewrite (see `specs/` and `docs/SOURCES.md`).
 
-This document is the single source of truth for refactoring progress. It is updated by Claude Code at the end of each phase. Read it first before starting any new phase.
+This document is the single source of truth for the Track A refactoring progress. It was updated by Claude Code at the end of each phase. Read it first to understand what was done across Sprints 0–4.
 
 ---
 
@@ -466,7 +465,9 @@ Completed on: 2026-06-02 — **`0.1.0b1` published to PyPI.**
 - Release: `0.0.12` → `0.1.0b1` (PEP 440 beta), tag `v0.1.0b1`, published via OIDC.
 
 **Notes / backlog after publication** (not done in Sprint 4):
-- Rationalize `specs/` and `docs/phases/` so they stop inflating the diff ~6×.
+- ~~Rationalize `specs/` and `docs/phases/` so they stop inflating the diff ~6×.~~
+  **Done (2026-06-02, post-publication housekeeping):** `docs/phases/` deleted (Track A scaffolding,
+  consumed); `specs/` kept and enriched to 6/6 services (Track B, live). See the changelog entry below.
 - Four latent bugs: `formations_liste` dict-where-`List[str]`; `creer/modifier_organisation`
   `None`-serialization; `Doc2` read-field order vs XSD; Common_v2 `requestId` as an XML attribute.
 - Dedup the version to a single source (`dynamic = ["version"]`).
@@ -498,3 +499,4 @@ Completed on: 2026-06-02 — **`0.1.0b1` published to PyPI.**
 - **[Sprint 4, phase 4.4]** Bumped `0.0.12` → `0.1.0b1` in both `pyproject.toml` and `pyetnic/__init__.py` (single-source dedup deferred per checklist); classifier `3 - Alpha` → `4 - Beta`. **Decision (with Fabien): moved `cryptography` from base deps to the `[seps]` extra** (`["xmlsec", "cryptography"]`) since it is SEPS-only (lazy-imported, guarded) — lighter base install. Enriched `[project.urls]` with Repository/Issues/Changelog. Verified README renders as long_description (no local links). Built sdist + wheel; `twine check dist/*` → both PASSED; wheel confirmed to carry `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`. No upload, no merge (4.5). Backlog: `CHANGELOG.md` absent from sdist (MANIFEST.in omits it).
 - **[Sprint 4, phase 4.5]** **Published `0.1.0b1` to PyPI.** Decided (asked Fabien) _not_ to add `CHANGELOG.md` to the sdist (kept as backlog). Merged `refactor/sprint-4` → `main` via PR #6 (merge commit `ccdb8a9`, no squash; `tests.yml` green on `pull_request`). Clean build from `main`; `twine check` PASSED (sdist + wheel). Local install rehearsal (no upload): wheel + sdist with `[seps]` in fresh venvs — `xmlsec` resolved as a prebuilt cp313 wheel, `import pyetnic` → `0.1.0b1`, `CONVENTION == "C"`, CLI OK. Pushed annotated tag `v0.1.0b1` on `ccdb8a9` → `publish-pypi.yml` published to prod PyPI via OIDC Trusted Publishing (run `26810820326`, 37 s green, no token). Post-check: `pip install --pre pyetnic` → `0.1.0b1` (base install pulls neither `xmlsec` nor `cryptography`); project page HTTP 200.
 - **[Sprint 4, post-publication]** Sprint 4 marked complete (Global progress); phase 4.5 detailed; Sprint 4 retrospective drafted (subjective sections pending Fabien). Backlog carried forward: rationalize `specs/`/`docs/phases/`, the four latent bugs, version single-source, Node 20 action bump, `CHANGELOG.md` in MANIFEST.in.
+- **[2026-06-02, post-publication housekeeping]** Rationalized the reference material now that Track A is closed (with Fabien). Committed the Track B analysis sessions 4–5 (`specs/05_document3_v1.md`, `specs/06_formation_droits_inscription_v1.md`; enriched `00_REGISTRE`/`00_SUIVI_SESSIONS` with the Doc3/Doc1D types) — Track B now **6/6 EPROM services**. Deleted `docs/phases/` (30 consumed phase-prompt files; recoverable via git history). Rewrote `docs/SOURCES.md` (Track A complete / Track B live), removed the `docs/phases/` convention from `docs/BACKWARDS_COMPAT.md` and the pointer from `CLAUDE.md`, and refreshed this file's stale header (was "Sprint 3 / `refactor/sprint-3`"). Neither `specs/` nor `docs/phases/` is packaged (MANIFEST.in), so zero impact on the published `0.1.0b1` artifact.
