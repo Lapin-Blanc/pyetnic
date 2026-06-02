@@ -118,18 +118,101 @@ SOAP ETNIC EPROM, en vue de refondre la bibliothèque pyetnic avec :
 
 ---
 
-### Session 4 — (à planifier) : Document 3 (Attributions) v1.0
+### Session 4 — 2026-06-02 : Document 3 (Attributions) v1
 
-**À faire** :
-- Document 3 v1.0 (Attributions) → fichiers dans `contrat_document3_v1/` et `manuel_document3_v1.pdf`
-- Identifier le workflow inter-documents (doc3 dépend de doc1+doc2 approuvés)
+**Services analysés** :
+- ✅ EPROM Formation Document 3 (Attributions) v1.0 (WSDL + PDF 22 pages, rev1.3 du 01-05-2023)
+
+**Fichiers produits** :
+- `specs/05_document3_v1.md` — spécification complète
+- `specs/00_REGISTRE.md` — registre enrichi (types Doc3, codes erreur Doc3, traçabilité XSD)
+
+**Méthode PDF** : la couche texte native du PDF était exploitable (`pdftotext -layout`) → extraction
+complète du texte ; rendu en image (`pdftoppm`) des pages à diagrammes (8, 9, 10, 14, 15, 22) pour
+vérification visuelle. L'OCR n'a pas été nécessaire pour ce manuel.
+
+**Découvertes clés** :
+
+- **2 opérations** : LireDocument3, ModifierDocument3 — **pas d'Approuver** (comme Document 2).
+- **SOAP 1.1 UNIQUEMENT** : confirmé par le binding WSDL (`wsdl/soap/`, pas de `soap12/`) **et** par le
+  PDF (§2.2). Particularité vs Organisation v7 (SOAP 1.1 ou 1.2).
+- **Pattern Common_v1** (ancien), bloc retour `AbstractExternalResponseType` — comme Doc 1/Doc 2/Liste v2.
+- **Modèle hiérarchique** : Document 3 → `activite` (branches, `[1..*]` en écriture) → `enseignant`
+  (attributions). C'est « qui enseigne quoi et combien de périodes ».
+- **Pas de switch d'approbation** dans `FormationDocument3CT` (ni `swApp*`). L'approbation du Doc 3 n'est
+  pas gérée par ce service.
+- **⭐ WORKFLOW INTER-DOCUMENTS CONFIRMÉ** (erreur `20102`) : « Les "**Doc A**" et "**Doc 2**" doivent être
+  approuvés pour pouvoir accéder au "Doc 3" ». → Doc 3 inaccessible tant que Population (« Doc A » =
+  vraisemblablement Document 1) **et** Périodes (Doc 2) ne sont pas approuvés. ⚠️ Le libellé est
+  littéralement « Doc A » (couche texte native, page 22, pas OCR) ; le mapping « Doc A = Document 1 »
+  reste à confirmer formellement avec l'ETNIC.
+- **Contrôles de plafond** : les périodes attribuées (Doc 3) ne peuvent dépasser les périodes organisées
+  au Doc 2 (IE comprise) — erreurs `1538` (par branche), `1574` (total), `1575` (CG), `1576` (CP).
+- **`coCategorie`** : table **identique** au Document 2 (30 codes) → référentiel partagé confirmé.
+- **`coCatCol` / `typeInterventionExterieure "J"`** : **sans objet** pour le Doc 3 (pas d'intervention
+  extérieure propre ; le Doc 3 n'en voit que l'effet agrégé sur les plafonds).
+- **2 nouvelles tables** : `coDispo` (~60 codes de disponibilité) et `teStatut` (7 codes : C/P/A/D/E/X/T),
+  toutes deux « validées hors contrat XML » (contrôle métier, absentes du XSD).
+- **9 divergences PDF ↔ XSD** recensées, dont :
+  - `implId` (`OrganisationResIdCT`) : PDF « obligatoire » vs XSD `minOccurs="0"` — **même divergence
+    qu'en session 3**, confirmée sur les 3 documents (le diagramme UML, lui, affiche bien `[0..1]`).
+  - `nbPeriodesPrevuesDoc2` / `nbPeriodesReellesDoc2` : PDF « float obligatoire » vs XSD « int `[0..1]` » ;
+    de plus le flux réel sérialise « 24.0 » → risque de `ValueError` avec un parseur int strict (zeep).
+  - `coNumAttribution` (`Doc3EnseignantDetailSaveCT`) : **présent au XSD, absent du texte PDF** → permet
+    de cibler une attribution existante.
+  - `coNumBranche`/`noAnneeEtude`/`enseignantListe` (Save) : facultatifs au PDF, obligatoires au XSD.
+- **8 XSD partagés byte-for-byte identiques** à la session 3 (vérifié par `diff`).
 
 ---
 
-### Session 5 — (à planifier) : Formation Droits Inscription v1.0
+### Session 5 — 2026-06-02 : Formation Droits d'Inscription (Document 1D) v1.0
 
-**À faire** :
-- Formation Droits Inscription v1.0 → fichiers dans `contrat_formation_droits_inscription_v1/` et `manuel_formation_droits_inscription_v1.pdf`
+**Services analysés** :
+- ✅ EPROM Formation Droits d'Inscription v1.0 (WSDL + PDF 23 pages, rev1.1 du 01-05-2023)
+
+**Fichiers produits** :
+- `specs/06_formation_droits_inscription_v1.md` — spécification complète
+- `specs/00_REGISTRE.md` — registre enrichi (types Document1D, codes 1545/1546/1530, mapping des 4 statuts, traçabilité XSD)
+
+**Méthode PDF** : couche texte native exploitable (`pdftotext -layout`, ~2750 c/page) ; rendu image
+(`pdftoppm`, 300 dpi) des pages à boîtes UML repliées (5, 8, 9, 13, 14, 18). OCR non nécessaire. Les boîtes
+UML ont permis de **trancher les coquilles de typage du texte** (types `string` vs « int »/« boolean »).
+
+**Découvertes clés** :
+
+- **« Document 1D » = service Droits d'Inscription** (radical interne `Document1D`/`Doc 1D`, « D » = Droits).
+  Pendant « droits d'inscription » de la famille Document 1. Gère **par année d'études** : la **population
+  scolaire au 5/10ᵉ** de la formation (`nbEleves5ieme`) **et** les **montants des droits** (`mtDroitsInscription`).
+- **3 opérations** : LireDocument1D, ModifierDocument1D, **ApprouverDocument1D** — comme le Document 1
+  (Population), contrairement à Doc 2 / Doc 3 (Lire+Modifier seulement).
+- **SOAP 1.1 UNIQUEMENT** : confirmé par le binding WSDL (`wsdl/soap/`, pas de `soap12/`) **et** le PDF (§2.2).
+  Comme le Document 3.
+- **Pattern Common_v1** (ancien), bloc retour `AbstractExternalResponseType`. Type de réponse
+  `Document1DReponseCT` **partagé par les 3 opérations**.
+- **Deux switches d'approbation** dans la ligne : `swAppPopD1D` (école/PO) + `swAppD1D` (administration) —
+  **parallèle exact au Document 1** (`swAppPopD1`/`swAppD1`), avec suffixe « D ».
+- **⭐ Règle métier des deux phases** (PDF §3.1.4.1) : `nbEleves5ieme` modifiable *jusqu'à* l'approbation de
+  la population (école/PO) ; `mtDroitsInscription` modifiable *seulement après*. `ApprouverDocument1D` pose
+  `swAppPopD1D=1` et fait basculer la ligne en phase 2. Verrou final = approbation administration (`swAppD1D`,
+  non exposée par ce service). Erreurs associées : `1546` (avant appro.), `1545` (déjà approuvé), `1530`
+  (admin a verrouillé), `00011` (concurrence sur `nbEleves5ieme` à l'approbation).
+- **⭐ `statutDocumentDroitsInscription` (point d'attention) résolu** : ce champ de `OrganisationApercuCT`
+  (Formations Liste) **= ce service Doc 1D**. La vue Liste expose **4 statuts** : Organisation /
+  Population+Périodes (Doc 1 + Doc 2) / **Droits d'Inscription (Doc 1D)** / Attributions (Doc 3). Le Doc 1D
+  a donc son **propre statut**, distinct de Population+Périodes.
+- **« Doc A » (point d'attention)** : **non mentionné** dans ce manuel (0 occurrence). L'hypothèse session 4
+  (« Doc A » = Document 1 / Population) reste inchangée. Nomenclature interne consolidée : Doc 1 (Population),
+  **Doc 1D (Droits)**, Doc 2 (Périodes), Doc 3 (Attributions), Doc 8bis (réf. Doc 3). **Pas d'erreur `20102`** :
+  aucune dépendance inter-documents bloquante déclarée pour le Doc 1D (gérable indépendamment).
+- **Coquilles de typage du PDF tranchées par l'UML + XSD** : `coAnnEtude` = `string` (pas « int »),
+  `tsMaj`/`teUserMaj` = `string` (pas « boolean »), `nbEleves5ieme` (Approuver) = **obligatoire** (pas
+  « facultatif »). `mtDroitsInscriptionOccupationnel` = « n'est plus utilisé ».
+- **Pas de divergence de type numérique** (contrairement au Doc 3 et ses « 24.0 » sur `int`) : `nbEleves5ieme`
+  est un vrai `int`, les montants des `float` déclarés. Aucun risque de `ValueError` zeep.
+- **Réutilisation de codes entre services** : `1545`/`1114`/`2106` ont un libellé différent ici qu'au
+  Doc 1/2/3 → indexer les exceptions pyetnic par **(service, code)**.
+- **8 XSD partagés byte-for-byte identiques** à la session 4 (diff). `Organisation_v1.xsd` identique aussi à
+  la session 3. Référentiel technique stable sur les 5 services.
 
 ---
 
@@ -141,6 +224,27 @@ SOAP ETNIC EPROM, en vue de refondre la bibliothèque pyetnic avec :
 - Prototype mock server SOAP stateful
 - Plan d'implémentation
 
+**Points à trancher / confirmer (hérités des sessions précédentes)** :
+- **Mapping « Doc A »** : confirmer formellement que le « Doc A » de l'erreur `20102` (Doc 3) = Document 1
+  (Population). Le Doc 1D (session 5) **ne mentionne pas « Doc A »** → hypothèse inchangée. Nomenclature
+  interne consolidée : Doc 1 (Population), Doc 1D (Droits), Doc 2 (Périodes), Doc 3 (Attributions), Doc 8bis.
+  Reconstituer la chaîne d'approbation : Organisation → Population (Doc A/1) + Périodes (Doc 2) →
+  Attributions (Doc 3) ; **Droits d'Inscription (Doc 1D) = branche indépendante** (pas de `20102`, workflow
+  interne population→montants).
+- **Divergences de type périodes** : décider de la stratégie zeep pour les champs `xs:int` recevant des
+  valeurs « 24.0 » (Doc 3 : `nbPeriodesDoc8`, `nbPeriodesPrevuesDoc2`, `nbPeriodesReellesDoc2`).
+  ⚠️ **Spécifique au Doc 3** : le Doc 1D n'a pas ce problème (`nbEleves5ieme` vrai `int`, montants `float`).
+- **Switches d'approbation** : modéliser les états dans le mock server stateful (Doc 1 : `swAppPopD1`+`swAppD1` ;
+  **Doc 1D : `swAppPopD1D`+`swAppD1D`** ; Doc 2 : `swAppD2` ; Doc 3 : aucun) pour tester la contrainte `20102`
+  (Doc 3) **et** le workflow deux phases du Doc 1D (`1546`/`1545`/`1530`/`00011`).
+- **Exceptions typées par (service, code)** : les codes ne sont **pas universels** (`1545`, `1114`, `2106`
+  ont un sens différent selon le service — confirmé Doc 1D). Ne pas mutualiser un registre de codes global naïf.
+- **Référentiels partagés** : centraliser `coCategorie` (Doc 2 + Doc 3) ; `coDispo`/`teStatut` (Doc 3) ;
+  `coCatCol`/`coObjFse` (Doc 2) — « validés hors contrat XML » donc à maintenir côté client.
+- **`FormationEpsocCT` (Formations Liste)** : type défini dans `Formation_v2.xsd` mais **non référencé** par
+  les opérations de Formations Liste v2 ; ajoute un champ `dateFermeture` (date, optionnel) vs `FormationCT`.
+  Identifier le service qui l'utilise réellement (note héritée de la session 1, non traitée depuis).
+
 ## Services EPROM identifiés (extranet ETNIC)
 
 | Service | Version | Analysé | Spec produite |
@@ -149,5 +253,5 @@ SOAP ETNIC EPROM, en vue de refondre la bibliothèque pyetnic avec :
 | Formation Organisation | 7.0 | ✅ session 2 | ✅ `02_formation_organisation_v7.md` |
 | Formation Population (Document 1) | 1.0 | ✅ session 3 | ✅ `03_formation_population_v1.md` |
 | Formation Périodes (Document 2) | 1.0 | ✅ session 3 | ✅ `04_formation_periodes_v1.md` |
-| Document 3 (Attributions) | 1.0 | ❌ session 4 | ❌ |
-| Formation Droits Inscription | 1.0 | ❌ session 5 | ❌ |
+| Document 3 (Attributions) | 1.0 | ✅ session 4 | ✅ `05_document3_v1.md` |
+| Formation Droits Inscription (Document 1D) | 1.0 | ✅ session 5 | ✅ `06_formation_droits_inscription_v1.md` |

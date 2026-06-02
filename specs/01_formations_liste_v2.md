@@ -261,7 +261,7 @@ des organisations et leurs statuts de documents.
 
 > (*) `FormationEpsocCT` est défini dans le XSD mais **non référencé** par les opérations
 > de Formations Liste v2. Il ajoute un champ `dateFermeture` (date, optionnel) par rapport
-> à `FormationCT`. Probablement utilisé par un autre service — à vérifier en session 2.
+> à `FormationCT`. Probablement utilisé par un autre service — non vérifié en session 2, reporté en session 6.
 
 ---
 
