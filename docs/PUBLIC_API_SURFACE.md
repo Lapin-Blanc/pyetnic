@@ -102,7 +102,9 @@ All use `(str, Enum)` base — members compare equal to their raw string value.
 | `EtnicBusinessError` | Server-side refusals (`success=False`) |
 | `EtnicDocumentNotAccessibleError` | Doc1/Doc2/Doc3 workflow violation (e.g. error 20102) |
 | `EtnicNotFoundError` | Resource not found (e.g. error 00009) |
-| `EtnicValidationError` | Input rejected by validation |
+| `EtnicValidationError` | Input rejected by validation (most `20xxx`/`30xxx` codes, `4004`-`4012`, …) |
+| `EtnicAlreadyApprovedError` | Document already approved by the administration (codes 1530, 1545) |
+| `EtnicConcurrencyError` | Record modified by another user since read (code 00011) |
 | `SoapError` | **Deprecated** alias for `EtnicTransportError`. Will be removed in 1.0.0 |
 
 ---

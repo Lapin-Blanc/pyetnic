@@ -11,9 +11,10 @@ Every Enum uses ``(str, Enum)`` so members compare equal to raw strings:
 
 Values for SEPS enums are pinned against the XSD enumerations in
 ``pyetnic/resources/SEPS_Enregistrer_Inscription_2.1/xsd/inscription_v1.xsd``.
-Values for ``TypeInterventionExterieure`` come from the previously
-maintained ``TYPES_INTERVENTION_EXTERIEURE`` constant (the XSD type is a
-free-form ``xs:string``, so these labels are what ETNIC expects verbatim).
+Values for ``TypeInterventionExterieure`` are the single-letter codes from
+the Organisation v7 manual (validated 2025-06-10); the XSD type is a
+free-form ``xs:string`` so they are not contract-validated, but they are the
+values ETNIC actually accepts.
 
 Usage:
     from pyetnic.nomenclatures import TypeInterventionExterieure, CodeSanction
@@ -22,7 +23,7 @@ Usage:
     org.typeInterventionExterieure = TypeInterventionExterieure.CONVENTION.value
 
     # Using the raw string (still works, always will):
-    org.typeInterventionExterieure = "Convention"
+    org.typeInterventionExterieure = "C"
 """
 
 from __future__ import annotations
@@ -34,23 +35,27 @@ class TypeInterventionExterieure(str, Enum):
     """Types d'intervention extérieure pour une organisation.
 
     Used in ``Organisation.typeInterventionExterieure``. The XSD defines
-    the field as ``xs:string`` — these labels are the verbatim values
-    expected by ETNIC.
+    the field as ``xs:string`` — ETNIC expects the single-letter codes
+    below (Organisation v7 manual, validated 2025-06-10), not the long
+    French labels. Codes ``R`` (Récupération périodes) and ``S`` (CISCO
+    Système) were removed by ETNIC and have no member here; reading a
+    legacy organisation that still carries them works (the dataclass keeps
+    the raw string, the Enum simply has no matching member).
     """
 
-    AGENCE_QUALITE = "Agence Qualité"
-    CONVENTION = "Convention"
-    DISCRIMINATIONS_POSITIVES = "Discriminations positives"
-    EHR = "EHR"
-    FONDS_EUROPEENS = "Fonds Européens"
-    FORMATION_PUBLICS_INFRA_SCOLARISES = "Formation des publics infra scolarisés"
-    FORMATIONS_CONTINUEES = "Formations continuées"
-    OCTROI_PERIODES_CABINET_PROJETS_TRANSVER = "Octroi périodes cabinet-projets transver"
-    OCTROI_PERIODES_SUPPLEMENTAIRES_BONUS = "Octroi périodes supplémentaires-bonus"
-    PERSONNEL_NON_CHARGE_DE_COURS = "Personnel non chargé de cours"
-    REORIENTATION_7TQ_7P = "Réorientation 7TQ/7P"
-    UNION_EUROPEENNE = "Union Européenne"
-    VALIDATION_DES_COMPETENCES = "Validation des compétences"
+    AGENCE_QUALITE = "Q"
+    CONVENTION = "C"
+    DISCRIMINATIONS_POSITIVES = "D"
+    EHR = "E"
+    FONDS_EUROPEENS = "F"
+    FORMATION_PUBLICS_INFRA_SCOLARISES = "I"
+    FORMATIONS_CONTINUEES = "P"
+    OCTROI_PERIODES_CABINET_PROJETS_TRANSVER = "K"
+    OCTROI_PERIODES_SUPPLEMENTAIRES_BONUS = "B"
+    PERSONNEL_NON_CHARGE_DE_COURS = "A"
+    REORIENTATION_7TQ_7P = "J"
+    UNION_EUROPEENNE = "U"
+    VALIDATION_DES_COMPETENCES = "V"
 
 
 class CodeAdmission(str, Enum):
