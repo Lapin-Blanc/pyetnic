@@ -2,7 +2,7 @@
 
 > Ce fichier centralise tous les types XSD réutilisés par plusieurs services EPROM.
 > Il est enrichi à chaque session d'analyse d'un nouveau service.
-> Dernière mise à jour : 2026-04-14 (session 3 — Formation Population v1 + Formation Périodes v1)
+> Dernière mise à jour : 2026-06-02 (session 5 — Formation Droits d'Inscription / Document 1D v1)
 
 ---
 
@@ -139,6 +139,13 @@
   ```
 - **Rôle** : vue résumée d'une organisation, retournée dans les listes
 - **Utilisé par** : Formations Liste (réponse ListerFormations)
+- **Mapping des 4 statuts ↔ services (confirmé session 5)** :
+  - `statutDocumentOrganisation` → Formation Organisation v7 (statut `StatutCT`)
+  - `statutDocumentPopulationPeriodes` → Document 1 (Population) **+** Document 2 (Périodes)
+  - `statutDocumentDroitsInscription` → **Document 1D (Droits d'Inscription)** — switches `swAppPopD1D` + `swAppD1D`
+  - `statutDocumentAttributions` → Document 3 (Attributions)
+  - → le Doc 1D a **son propre statut**, distinct de Population+Périodes ; les valeurs de `StatutCT.statut`
+    (« Encodé école »/« Encodé PO »/« Approuvé ») projettent l'état des switches dans la vue Liste
 
 ### OrganisationReqIdCT (NOUVEAU — session 3)
 - **Fichier XSD** : `Organisation_v1.xsd`
@@ -152,7 +159,7 @@
   └── numOrganisation : int             [obligatoire]
   ```
 - **Différence avec OrganisationIdCT** (namespace `/v2` ou `/v7`) : pas de `implId`
-- **Utilisé par** : Document 1 (Population), Document 2 (Périodes)
+- **Utilisé par** : Document 1 (Population), Document 2 (Périodes), Document 3 (Attributions) — en requête (Lire/Modifier)
 
 ### OrganisationResIdCT (NOUVEAU — session 3)
 - **Fichier XSD** : `Organisation_v1.xsd`
@@ -166,8 +173,9 @@
   ├── numAdmFormation : int             [obligatoire]
   └── numOrganisation : int             [obligatoire]
   ```
-- **⚠️ Divergence** : le PDF Document 1 (page 9) dit `implId` « obligatoire », mais le XSD déclare `minOccurs="0"`
-- **Utilisé par** : Document 1 (Population), Document 2 (Périodes) — en réponse uniquement
+- **⚠️ Divergence** : le PDF dit `implId` « obligatoire » (Document 1 page 9, Document 2, **et Document 3 page 8**),
+  mais le XSD déclare `minOccurs="0"` — divergence **confirmée sur les 3 documents** (le diagramme UML affiche `[0..1]`)
+- **Utilisé par** : Document 1 (Population), Document 2 (Périodes), Document 3 (Attributions) — en réponse uniquement
 
 ### OrganisationIdCT
 - **Fichier XSD** : `FormationOrganisation_v2.xsd`
@@ -225,6 +233,92 @@
   ```
 - **Utilisé par** : Formation Organisation v7 (réponses Créer, Lire, Modifier)
 
+### FormationDocument3CT (NOUVEAU — session 4)
+- **Fichier XSD** : `FormationDocument3_v1.xsd` (version 1.1)
+- **Namespace** : `http://enseignement.cfwb.be/types/formation/document3/v1`
+- **Structure** :
+  ```
+  FormationDocument3CT
+  ├── id            : OrganisationResIdCT  [obligatoire] (avec implId [0..1])
+  └── activiteListe : Doc3ActiviteListeCT  [0..1]
+      └── activite  : Doc3ActiviteDetailCT [0..*]
+  ```
+- **Particularité** : **aucun switch d'approbation** (contrairement à Doc 1 `swAppPopD1`/`swAppD1` et Doc 2 `swAppD2`)
+- **Utilisé par** : Document 3 (Attributions) — réponses Lire et Modifier (type partagé `Document3ReponseCT`)
+
+### Doc3ActiviteDetailCT (NOUVEAU — session 4)
+- **Fichier XSD** : `FormationDocument3_v1.xsd`
+- **Structure** (réponse, tous `[0..1]` au XSD) :
+  ```
+  Doc3ActiviteDetailCT
+  ├── coNumBranche          : int     — numéro de l'activité d'enseignement
+  ├── coCategorie           : string  — code catégorie (table identique au Doc 2, 30 codes)
+  ├── teNomBranche          : string  — nom de l'activité
+  ├── noAnneeEtude          : string  — numéro de l'année d'étude
+  ├── nbPeriodesDoc8        : int     — périodes au Doc 8bis (⚠️ flux "24.0")
+  ├── nbPeriodesPrevuesDoc2 : int     — ⚠️ PDF : float obligatoire
+  ├── nbPeriodesReellesDoc2 : int     — ⚠️ PDF : float obligatoire
+  └── enseignantListe       : Doc3EnseignantLstCT [0..1] → enseignant [0..*]
+  ```
+- **Type Save (requête)** `Doc3ActiviteDetailSaveCT` : `coNumBranche` + `noAnneeEtude` + `enseignantListe`
+  (obligatoires au XSD, facultatifs selon le PDF)
+
+### Doc3EnseignantDetailCT (NOUVEAU — session 4)
+- **Fichier XSD** : `FormationDocument3_v1.xsd`
+- **Structure** (réponse, 11 champs, tous `[0..1]`) :
+  ```
+  Doc3EnseignantDetailCT
+  ├── coNumAttribution     : int     — numéro de l'attribution
+  ├── noMatEns             : string  — matricule enseignant
+  ├── teNomEns             : string  — nom
+  ├── tePrenomEns          : string  — prénom
+  ├── teAbrEns             : string  — abréviation
+  ├── teEnseignant         : string  — "NOM PRENOM MATRICULE"
+  ├── coDispo              : string  — code disponibilité (~60 codes, hors contrat XML)
+  ├── teStatut             : string  — code statut (C/P/A/D/E/X/T, hors contrat XML)
+  ├── nbPeriodesAttribuees : float   — périodes attribuées
+  ├── tsMaj                : string  — timestamp dernière MAJ
+  └── teUserMaj            : string  — userid dernière MAJ
+  ```
+- **Type Save (requête)** `Doc3EnseignantDetailSaveCT` : `coNumAttribution` (⚠️ **absent du PDF**),
+  `noMatEns`, `coDispo`, `teStatut`, `nbPeriodesAttribuees` — tous `[0..1]`
+- **Note** : `coCategorie` (table) **partagé avec Document 2** ; `coDispo` et `teStatut` sont **propres au Document 3**
+
+### FormationDocument1DCT (NOUVEAU — session 5)
+- **Fichier XSD** : `FormationDocument1D_v1.xsd` (version 1.0)
+- **Namespace** : `http://enseignement.cfwb.be/types/formation/document1D/v1`
+- **Structure** :
+  ```
+  FormationDocument1DCT
+  ├── id                    : OrganisationResIdCT          [obligatoire] (avec implId [0..1])
+  └── droitInscriptionListe : Doc1DDroitInscriptionLstCT   [obligatoire au XSD / « facultatif » PDF]
+      └── droitInscription  : Doc1DDroitInscriptionLineCT  [0..*]  (une ligne par année d'études)
+  ```
+- **Particularité** : **deux switches d'approbation** dans la ligne (cf. ci-dessous), structure parallèle
+  au Document 1 (Population). Service « Droits d'Inscription », nom interne **Document 1D**.
+- **Utilisé par** : Document 1D — réponses Lire / Modifier / Approuver (type partagé `Document1DReponseCT`)
+
+### Doc1DDroitInscriptionLineCT (NOUVEAU — session 5)
+- **Fichier XSD** : `FormationDocument1D_v1.xsd`
+- **Structure** (réponse, 8 champs, tous obligatoires au XSD) :
+  ```
+  Doc1DDroitInscriptionLineCT
+  ├── coAnnEtude                       : string   — code année d'études (clé de ligne) ⚠️ PDF dit « int »
+  ├── nbEleves5ieme                    : int      — population scolaire au 5/10ᵉ de la formation
+  ├── mtDroitsInscription              : float    — montant des droits d'inscription
+  ├── mtDroitsInscriptionOccupationnel : float    — ⚠️ « n'est plus utilisé »
+  ├── swAppPopD1D                      : boolean  — approuvé école / PO
+  ├── swAppD1D                         : boolean  — approuvé administration
+  ├── tsMaj                            : string   — timestamp MAJ ⚠️ PDF dit « boolean »
+  └── teUserMaj                        : string   — userid MAJ ⚠️ PDF dit « boolean »
+  ```
+- **Type Save (requête Modifier)** `Doc1DDroitInscriptionSaveLineCT` : `coAnnEtude` (oblig.) +
+  `nbEleves5ieme` `[0..1]` + `mtDroitsInscription` `[0..1]`.
+- **Type Appr (requête Approuver)** `Doc1DDroitInscriptionApprLineCT` : `coAnnEtude` (oblig.) +
+  `nbEleves5ieme` (**obligatoire** au XSD+UML, « facultatif » au texte PDF — contrôle de concurrence).
+- **Règle métier** : `nbEleves5ieme` modifiable *jusqu'à* approbation population (`swAppPopD1D`),
+  `mtDroitsInscription` modifiable *après* (erreurs `1546`/`1545`/`1530`).
+
 ---
 
 ## 3. Namespaces de référence
@@ -243,6 +337,8 @@
 | `orgdoc` | `http://enseignement.cfwb.be/types/organisation/v1` | Organisation (Documents 1/2/3) |
 | `doc1` | `http://enseignement.cfwb.be/types/formation/document1/v1` | Formation Document 1 (Population) |
 | `doc2` | `http://enseignement.cfwb.be/types/formation/document2/v1` | Formation Document 2 (Périodes) |
+| `doc3` | `http://enseignement.cfwb.be/types/formation/document3/v1` | Formation Document 3 (Attributions) |
+| `doc1D` | `http://enseignement.cfwb.be/types/formation/document1D/v1` | Formation Document 1D (Droits d'Inscription) |
 
 ---
 
@@ -298,6 +394,24 @@
 | `2118` | `false` | Numéro activité d'enseignement incorrect | Document 2 |
 | `20015`-`20036` | `false` | Erreurs intervention extérieure (type, sous-type, relation) | Document 2 |
 | `30016`-`30017` | `false` | Contraintes métier (date valorisation, part supplémentaire) | Document 2 |
+| `1538` | `false` | Périodes Doc3 > périodes Doc2 + IE par branche | Document 3 |
+| `1574` | `false` | Total attributions > total périodes organisées dans formation | Document 3 |
+| `1575` | `false` | Périodes CG attribuées > réel CG + IE CG | Document 3 |
+| `1576` | `false` | Périodes CP attribuées > réel CP + IE CP | Document 3 |
+| `20102` | `false` | **« Doc A » et « Doc 2 » doivent être approuvés pour accéder au « Doc 3 »** (workflow) | Document 3 |
+| `20108` | `false` | Numéro de matricule d'enseignement incorrect | Document 3 |
+| `20109` | `false` | Code dispo d'enseignement incorrect | Document 3 |
+| `20110` | `false` | Statut d'enseignement incorrect | Document 3 |
+| `2106` | `false` | Année d'étude invalide *(Doc 1D)* / Code année d'études population incorrect *(Doc 1/2)* | Doc 1, Doc 2, **Doc 1D** |
+| `1545` | `false` | **« Document déjà approuvé ! »** *(Doc 1D)* — ⚠️ libellé ≠ Doc 1/2 (« Doc 1 approuvé / max 5 IE ») | **Document 1D** (sens propre) |
+| `1546` | `false` | **« Document non encore approuvé ! »** (modif. montants avant approbation population) | **Document 1D** |
+| `1530` | `false` | « Mise à jour impossible; document déjà approuvé par l'administration ! » | Doc 1 (Approuver), Doc 2 (Modifier), **Doc 1D** (Modifier) |
+| `1114` | `false` | **« Matricule école inexistant »** *(Doc 1D)* / « Numéro d'établissement incorrect » *(Doc 1/2/3)* | Doc 1/2/3, **Doc 1D** |
+
+> ⚠️ **Codes non universels** : un même code numérique peut avoir un **libellé/sens différent selon le
+> service** (ex. `1545` = « Document déjà approuvé » au Doc 1D, mais « Doc 1 approuvé / max 5 interventions
+> extérieures » au Doc 1/2). → côté pyetnic, indexer les exceptions typées par **(service, code)**, pas par
+> code seul.
 
 ---
 
@@ -330,19 +444,21 @@
 > Tableau de traçabilité : quel XSD est utilisé par quel service.
 > ✓ = confirmé par analyse WSDL, ? = probable, à confirmer
 
-| Fichier XSD | Formations Liste v2 | Organisation v7 | Document 1 | Document 2 | Document 3 | Droits Inscription |
+| Fichier XSD | Formations Liste v2 | Organisation v7 | Document 1 | Document 2 | Document 3 | Document 1D (Droits Insc.) |
 |---|---|---|---|---|---|---|
-| AnneeScolaire_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ? | ? |
-| Etablissement_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ? | ? |
-| Organisation_v1.xsd | — | — | ✓ (NOUVEAU) | ✓ (identique) | ? | ? |
-| Formation_v2.xsd | ✓ | — | — | — | | |
-| FormationOrganisation_v2.xsd | ✓ | — (remplacé par v7) | — | — | ? | ? |
-| FormationOrganisation_v7.xsd | — | ✓ | — | — | ? | ? |
+| AnneeScolaire_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+| Etablissement_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+| Organisation_v1.xsd | — | — | ✓ (NOUVEAU) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+| Formation_v2.xsd | ✓ | — | — | — | — | — |
+| FormationOrganisation_v2.xsd | ✓ | — (remplacé par v7) | — | — | — | — |
+| FormationOrganisation_v7.xsd | — | ✓ | — | — | — | — |
 | FormationDocument1_v1.xsd | — | — | ✓ (spécifique) | — | — | — |
 | FormationDocument2_v1.xsd | — | — | — | ✓ (spécifique) | — | — |
-| ResponseStatus_v3.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ? | ? |
-| Common_v1.xsd | ✓ | — (remplacé par v2) | ✓ (identique) | ✓ (identique) | ? | ? |
-| Common_v2.xsd | — | ✓ | — | — | ? | ? |
-| requestId_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ? | ? |
-| Addressing_v2.xsd | ✓ | — | ✓ (identique) | ✓ (identique) | ? | ? |
-| Authorisation_v2.xsd | ✓ | — | ✓ (identique) | ✓ (identique) | ? | ? |
+| FormationDocument3_v1.xsd | — | — | — | — | ✓ (spécifique, v1.1) | — |
+| FormationDocument1D_v1.xsd | — | — | — | — | — | ✓ (spécifique, v1.0) |
+| ResponseStatus_v3.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+| Common_v1.xsd | ✓ | — (remplacé par v2) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+| Common_v2.xsd | — | ✓ | — | — | — | — |
+| requestId_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+| Addressing_v2.xsd | ✓ | — | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+| Authorisation_v2.xsd | ✓ | — | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
