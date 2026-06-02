@@ -125,7 +125,7 @@ Construction API symbols are covered only by unit tests. No regression coverage.
 ## What to do when you want to break something stable
 
 1. **Double-check** it's actually on the stable list. If not, go ahead.
-2. If it is, document the proposed change in a phase prompt under `docs/phases/`.
+2. If it is, document the proposed change (rationale + migration path) in `plan.md` or a design note.
 3. Introduce the change via the deprecation process above.
 4. Update `PUBLIC_API_SURFACE.md` if the symbol's classification changes.
 5. Add a CHANGELOG entry.
