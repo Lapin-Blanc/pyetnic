@@ -9,6 +9,14 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+### Fixed
+
+- **SEPS responses no longer fail to parse in production.** The SOAP client now
+  builds its `zeep` client with `Settings(strict=False)`, so ETNIC production
+  responses carrying elements absent from the embedded WSDL/XSD (e.g. the SEPS
+  inscription `audit` block) are tolerated instead of raising `XMLParseError`.
+  Applies to all services (EPROM and SEPS).
+
 ## [0.1.0b1] - 2026-06-02
 
 First public **beta** of the refactored library. This entry covers the whole
