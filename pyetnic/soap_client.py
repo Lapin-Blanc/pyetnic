@@ -11,7 +11,7 @@ import logging
 import urllib3
 from importlib.resources import files, as_file
 
-from zeep import Client
+from zeep import Client, Settings
 from zeep.helpers import serialize_object
 from zeep.wsse.username import UsernameToken
 from zeep.transports import Transport
@@ -200,7 +200,11 @@ class SoapClientManager:
         transport = Transport(session=session)
 
         wsdl_path = get_wsdl_path('pyetnic.resources', self.service_config.wsdl_path)
-        client = Client(wsdl_path, wsse=wsse, transport=transport)
+        # Non-strict parsing: ETNIC production responses may carry elements absent
+        # from the embedded WSDL/XSD (e.g. the SEPS inscription `audit` block), which
+        # zeep's default strict mode rejects. Tolerate unknown elements instead.
+        settings = Settings(strict=False)
+        client = Client(wsdl_path, wsse=wsse, transport=transport, settings=settings)
         service = client.create_service(self.service_config.binding_name, self.service_config.endpoint)
 
         self._client_cache[key] = service
