@@ -10,8 +10,17 @@ nominative student data (no NISS, name, address...).
 
 Strategy:
 - one bulk SEPS call retrieves every inscription, grouped by (numAdm, numOrg);
+  inscriptions whose status is excluded (cancelled, ``AN``) are dropped;
 - the Doc 1 is read per organisation, but only for organisations whose
   population/periods document is approved (otherwise Doc 1 is not accessible).
+
+Discrepancy kinds:
+- ``MISMATCH``           — approved org, both sides > 0 but differ;
+- ``DECLARED_NO_SEPS``   — approved org declares a population, SEPS has none;
+- ``SEPS_NO_DECLARED``   — approved org declares 0, SEPS has inscriptions;
+- ``NOT_APPROVED``       — org not approved yet (Doc 1 unreadable) but SEPS has
+                           inscriptions: the real org status is shown;
+- ``ORPHAN_SEPS``        — SEPS inscriptions for an org absent from EPROM.
 
 Usage:
     python examples/audit_coherence_doc1_seps.py --annee 2025-2026 --etab 3052
@@ -28,10 +37,14 @@ from dataclasses import dataclass
 import pyetnic.eprom as eprom
 import pyetnic.seps as seps
 
-# Discrepancy kinds
-MISMATCH = "MISMATCH"  # both sides > 0 but differ
-DECLARED_NO_SEPS = "DECLARED_NO_SEPS"  # Doc 1 declares a population, SEPS has none
-SEPS_NO_DECLARED = "SEPS_NO_DECLARED"  # SEPS has inscriptions, Doc 1 declares none / not approved
+MISMATCH = "MISMATCH"
+DECLARED_NO_SEPS = "DECLARED_NO_SEPS"
+SEPS_NO_DECLARED = "SEPS_NO_DECLARED"
+NOT_APPROVED = "NOT_APPROVED"
+ORPHAN_SEPS = "ORPHAN_SEPS"
+
+# SEPS inscription statuses dropped by default: ``AN`` = annulé (cancelled).
+DEFAULT_EXCLUDED_STATUSES: tuple[str, ...] = ("AN",)
 
 
 @dataclass
@@ -45,10 +58,22 @@ class Discrepancy:
     doc1: int
     seps: int
     kind: str
+    org_status: str
 
     @property
     def delta(self) -> int:
         return self.seps - self.doc1
+
+
+@dataclass
+class AuditResult:
+    """Outcome of an audit run, including transparency counters."""
+
+    discrepancies: list[Discrepancy]
+    organisations_scanned: int
+    seps_total: int
+    seps_excluded: int
+    excluded_statuses: tuple[str, ...]
 
 
 def _doc1_headcount(org_id: object) -> int | None:
@@ -70,13 +95,25 @@ def _doc1_headcount(org_id: object) -> int | None:
     )
 
 
-def audit(annee_scolaire: str, etab_id: int) -> list[Discrepancy]:
-    """Return the list of organisations where Doc 1 and SEPS head-counts differ."""
+def audit(
+    annee_scolaire: str,
+    etab_id: int,
+    excluded_statuses: tuple[str, ...] = DEFAULT_EXCLUDED_STATUSES,
+) -> AuditResult:
+    """Return the organisations where Doc 1 and SEPS head-counts differ."""
     year_int = int(annee_scolaire.split("-")[0])
+    excluded = set(excluded_statuses)
 
-    # 1) Every SEPS inscription in a single call, grouped by (numAdm, numOrg).
+    # 1) Every SEPS inscription in a single call, grouped by (numAdm, numOrg),
+    #    dropping excluded (e.g. cancelled) statuses.
     seps_by_org: Counter[tuple[int, int]] = Counter()
+    seps_total = 0
+    seps_excluded = 0
     for ins in seps.rechercher_inscriptions(annee_scolaire=year_int, etab_id=etab_id):
+        seps_total += 1
+        if ins.statut in excluded:
+            seps_excluded += 1
+            continue
         if ins.ue:
             seps_by_org[(ins.ue.noAdministratif, ins.ue.noOrganisation)] += 1
 
@@ -84,22 +121,25 @@ def audit(annee_scolaire: str, etab_id: int) -> list[Discrepancy]:
     res = eprom.lister_formations(annee_scolaire=annee_scolaire)
     discrepancies: list[Discrepancy] = []
     accounted: set[tuple[int, int]] = set()
+    scanned = 0
 
     for formation in res.formations:
         for org in formation.organisations:
+            scanned += 1
             key = (formation.numAdmFormation, org.id.numOrganisation)
             seps_n = seps_by_org.get(key, 0)
             status = org.statutDocumentPopulationPeriodes
+            status_label = status.statut if status else "—"
             approved = bool(status and status.statut == "Approuvé")
 
             if not approved:
-                # Doc 1 is not accessible; only worth flagging if SEPS has inscriptions
-                # (EPROM encoding lagging behind real registrations).
+                # Doc 1 not accessible; flag only if SEPS already has inscriptions
+                # (real registrations preceding EPROM approval).
                 if seps_n:
                     accounted.add(key)
                     discrepancies.append(
                         Discrepancy(key[0], key[1], formation.codeFormation,
-                                    formation.libelleFormation, 0, seps_n, SEPS_NO_DECLARED)
+                                    formation.libelleFormation, 0, seps_n, NOT_APPROVED, status_label)
                     )
                 continue
 
@@ -115,7 +155,7 @@ def audit(annee_scolaire: str, etab_id: int) -> list[Discrepancy]:
                 kind = MISMATCH
             discrepancies.append(
                 Discrepancy(key[0], key[1], formation.codeFormation,
-                            formation.libelleFormation, doc1_n, seps_n, kind)
+                            formation.libelleFormation, doc1_n, seps_n, kind, status_label)
             )
 
     # 3) SEPS inscriptions pointing at an organisation absent from the EPROM catalogue.
@@ -123,9 +163,10 @@ def audit(annee_scolaire: str, etab_id: int) -> list[Discrepancy]:
         if key not in accounted:
             discrepancies.append(
                 Discrepancy(key[0], key[1], "?",
-                            "(organisation absente du catalogue EPROM)", 0, seps_n, SEPS_NO_DECLARED)
+                            "(organisation absente du catalogue EPROM)", 0, seps_n, ORPHAN_SEPS, "—")
             )
-    return discrepancies
+
+    return AuditResult(discrepancies, scanned, seps_total, seps_excluded, tuple(excluded_statuses))
 
 
 def main() -> None:
@@ -134,20 +175,36 @@ def main() -> None:
     )
     parser.add_argument("--annee", default="2025-2026", help="School year, e.g. 2025-2026")
     parser.add_argument("--etab", type=int, default=3052, help="Établissement id")
+    parser.add_argument(
+        "--exclure-statuts", nargs="*", metavar="STATUT",
+        default=list(DEFAULT_EXCLUDED_STATUSES),
+        help="SEPS inscription statuses to ignore (default: AN = cancelled). "
+             "Pass with no value to count every status.",
+    )
     args = parser.parse_args()
 
-    discrepancies = audit(args.annee, args.etab)
+    result = audit(args.annee, args.etab, tuple(args.exclure_statuts))
     header = f"[{args.annee} / etab {args.etab}]"
-    if not discrepancies:
-        print(f"{header} Aucune incohérence Doc 1 <-> SEPS. OK")
+    excl_codes = ",".join(result.excluded_statuses) or "—"
+    seps_line = (f"  SEPS : {result.seps_total} inscriptions, "
+                 f"{result.seps_excluded} exclue(s) [{excl_codes}].")
+
+    if not result.discrepancies:
+        print(f"{header} Aucune incohérence Doc 1 <-> SEPS sur "
+              f"{result.organisations_scanned} organisations. OK")
+        print(seps_line)
         return
 
-    by_kind = Counter(d.kind for d in discrepancies)
-    print(f"{header} {len(discrepancies)} incohérence(s) Doc 1 <-> SEPS : {dict(by_kind)}\n")
-    print(f"  {'UE/org':<12}{'Doc1':>6}{'SEPS':>6}{'delta':>7}  {'type':<17}libellé")
-    for d in sorted(discrepancies, key=lambda x: (x.kind, -abs(x.delta))):
+    by_kind = Counter(d.kind for d in result.discrepancies)
+    print(f"{header} {len(result.discrepancies)} incohérence(s) / "
+          f"{result.organisations_scanned} org. : {dict(by_kind)}")
+    print(seps_line + "\n")
+    print(f"  {'UE/org':<12}{'Doc1':>5}{'SEPS':>5}{'delta':>7}  "
+          f"{'type':<17}{'statut org':<15}libellé")
+    for d in sorted(result.discrepancies, key=lambda x: (x.kind, -abs(x.delta))):
         ue_org = f"{d.num_adm}/{d.num_org}"
-        print(f"  {ue_org:<12}{d.doc1:>6}{d.seps:>6}{d.delta:>+7}  {d.kind:<17}{d.label[:38]}")
+        print(f"  {ue_org:<12}{d.doc1:>5}{d.seps:>5}{d.delta:>+7}  "
+              f"{d.kind:<17}{d.org_status:<15}{d.label[:32]}")
 
 
 if __name__ == "__main__":
