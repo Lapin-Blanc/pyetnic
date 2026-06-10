@@ -1,8 +1,12 @@
-# Registre des types XSD partagés — Services ETNIC EPROM
+# Registre des types XSD partagés — Services ETNIC EPROM + SEPS
 
-> Ce fichier centralise tous les types XSD réutilisés par plusieurs services EPROM.
+> Ce fichier centralise tous les types XSD réutilisés par plusieurs services ETNIC.
 > Il est enrichi à chaque session d'analyse d'un nouveau service.
-> Dernière mise à jour : 2026-06-02 (session 5 — Formation Droits d'Inscription / Document 1D v1)
+> Dernière mise à jour : 2026-06-09 (session 7 — **famille SEPS** : Étudiants, Inscriptions, Notifications + référentiels)
+>
+> **Deux familles distinctes** : **EPROM** (sections 1-6, organisation des formations) et **SEPS**
+> (section 7, étudiants & inscriptions — Enseignement pour Adultes). Patterns techniques différents
+> (auth, namespaces, bloc retour). Voir section 7 pour SEPS.
 
 ---
 
@@ -462,3 +466,154 @@
 | requestId_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
 | Addressing_v2.xsd | ✓ | — | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
 | Authorisation_v2.xsd | ✓ | — | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
+
+---
+
+# 7. Famille SEPS (Étudiants & Inscriptions — Enseignement pour Adultes)
+
+> **NOUVEAU — session 7.** Famille **distincte d'EPROM**. Specs 09-13 (services) + 14 (circulaire 9593) + 15 (référentiels).
+> 5 services : Recherche Étudiants (09), Sauvegarde Étudiant (10), Enregistrer Inscription (11),
+> Recherche Inscriptions (12), Notifications (13). Contrat **external_v1** ; releases 2.1.9 (sauf Notifications 1.0.8).
+
+## 7.1. Particularités techniques SEPS vs EPROM
+
+| Aspect | EPROM | SEPS |
+|---|---|---|
+| Auth | WS-Security UsernameToken | **WS-Security certificat X.509** (BinarySecurityToken + Signature) |
+| SOAP | 1.1 ou 1.2 | **1.1 uniquement** |
+| Namespace WSDL | `services-web.etnic.be/eprom/...` | `ws.etnic.be/seps/{service}/v1` |
+| Namespace types | `enseignement.cfwb.be/types/...` | `enseignement.cfwb.be/types/seps/...` |
+| Bloc retour | `AbstractExternalResponseType` (`common/v1`) | `AbstractExternalResponseType` (**`external/v1`**) |
+| Identité métier | etabId + numAdmFormation + numOrganisation | **cfNum** (+ etabId/idImplantation pour inscriptions) |
+| Host endpoint | `services-web(.tq).etnic.be` | WSDL=`ws-tq.etnic.be` ⚠️ vs PDF=`services-web(.tq).etnic.be` |
+
+## 7.2. Namespaces SEPS
+
+| Préfixe | URI | Description |
+|---|---|---|
+| `cfNum` | `http://enseignement.cfwb.be/types/seps/cfNum/v1` | Identifiant étudiant (cfNumType) |
+| `etu` | `http://enseignement.cfwb.be/types/seps/etudiant/v1` | EtudiantType |
+| `etd` | `http://enseignement.cfwb.be/types/seps/etudiantDetails/v1` | EtudiantDetailsType + sous-types |
+| `insc` | `http://enseignement.cfwb.be/types/seps/inscription/v1` | InscriptionType + enums |
+| `noti` | `http://enseignement.cfwb.be/types/seps/notification/v1` | NotificationType |
+| `ext` | `http://etnic.be/types/technical/external/v1` | AbstractExternalResponseType (SEPS) |
+| (msg) | `http://ws.etnic.be/seps/{service}/messages/v1` | Éléments d'opération par service |
+
+## 7.3. AbstractExternalResponseType (external_v1.xsd) — bloc retour SEPS
+```
+AbstractExternalResponseType (abstract, ns external/v1)
+├── success  : boolean       [obligatoire]  (ns ResponseStatus/v3)
+└── messages : messagesType  [0..1]         (ns ResponseStatus/v3) → error/warning/info : MessageType[]
+```
+- **Forme identique** à Common_v1 mais **namespace différent** (`external/v1` au lieu de `common/v1`).
+- `ResponseStatus_v3.xsd` et `requestId_v1.xsd` **byte-for-byte identiques à EPROM** (md5 vérifié).
+- Convention codes : succès via `messages/info` (200/201) ; absence de résultat souvent en `messages/warning` avec `success=false` (30105/30103/30115).
+
+## 7.4. Types signalétique étudiant (etudiant_v1.xsd, etudiantDetails_v1.xsd)
+```
+cfNumType        : string, pattern [0-9]{1,10}\-[0-9]{2}        (ex. 8501889-33)
+EtudiantType     : cfNum[0..1] + rnDetails[0..1] + cfwbDetails[0..1]   (2 versions : RN/BCSS vs établissement)
+EtudiantDetailsType :
+  niss[0..1] (NISSType [0-9]{6}(-)?[0-9]{3}(-)?[0-9]{2}, contrôle mod 97)
+  nom[0..1] (1..80) | prenom[0..1] (0..50) | autrePrenom[0..3] | sexe[0..1] (M/F/X)
+  naissance[0..1] (date:IncompleteDateType + codePays:INS5 + localite[0..1])
+  deces[0..1] (date) | adresse[0..1] | codeNationalite[0..1] (INS5)
+AdresseType   : rue + numero[0..1] + boite[0..1] + extension[0..1] + codePostal + localite[0..1] + localiteExtension[0..1] + codePays
+LocaliteType  : code[0..1] (INS 5 ch. si belge) + description[0..1]
+IncompleteDateType : pattern [1-2][0-9]{3}(\-[0-1][0-9]\-[0-3][0-9])?  (date complète OU année seule)
+```
+⚠️ **Réponse HORS XSD** (observé en exemples) : attribut `rnValidityEndDate` + élément `codeEtatCivil` (cfwbDetails). XSD non exhaustif en sortie → parser tolérant.
+⚠️ **Naming** : texte PDF `rnDetail`/`cfwbDetail` (sing.) vs XSD+UML `rnDetails`/`cfwbDetails` (plur. — fait foi).
+
+## 7.5. Types inscription (inscription_v1.xsd)
+```
+InscriptionInputDataType : cfNum + idEtab(int) + idImplantation(int) + codePostalLieuCours(≤7) + inscription:InscriptionInputType
+InscriptionInputType : dateInscription(DateType ≤10) + statut(DE/AN) + anneeScolaire(int)⚠ + ue(UEInputType)⚠ + specificite(SpecificiteDataType)⚠
+  ⚠ anneeScolaire/ue/specificite : minOccurs=0 au XSD mais OBLIGATOIRES (erreurs 30101/30100/30025)
+UEInputType  : noAdministratif(ShortType) + noOrganisation(ShortType)
+SpecificiteDataType : regulier1/regulier5(IndicateurType) + droitInscription + droitInscriptionSpecifique
+                      + dureeInoccupation + situationMenage + enfantACharge + difficulteHandicap + difficulteAutre
+                      + admission + sanction   (tous [0..1] ; conditionnels FSE/admission/sanction)
+InscriptionType (sortie) : cfNum + anneeScolaire + idEtab + idImplantation + dateInscription + lieuCours + statut + ue:UEType + specificite
+UEType (sortie) : noAdministratif + noOrganisation + label + code + codeNiveau(SI/SS/SC/SL) + nombreSemaine + dateDebut + dateFin + fse + noOrganisationPrecedent + activiteDeFormation
+LieuCoursType : codePostal[0..1] + ville[0..1]
+```
+⚠️ **`SpecificiteDataInputType`** défini mais **JAMAIS référencé** (type mort ; l'entrée utilise SpecificiteDataType).
+
+### Énumérations inscription (référentiel partagé — à maintenir côté pyetnic)
+| Type | Valeurs |
+|---|---|
+| CodeStatutType | `DE` (définitive), `AN` (annulée) |
+| IndicateurType | `O`, `N` |
+| IndicateurXType | `O`, `N`, `X` (n'accepte pas) |
+| MotifExemptionType (DI) | `C01`-`C07` (mineur / chômeur / handicap / RIS / personnel enseignant / autorité publique / autre) |
+| MotifExemptionSpecType (DIS, hors CEE) | `C01`-`C13` |
+| DureeInoccupationType (FSE) | `C00` (<6m), `C06` (6-12m), `C12` (12-24m), `C24` (>24m) |
+| SituationMenageType (FSE) | `ISOL`, `SSEM`, `A1EM`, `X` |
+| CodeAdmissionType | `REUSSITE`, `TITREBEL`, `TITREETR`, `AUTRE` |
+| TypeEnseignementType | `PRI`, `SIPE`, `SSPE`, `SIPS`, `SSPS`, `SCPE`, `SLPE`, `SCPS`, `SLPS` |
+| TitreDelivreType | 23 valeurs (CEB, CE1D, CESI, CE2D, CQ4, CESSG/T/Q/P/A, CE6P, CQ6, CQ7, DAES, BES, BACH, MAST, CESS, CQINF, CQSUP, BACHSPE, MASTSPE, DOC) |
+| EquivalenceType (TITREETR) | `C01`-`C04` |
+| ValorisationAcquisType (AUTRE) | `C01`-`C04`, `C10`, `C20`, `C30`, `C40` |
+| CodeSanctionType | `RE` (réussite), `AB` (abandon), `EH` (échec) |
+| ValorisationAcquisSanctionType (RE) | `C00`-`C05` |
+| MotifAbandonType (AB) | `TPS`, `PRO`, `FAM`, `SAN`, `ATT`, `MEM`, `FMJ`, `NUM`, `AUT`, `INC` |
+| StatutFinFormationType (FSE) | `C01`-`C06` ⚠️ (PDF écrit 01-06 sans « C » ; XSD fait foi) |
+| CodeNiveauType | `SI`, `SS`, `SC`, `SL` |
+
+## 7.6. NotificationType (notification_v1.xsd)
+```
+NotificationType : id(unsignedLong) + cfNum + date + code(NotificationCodeType \d{2}) + description[0..1](NotificationDescriptionType)
+```
+- Codes (PDF) : `02` sexe, `04` nom/prénom, `05` adresse, `06` nationalité, `07` NISS, `08` statut.
+- ⚠️ `code` = pattern libre `\d{2}` (pas d'enum) ; `NotificationDescriptionType` = **5 valeurs** (SEXE/NOM-PRENOM/ADRESSE/NATIONALITE/NISS) → **« STATUT » (08) absent de l'enum**.
+
+## 7.7. Référentiels SEPS (codes — spec 15)
+- **codePays / codeNationalite** = code INS (`Codes_Pays.xls`), **5 chiffres** zero-paddés. `codePays`=`CO_ONSS_ID`, `codeNationalite`=`CO_NATIO_ID` (≠ pour 43 territoires). Belgique=`00150`. Codes spéciaux 900/901/999.
+- **localite.code** = code INS commune (`INS_communesNais200723.xlsx`), **5 chiffres**, obligatoire si commune belge ; historique de fusions (601 actives / 2789 codes).
+- Extraits exploitables : `specs/referentiels/codes_pays.{csv,json}`, `codes_communes_ins.{csv,json}`, `codes_communes_ins_actives.csv`.
+
+## 7.8. Codes d'erreur SEPS (⚠️ non universels, indexer par (service, code))
+
+| Code | Sens | Service(s) |
+|---|---|---|
+| `200`/`201` | Succès (found / created) | tous |
+| `30036`/`30037` | Combinaison de critères invalide / date invalide | Recherche Inscriptions |
+| `30039` | modeEnregistrement requis | Sauvegarde Étudiant |
+| `30041` | Validation cfNum | plusieurs |
+| `30042` | **Validation SSIN** *(Recherche Étud.)* / **pas de EtudiantDetail** *(Sauvegarde)* | ⚠️ 2 sens |
+| `30047`/`30048` | Validation cfNum / fromDate | lireEtudiant |
+| `30049`/`30050` | Validation etabId / dateDebut | Notifications, Rech. Insc. |
+| `30051` | OK mais inscrit dans >4 UEs | Enregistrer Inscription |
+| `30052` | Multi-profil : etabId requis | Recherche Inscriptions |
+| `30060`-`30078` | Validations champs signalétique | Sauvegarde Étudiant |
+| `30100`/`30101`/`30102`/`30103` | UE/inscription introuvable (variantes) | Inscriptions |
+| `30105`/`30110`/`30115` | Pas de notification / étudiant trouvé | Notif / Recherche Étud. |
+| `30010`-`30035` | Validations métier inscription (FSE, admission, sanction, DI exclusif…) | Enregistrer Inscription |
+| `30070`/`30079`/`30080` | Annulation / regulier1 / regulier5 figés (1-5/10ᵉ) | Enregistrer Inscription |
+| `30120` | Pas trouvé (fin) | Sauvegarde Étudiant |
+| `30200` | Inscription déjà existante pour l'UE | Enregistrer Inscription |
+| `30201` | Étudiant existe déjà (cfNum) | Sauvegarde Étudiant |
+| `30202`/`30203`/`30204` | Doublons (Phonex/BCED) | Sauvegarde Étudiant |
+| `30401` | Mutation de NISS détectée | Recherche / Sauvegarde Étud. |
+| `30402` | Non enregistrable (RGPD) | Sauvegarde Étudiant |
+| `30443` | Aucune modification à appliquer | Sauvegarde Étud. / Modif Insc. |
+| `30501`/`30502`/`30503`/`30504` | Trop de résultats / erreur BCED / sauvegarde | plusieurs |
+| `30550` / `50505`-`50509` | Auth interne / erreurs internes | plusieurs |
+
+**SOAP Fault (technique, ≠ métier)** : `SECU-0102/0103/0104` (auth), `SECU-1101` (autorisation), `ROUT-1001` (technique), `VALI-0100/1100` (validation XSD requête/réponse).
+
+## 7.9. Traçabilité XSD par service SEPS
+> md5 vérifié : `cfNum_v1`, `external_v1`, `requestId_v1`, `ResponseStatus_v3` identiques sur les 5 services ; `etudiant_v1`/`etudiantDetails_v1` identiques (Recherche/Sauvegarde Étudiant) ; `inscription_v1` identique (Enregistrer/Recherche Inscriptions).
+
+| XSD | Rech. Étud. (09) | Sauv. Étud. (10) | Enr. Insc. (11) | Rech. Insc. (12) | Notif. (13) |
+|---|---|---|---|---|---|
+| cfNum_v1.xsd | ✓ | ✓ | ✓ | ✓ | ✓ |
+| external_v1.xsd | ✓ | ✓ | ✓ | ✓ | ✓ |
+| requestId_v1.xsd | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ResponseStatus_v3.xsd | ✓ | ✓ | ✓ | ✓ | ✓ |
+| etudiant_v1.xsd | ✓ | ✓ | — | — | — |
+| etudiantDetails_v1.xsd | ✓ | ✓ | — | — | — |
+| inscription_v1.xsd | — | — | ✓ | ✓ | — |
+| notification_v1.xsd | — | — | — | — | ✓ |
+| {Service}Messages_external_v1.xsd | ✓ (spécifique) | ✓ | ✓ | ✓ | ✓ |
