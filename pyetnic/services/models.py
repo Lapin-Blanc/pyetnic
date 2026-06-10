@@ -133,7 +133,13 @@ class FormationDocument1:
 
 @dataclass
 class Doc2ActiviteEnseignementLine:
-    """Ligne d'activité d'enseignement pour le document 2."""
+    """Ligne d'activité d'enseignement pour le document 2.
+
+    Ordre et types alignés sur le XSD ``Doc2ActiviteEnseignementLineCT`` (cf.
+    ``specs/04_formation_periodes_v1.md``) : les 14 champs sont obligatoires en
+    réponse, ``coEtuReg`` (année d'études Rgp, string) vient en dernier après
+    les trois numéros de regroupement ``coAdmReg``/``coOrgReg``/``coBraReg`` (int).
+    """
     coNumBranche: int
     coCategorie: str
     teNomBranche: str
@@ -144,10 +150,10 @@ class Doc2ActiviteEnseignementLine:
     nbPeriodePrevueAn2: float
     nbPeriodeReelleAn1: float
     nbPeriodeReelleAn2: float
+    coAdmReg: int
+    coOrgReg: int
+    coBraReg: int
     coEtuReg: str
-    coAdmReg: int = 0
-    coOrgReg: int = 0
-    coBraReg: int = 0
 
 @dataclass
 class Doc2ActiviteEnseignementList:
@@ -519,7 +525,15 @@ class SepsUESave:
 
 @dataclass
 class SepsSpecificiteSave:
-    """Spécificités d'inscription à envoyer (SpecificiteDataInputType — sans regulier1/5)."""
+    """Spécificités d'inscription à envoyer (SpecificiteDataType).
+
+    L'élément d'entrée ``inscription/specificite`` est typé ``SpecificiteDataType``
+    (inscription_v1.xsd l.18), et non ``SpecificiteDataInputType`` — ce dernier
+    est un type XSD mort, jamais référencé. Le contrat d'entrée porte donc bien
+    ``regulier1`` / ``regulier5`` (IndicateurType, "O"/"N").
+    """
+    regulier1: Optional[str] = None                       # "O" | "N"
+    regulier5: Optional[str] = None                       # "O" | "N"
     droitInscription: Optional[SepsDroitInscription] = None
     droitInscriptionSpecifique: Optional[SepsDroitInscriptionSpecifique] = None
     dureeInoccupation: Optional[str] = None               # C00|C06|C12|C24

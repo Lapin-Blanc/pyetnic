@@ -6,7 +6,7 @@ from typing import Optional
 from ..soap_client import SoapClientManager
 from ._helpers import to_soap_dict
 from .models import Etudiant, EtudiantDetailsSave
-from .seps import RechercheEtudiantsService
+from .seps import RechercheEtudiantsService, _check_seps_errors
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,7 @@ class EnregistrerEtudiantService:
     # ------------------------------------------------------------------
 
     def _parse_enregistrer_response(self, result) -> Optional[Etudiant]:
+        _check_seps_errors(result)
         if not (
             result
             and result.get("body")
@@ -43,6 +44,7 @@ class EnregistrerEtudiantService:
         return self._parse_etudiant(result["body"]["response"]["etudiant"])
 
     def _parse_modifier_response(self, result) -> Optional[Etudiant]:
+        _check_seps_errors(result)
         if not (
             result
             and result.get("body")

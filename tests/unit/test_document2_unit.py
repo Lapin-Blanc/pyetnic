@@ -1,17 +1,37 @@
 # test_document2_unit.py — mock-only unit tests for Document2Service.
 
 import logging
+from dataclasses import MISSING, fields
 
 import pytest
 
 from pyetnic.config import Config
 from pyetnic.services.document2 import Document2Service
 from pyetnic.services.models import (
+    Doc2ActiviteEnseignementLine,
     Doc2ActiviteEnseignementLineSave,
     Doc2ActiviteEnseignementListSave,
     FormationDocument2,
     OrganisationId,
 )
+
+
+def test_doc2_activite_line_field_order_matches_xsd():
+    """Field order must follow the XSD (coEtuReg last), with no misleading
+    ``=0`` defaults on the four required regroupement fields — guards against
+    the positional-construction hazard (latent bug #3)."""
+    names = [f.name for f in fields(Doc2ActiviteEnseignementLine)]
+    assert names == [
+        "coNumBranche", "coCategorie", "teNomBranche", "coAnnEtude", "nbEleveC1",
+        "nbPeriodeBranche", "nbPeriodePrevueAn1", "nbPeriodePrevueAn2",
+        "nbPeriodeReelleAn1", "nbPeriodeReelleAn2",
+        "coAdmReg", "coOrgReg", "coBraReg", "coEtuReg",
+    ]
+    by_name = {f.name: f for f in fields(Doc2ActiviteEnseignementLine)}
+    for required in ("coAdmReg", "coOrgReg", "coBraReg", "coEtuReg"):
+        assert by_name[required].default is MISSING, (
+            f"{required} is required in the response — it must not carry a default"
+        )
 
 logger = logging.getLogger(__name__)
 

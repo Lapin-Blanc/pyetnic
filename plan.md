@@ -468,8 +468,11 @@ Completed on: 2026-06-02 — **`0.1.0b1` published to PyPI.**
 - ~~Rationalize `specs/` and `docs/phases/` so they stop inflating the diff ~6×.~~
   **Done (2026-06-02, post-publication housekeeping):** `docs/phases/` deleted (Track A scaffolding,
   consumed); `specs/` kept and enriched to 6/6 services (Track B, live). See the changelog entry below.
-- Four latent bugs: `formations_liste` dict-where-`List[str]`; `creer/modifier_organisation`
-  `None`-serialization; `Doc2` read-field order vs XSD; Common_v2 `requestId` as an XML attribute.
+- ~~Four latent bugs: `formations_liste` dict-where-`List[str]`; `creer/modifier_organisation`
+  `None`-serialization; `Doc2` read-field order vs XSD; Common_v2 `requestId` as an XML attribute.~~
+  **All four fixed (2026-06-10)** on branch `fix/seps-latent-bugs-and-org-none` — see the
+  post-publication maintenance entry below. The Common_v2 `requestId` fix is a non-regressive
+  `body['requestId']` fallback, still unconfirmed against a live v7 error response.
 - Dedup the version to a single source (`dynamic = ["version"]`).
 - Bump the deprecated Node 20 GitHub Actions; consider `include CHANGELOG.md` in MANIFEST.in.
 - Default-mode flip to "raise" + `0.1.0` final / `0.2.0` planning.
@@ -499,4 +502,23 @@ Completed on: 2026-06-02 — **`0.1.0b1` published to PyPI.**
 - **[Sprint 4, phase 4.4]** Bumped `0.0.12` → `0.1.0b1` in both `pyproject.toml` and `pyetnic/__init__.py` (single-source dedup deferred per checklist); classifier `3 - Alpha` → `4 - Beta`. **Decision (with Fabien): moved `cryptography` from base deps to the `[seps]` extra** (`["xmlsec", "cryptography"]`) since it is SEPS-only (lazy-imported, guarded) — lighter base install. Enriched `[project.urls]` with Repository/Issues/Changelog. Verified README renders as long_description (no local links). Built sdist + wheel; `twine check dist/*` → both PASSED; wheel confirmed to carry `py.typed`, 9 WSDL + 73 XSD, no `Codes_Pays.xls`. No upload, no merge (4.5). Backlog: `CHANGELOG.md` absent from sdist (MANIFEST.in omits it).
 - **[Sprint 4, phase 4.5]** **Published `0.1.0b1` to PyPI.** Decided (asked Fabien) _not_ to add `CHANGELOG.md` to the sdist (kept as backlog). Merged `refactor/sprint-4` → `main` via PR #6 (merge commit `ccdb8a9`, no squash; `tests.yml` green on `pull_request`). Clean build from `main`; `twine check` PASSED (sdist + wheel). Local install rehearsal (no upload): wheel + sdist with `[seps]` in fresh venvs — `xmlsec` resolved as a prebuilt cp313 wheel, `import pyetnic` → `0.1.0b1`, `CONVENTION == "C"`, CLI OK. Pushed annotated tag `v0.1.0b1` on `ccdb8a9` → `publish-pypi.yml` published to prod PyPI via OIDC Trusted Publishing (run `26810820326`, 37 s green, no token). Post-check: `pip install --pre pyetnic` → `0.1.0b1` (base install pulls neither `xmlsec` nor `cryptography`); project page HTTP 200.
 - **[Sprint 4, post-publication]** Sprint 4 marked complete (Global progress); phase 4.5 detailed; Sprint 4 retrospective drafted (subjective sections pending Fabien). Backlog carried forward: rationalize `specs/`/`docs/phases/`, the four latent bugs, version single-source, Node 20 action bump, `CHANGELOG.md` in MANIFEST.in.
+- **[2026-06-10, post-publication maintenance — specs↔code audit follow-up]** A multi-agent
+  audit confronting the session-7 enriched `specs/` (full SEPS family + circulaires + INS
+  referentials) against the code drove a round of correctness fixes on branch
+  `fix/seps-latent-bugs-and-org-none` (not yet merged). **SEPS quick-wins:** `lire_etudiant` /
+  `enregistrer_etudiant` / `modifier_etudiant` no longer swallow business errors as `None`
+  (shared `_check_seps_errors` raises typed exceptions; NOT_FOUND 30110/30115 still yield None/[]);
+  `_as_list` hardened to treat `str`/`bytes` as scalar, fixing `autrePrenom` char-splitting.
+  **Four known latent bugs closed:** organisation `None`-serialization (`_strip_none_recursive` on
+  creer/modifier), `formations_liste` messagesType→`List[str]` (`_flatten_messages`),
+  `Doc2ActiviteEnseignementLine` field order realigned to the XSD (coEtuReg last, no `=0`
+  defaults), and a non-regressive `body['requestId']` fallback in `extract_error_info` for
+  Common_v2 (still unconfirmed against a live v7 error). **Nomenclatures (option 2):** added the 12
+  missing inscription enums (CodeStatut, Indicateur, IndicateurX, MotifExemption,
+  MotifExemptionSpec, TypeEnseignement, TitreDelivre×23, Equivalence, ValorisationAcquis,
+  ValorisationAcquisSanction, StatutFinFormation, CodeNiveau) pinned against `inscription_v1.xsd`
+  and exported from `pyetnic.seps`; fixed `SepsSpecificiteSave` (added regulier1/regulier5 — the
+  input element is `SpecificiteDataType`, not the dead `SpecificiteDataInputType`). 254→283 tests
+  green. Remaining audit backlog (not done): SEPS Notifications + Document 1D services, SEPS error
+  codes in the typed hierarchy, INS referential wiring, `Sexe`/`ModeEnregistrement` enums.
 - **[2026-06-02, post-publication housekeeping]** Rationalized the reference material now that Track A is closed (with Fabien). Committed the Track B analysis sessions 4–5 (`specs/05_document3_v1.md`, `specs/06_formation_droits_inscription_v1.md`; enriched `00_REGISTRE`/`00_SUIVI_SESSIONS` with the Doc3/Doc1D types) — Track B now **6/6 EPROM services**. Deleted `docs/phases/` (30 consumed phase-prompt files; recoverable via git history). Rewrote `docs/SOURCES.md` (Track A complete / Track B live), removed the `docs/phases/` convention from `docs/BACKWARDS_COMPAT.md` and the pointer from `CLAUDE.md`, and refreshed this file's stale header (was "Sprint 3 / `refactor/sprint-3`"). Neither `specs/` nor `docs/phases/` is packaged (MANIFEST.in), so zero impact on the published `0.1.0b1` artifact.

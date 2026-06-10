@@ -19,8 +19,10 @@ from pyetnic.services.models import (
     InscriptionInputDataSave,
     InscriptionInputSave,
     SepsNaissanceSave,
+    SepsSpecificiteSave,
     SepsUESave,
 )
+from pyetnic.services.seps import SepsAuthError, SepsEtnicError
 
 
 @pytest.fixture(autouse=True)
@@ -101,6 +103,58 @@ class TestEnregistrerEtudiantPayload:
             assert absent not in payload
 
 
+class TestEnregistrerEtudiantErrors:
+    """A success=False response must raise a typed error, never return None silently."""
+
+    def test_enregistrer_raises_on_business_error(self, monkeypatch):
+        service = EnregistrerEtudiantService()
+
+        def fake_call(method_name, **kwargs):
+            return {
+                "body": {
+                    "success": False,
+                    "messages": {
+                        "error": [
+                            {"code": "30201", "description": "Étudiant déjà existant"},
+                        ],
+                    },
+                },
+            }
+
+        monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+
+        with pytest.raises(SepsEtnicError) as exc_info:
+            service.enregistrer_etudiant(
+                mode_enregistrement="NISS",
+                etudiant_details=EtudiantDetailsSave(niss="12345678901"),
+            )
+        assert exc_info.value.code == "30201"
+
+    def test_modifier_raises_on_auth_error(self, monkeypatch):
+        service = EnregistrerEtudiantService()
+
+        def fake_call(method_name, **kwargs):
+            return {
+                "body": {
+                    "success": False,
+                    "messages": {
+                        "error": [
+                            {"code": "30550", "description": "Certificat invalide"},
+                        ],
+                    },
+                },
+            }
+
+        monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+
+        with pytest.raises(SepsAuthError) as exc_info:
+            service.modifier_etudiant(
+                cf_num="123-01",
+                etudiant_details=EtudiantDetailsSave(nom="DUPONT"),
+            )
+        assert exc_info.value.code == "30550"
+
+
 class TestInscriptionsPayload:
     def test_enregistrer_inscription_payload_excludes_none(self, monkeypatch):
         service = InscriptionsService()
@@ -143,6 +197,35 @@ class TestInscriptionsPayload:
         assert inscription["ue"] == {"noAdministratif": 328, "noOrganisation": 1}
         for absent in ("anneeScolaire", "specificite"):
             assert absent not in inscription, f"expected {absent!r} to be stripped"
+
+    def test_specificite_regulier_fields_serialized(self, monkeypatch):
+        """regulier1/regulier5 belong to the input contract (SpecificiteDataType)
+        and must be serialized when set, stripped when None."""
+        service = InscriptionsService()
+        captured: dict = {}
+
+        def fake_call(method_name, **kwargs):
+            captured["kwargs"] = kwargs
+            return {"body": {"success": True, "response": {"inscription": {"cfNum": "123-01"}}}}
+
+        monkeypatch.setattr(service._enregistrer, "call_service", fake_call)
+
+        data = InscriptionInputDataSave(
+            cfNum="123-01",
+            idEtab=3052,
+            idImplantation=6050,
+            codePostalLieuCours="1000",
+            inscription=InscriptionInputSave(
+                dateInscription="2024-09-01",
+                statut="DE",
+                ue=SepsUESave(noAdministratif=328, noOrganisation=1),
+                specificite=SepsSpecificiteSave(regulier1="O", regulier5="N"),
+            ),
+        )
+        service.enregistrer_inscription(inscription_input_data=data)
+
+        specificite = captured["kwargs"]["inscriptionInputData"]["inscription"]["specificite"]
+        assert specificite == {"regulier1": "O", "regulier5": "N"}
 
     def test_modifier_inscription_payload_excludes_none(self, monkeypatch):
         service = InscriptionsService()

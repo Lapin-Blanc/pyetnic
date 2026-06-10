@@ -237,6 +237,15 @@ def extract_error_info(result: Any) -> Tuple[Optional[str], Optional[str], Optio
     if not isinstance(body, dict):
         return code, description, request_id
 
+    # Common_v2 services (e.g. Organisation v7) carry requestId as an XML
+    # attribute on the response body root rather than in a SOAP header, so it
+    # lands as a top-level key of ``body`` after zeep serialization. Fall back
+    # to it when no header requestId was found (non-regressive for v1/v3).
+    if request_id is None:
+        rid = body.get("requestId")
+        if rid is not None:
+            request_id = str(rid)
+
     messages = body.get("messages") or {}
     if not isinstance(messages, dict):
         return code, description, request_id

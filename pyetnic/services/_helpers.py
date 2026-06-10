@@ -120,24 +120,68 @@ def _as_list(value: Any) -> list:
     Args:
         value: The raw value from zeep's serialized output. Can be:
             - None → returns []
-            - a dict (single element) → returns [dict]
+            - a dict (single complex element) → returns [dict]
+            - a str/bytes (single simple-typed element) → returns [str]
             - a list → returns as-is
 
     Returns:
         A list, always.
 
+    Note:
+        ``str``/``bytes`` are treated as a single scalar element, never as an
+        iterable to walk. zeep returns a bare ``str`` (not a one-element list)
+        when a repeated *simple-typed* element occurs once — e.g. a single
+        ``autrePrenom``. Without this guard, ``list("Karim")`` would explode
+        into ``['K', 'a', 'r', 'i', 'm']``.
+
     Examples:
         # Multiple results → already a list, returned as-is
         _as_list([{'name': 'A'}, {'name': 'B'}])  # → [{'name': 'A'}, {'name': 'B'}]
 
-        # Single result → zeep returned a dict, wrapped in a list
+        # Single complex result → zeep returned a dict, wrapped in a list
         _as_list({'name': 'A'})  # → [{'name': 'A'}]
+
+        # Single simple-typed result → zeep returned a bare str, wrapped (not split)
+        _as_list('Karim')  # → ['Karim']
 
         # No results → empty list
         _as_list(None)  # → []
     """
     if value is None:
         return []
-    if isinstance(value, dict):
+    if isinstance(value, (dict, str, bytes)):
         return [value]
     return list(value)
+
+
+def _flatten_messages(messages: Any) -> list:
+    """Flatten a SOAP ``messagesType`` block into a list of strings.
+
+    ``messagesType`` is a dict with ``error`` / ``warning`` / ``info`` sub-lists
+    of ``MessageType`` ({code, description, zone}); zeep may return a single
+    dict or a list per category. This normalizes the whole block to
+    ``["<code>: <description>", ...]`` — suitable for a ``List[str]`` field such
+    as ``FormationsListeResult.messages`` — instead of leaking the raw dict
+    (which breaks ``" ".join(result.messages)`` and friends).
+
+    Args:
+        messages: The raw ``body['messages']`` value (a dict, or None).
+
+    Returns:
+        A list of human-readable strings, always (empty if no messages).
+    """
+    if not isinstance(messages, dict):
+        return []
+    out: list = []
+    for kind in ("error", "warning", "info"):
+        for msg in _as_list(messages.get(kind)):
+            if isinstance(msg, dict):
+                code = msg.get("code")
+                desc = msg.get("description")
+                parts = [str(code)] if code is not None else []
+                if desc is not None:
+                    parts.append(str(desc))
+                out.append(": ".join(parts) if parts else str(msg))
+            elif msg is not None:
+                out.append(str(msg))
+    return out
