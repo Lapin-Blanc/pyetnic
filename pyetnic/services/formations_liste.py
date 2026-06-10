@@ -11,7 +11,7 @@ from typing import Any, Optional
 from ..soap_client import SoapClientManager, SoapError
 from ..config import Config
 from ..exceptions import extract_error_info, map_etnic_error_code_to_class
-from ._helpers import _as_list
+from ._helpers import _as_list, _flatten_messages
 from .models import Formation, FormationsListeResult, OrganisationApercu, OrganisationId, StatutDocument
 import logging
 from pprint import pformat
@@ -62,7 +62,7 @@ class FormationsListeService:
                         description=description,
                         request_id=request_id,
                     )
-                return FormationsListeResult(False, [], messages=result['body'].get('messages', []))
+                return FormationsListeResult(False, [], messages=_flatten_messages(result['body'].get('messages')))
 
         except SoapError as e:
             if Config.RAISE_ON_ERROR:
@@ -135,7 +135,7 @@ class FormationsListeService:
                         description=description,
                         request_id=request_id,
                     )
-                return FormationsListeResult(False, [], messages=result['body'].get('messages', []))
+                return FormationsListeResult(False, [], messages=_flatten_messages(result['body'].get('messages')))
 
         except SoapError as e:
             if Config.RAISE_ON_ERROR:

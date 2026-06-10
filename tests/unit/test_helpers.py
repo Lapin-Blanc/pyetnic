@@ -5,7 +5,12 @@ from typing import List, Optional
 
 import pytest
 
-from pyetnic.services._helpers import _as_list, organisation_request_id, to_soap_dict
+from pyetnic.services._helpers import (
+    _as_list,
+    _flatten_messages,
+    organisation_request_id,
+    to_soap_dict,
+)
 from pyetnic.services.models import OrganisationId
 
 
@@ -210,3 +215,37 @@ class TestAsList:
 
     def test_str_list_returned_as_is(self):
         assert _as_list(['Marc', 'Karim']) == ['Marc', 'Karim']
+
+
+# ---------------------------------------------------------------------------
+# _flatten_messages
+# ---------------------------------------------------------------------------
+
+class TestFlattenMessages:
+
+    def test_none_returns_empty_list(self):
+        assert _flatten_messages(None) == []
+
+    def test_non_dict_returns_empty_list(self):
+        assert _flatten_messages("oops") == []
+
+    def test_flattens_error_list(self):
+        block = {"error": [{"code": "00009", "description": "Aucun enregistrement"}]}
+        assert _flatten_messages(block) == ["00009: Aucun enregistrement"]
+
+    def test_single_dict_per_category_is_normalized(self):
+        """zeep may return a single dict (not a list) for one message."""
+        block = {"warning": {"code": "12345", "description": "Attention"}}
+        assert _flatten_messages(block) == ["12345: Attention"]
+
+    def test_orders_error_warning_info(self):
+        block = {
+            "info": [{"code": "200", "description": "ok"}],
+            "error": [{"code": "1", "description": "err"}],
+            "warning": [{"code": "2", "description": "warn"}],
+        }
+        assert _flatten_messages(block) == ["1: err", "2: warn", "200: ok"]
+
+    def test_returns_only_strings(self):
+        block = {"error": [{"code": "1", "description": "x"}]}
+        assert all(isinstance(m, str) for m in _flatten_messages(block))
