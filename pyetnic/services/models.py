@@ -133,7 +133,13 @@ class FormationDocument1:
 
 @dataclass
 class Doc2ActiviteEnseignementLine:
-    """Ligne d'activité d'enseignement pour le document 2."""
+    """Ligne d'activité d'enseignement pour le document 2.
+
+    Ordre et types alignés sur le XSD ``Doc2ActiviteEnseignementLineCT`` (cf.
+    ``specs/04_formation_periodes_v1.md``) : les 14 champs sont obligatoires en
+    réponse, ``coEtuReg`` (année d'études Rgp, string) vient en dernier après
+    les trois numéros de regroupement ``coAdmReg``/``coOrgReg``/``coBraReg`` (int).
+    """
     coNumBranche: int
     coCategorie: str
     teNomBranche: str
@@ -144,10 +150,10 @@ class Doc2ActiviteEnseignementLine:
     nbPeriodePrevueAn2: float
     nbPeriodeReelleAn1: float
     nbPeriodeReelleAn2: float
+    coAdmReg: int
+    coOrgReg: int
+    coBraReg: int
     coEtuReg: str
-    coAdmReg: int = 0
-    coOrgReg: int = 0
-    coBraReg: int = 0
 
 @dataclass
 class Doc2ActiviteEnseignementList:
