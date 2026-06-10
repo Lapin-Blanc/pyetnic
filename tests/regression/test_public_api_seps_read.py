@@ -36,7 +36,9 @@ from .fixtures.seps_responses import (
     EMPTY_RECHERCHER_ETUDIANTS_RESPONSE,
     GENERIC_SEPS_ERROR_RESPONSE,
     LIRE_ETUDIANT_NONE_RESPONSE,
+    LIRE_ETUDIANT_SINGLE_AUTRE_PRENOM_RESPONSE,
     NISS_MUTATION_ERROR_RESPONSE,
+    NOT_FOUND_SEPS_RESPONSE,
     SEPS_AUTH_ERROR_RESPONSE,
     TROP_DE_RESULTATS_ERROR_RESPONSE,
 )
@@ -70,6 +72,30 @@ class TestLireEtudiant:
     def test_none_response(self, mock_soap_call):
         mock_soap_call.return_value = LIRE_ETUDIANT_NONE_RESPONSE
         assert lire_etudiant("1234567-89") is None
+
+    def test_auth_error_raises_not_swallowed(self, mock_soap_call):
+        """A business error (here 30550) must raise, not return None silently."""
+        mock_soap_call.return_value = SEPS_AUTH_ERROR_RESPONSE
+        with pytest.raises(SepsAuthError) as exc_info:
+            lire_etudiant("1234567-89")
+        assert exc_info.value.code == "30550"
+
+    def test_generic_error_raises_not_swallowed(self, mock_soap_call):
+        mock_soap_call.return_value = GENERIC_SEPS_ERROR_RESPONSE
+        with pytest.raises(SepsEtnicError) as exc_info:
+            lire_etudiant("1234567-89")
+        assert exc_info.value.code == "30999"
+
+    def test_not_found_code_returns_none(self, mock_soap_call):
+        """A NOT_FOUND code (30115) is 'no result', not an error → None."""
+        mock_soap_call.return_value = NOT_FOUND_SEPS_RESPONSE
+        assert lire_etudiant("1234567-89") is None
+
+    def test_single_autre_prenom_not_char_split(self, mock_soap_call):
+        """A single autrePrenom returned as a bare str must stay ['Karim']."""
+        mock_soap_call.return_value = LIRE_ETUDIANT_SINGLE_AUTRE_PRENOM_RESPONSE
+        et = lire_etudiant("1234567-89")
+        assert et.rnDetails.autrePrenom == ["Karim"]
 
     def test_request_shape_default(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_LIRE_ETUDIANT_RESPONSE
@@ -150,6 +176,11 @@ class TestRechercherEtudiants:
 
     def test_empty_response(self, mock_soap_call):
         mock_soap_call.return_value = EMPTY_RECHERCHER_ETUDIANTS_RESPONSE
+        assert rechercher_etudiants(niss="00000000000") == []
+
+    def test_not_found_code_returns_empty(self, mock_soap_call):
+        """A NOT_FOUND code (30115) yields [] rather than raising."""
+        mock_soap_call.return_value = NOT_FOUND_SEPS_RESPONSE
         assert rechercher_etudiants(niss="00000000000") == []
 
     def test_no_args_raises_value_error(self, mock_soap_call):
