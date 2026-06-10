@@ -92,6 +92,20 @@ All use `(str, Enum)` base — members compare equal to their raw string value.
 | `MotifAbandon` | Abandon reasons. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
 | `DureeInoccupation` | Inoccupation duration codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
 | `SituationMenage` | Household situation codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
+| `CodeStatut` | Inscription status (DE/AN). Exported from `pyetnic.seps`. |
+| `Indicateur` | Boolean indicator (O/N). Exported from `pyetnic.seps`. |
+| `IndicateurX` | Ternary indicator (O/N/X). Exported from `pyetnic.seps`. |
+| `MotifExemption` | DI exemption reasons (C01-C07). Exported from `pyetnic.seps`. |
+| `MotifExemptionSpec` | DIS exemption reasons (C01-C13, non-EEC). Exported from `pyetnic.seps`. |
+| `TypeEnseignement` | Education type (9 codes). Exported from `pyetnic.seps`. |
+| `TitreDelivre` | Delivered titles (23 codes). Exported from `pyetnic.seps`. |
+| `Equivalence` | Foreign-title equivalence (C01-C04). Exported from `pyetnic.seps`. |
+| `ValorisationAcquis` | Prior-learning valorisation at admission. Exported from `pyetnic.seps`. |
+| `ValorisationAcquisSanction` | Prior-learning valorisation at sanction. Exported from `pyetnic.seps`. |
+| `StatutFinFormation` | End-of-training status (C01-C06, FSE). Exported from `pyetnic.seps`. |
+| `CodeNiveau` | UE level code (SI/SS/SC/SL). Exported from `pyetnic.seps`. |
+
+All SEPS inscription enums are pinned against `inscription_v1.xsd`.
 
 ### Stable — Exceptions
 

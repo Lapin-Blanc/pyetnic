@@ -63,6 +63,44 @@ def test_lister_formations_organisables_does_not_swallow_unexpected_exceptions(m
         svc.lister_formations_organisables()
 
 
+def test_lister_formations_flattens_messages_block(monkeypatch):
+    """On success=False, messages must be a flat List[str], not the raw dict."""
+    svc = FormationsListeService()
+    mock_response = {
+        "body": {
+            "success": False,
+            "messages": {
+                "error": [{"code": "00009", "description": "Aucun enregistrement"}],
+                "warning": {"code": "12345", "description": "Attention"},
+            },
+        }
+    }
+    monkeypatch.setattr(svc.client_manager, "call_service", lambda *a, **kw: mock_response)
+
+    result = svc.lister_formations()
+
+    assert result.success is False
+    assert result.messages == ["00009: Aucun enregistrement", "12345: Attention"]
+    assert all(isinstance(m, str) for m in result.messages)
+
+
+def test_lister_formations_organisables_flattens_messages_block(monkeypatch):
+    """Same flattening contract for lister_formations_organisables."""
+    svc = FormationsListeService()
+    mock_response = {
+        "body": {
+            "success": False,
+            "messages": {"error": [{"code": "30001", "description": "Établissement incorrect"}]},
+        }
+    }
+    monkeypatch.setattr(svc.client_manager, "call_service", lambda *a, **kw: mock_response)
+
+    result = svc.lister_formations_organisables()
+
+    assert result.success is False
+    assert result.messages == ["30001: Établissement incorrect"]
+
+
 def test_lister_formations_mock_response(monkeypatch):
     svc = FormationsListeService()
     mock_response = {

@@ -134,6 +134,93 @@ def test_modifier_organisation_mock(service, monkeypatch):
     assert result.id == org_id
 
 
+def test_creer_organisation_strips_none_from_payload(service, monkeypatch):
+    """None-valued optional fields must be absent from the CreerOrganisation payload.
+
+    zeep would otherwise serialize them as empty XML elements that ETNIC reads
+    as 'erase this value' (D2 defect — previously unfixed on organisation).
+    """
+    captured: dict = {}
+
+    def fake_call(method_name, **kwargs):
+        captured["method"] = method_name
+        captured["kwargs"] = kwargs
+        return _mock_org_response("2023-2024", 3052, 328, 99)
+
+    monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+
+    service.creer_organisation(
+        annee_scolaire="2023-2024",
+        etab_id=3052, impl_id=6050,
+        num_adm_formation=328,
+        date_debut=date(2024, 9, 2),
+        date_fin=date(2025, 6, 27),
+        valorisationAcquis=True,
+    )
+
+    kwargs = captured["kwargs"]
+    assert captured["method"] == "CreerOrganisation"
+    # implId IS sent on create (required there, unlike Lire/Modifier)
+    assert kwargs["id"] == {
+        "anneeScolaire": "2023-2024",
+        "etabId": 3052,
+        "implId": 6050,
+        "numAdmFormation": 328,
+    }
+    assert kwargs["valorisationAcquis"] is True
+    for absent in (
+        "organisationPeriodesSupplOuEPT",
+        "enPrison",
+        "reorientation7TP",
+        "activiteFormation",
+        "conseillerPrevention",
+        "enseignementHybride",
+        "numOrganisation2AnneesScolaires",
+        "typeInterventionExterieure",
+        "interventionExterieure50p",
+    ):
+        assert absent not in kwargs, f"expected {absent!r} to be stripped"
+
+
+def test_modifier_organisation_strips_none_from_payload(service, monkeypatch):
+    """None-valued optional fields must be absent from the ModifierOrganisation payload."""
+    captured: dict = {}
+
+    def fake_call(method_name, **kwargs):
+        captured["method"] = method_name
+        captured["kwargs"] = kwargs
+        return _mock_org_response("2023-2024", 3052, 328, 1)
+
+    monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+
+    org_id = OrganisationId(
+        anneeScolaire="2023-2024", etabId=3052,
+        numAdmFormation=328, numOrganisation=1, implId=6050,
+    )
+    org = Organisation(
+        id=org_id,
+        dateDebutOrganisation=date(2024, 9, 2),
+        dateFinOrganisation=date(2025, 6, 27),
+        enPrison=True,
+    )
+
+    service.modifier_organisation(org)
+
+    kwargs = captured["kwargs"]
+    assert captured["method"] == "ModifierOrganisation"
+    # implId must NOT be sent on modify (organisation_request_id excludes it)
+    assert "implId" not in kwargs["id"]
+    assert kwargs["enPrison"] is True
+    for absent in (
+        "valorisationAcquis",
+        "reorientation7TP",
+        "activiteFormation",
+        "typeInterventionExterieure",
+        "interventionExterieure50p",
+    ):
+        assert absent not in kwargs, f"expected {absent!r} to be stripped"
+
+
 def test_supprimer_organisation_mock_succes(service, monkeypatch):
     """Vérifie que supprimer_organisation retourne True si success=True."""
     org_id = OrganisationId(

@@ -2,14 +2,28 @@
 
 from __future__ import annotations
 
+import pytest
+
 from pyetnic.nomenclatures import (
     CodeAdmission,
+    CodeNiveau,
     CodeSanction,
+    CodeStatut,
     DureeInoccupation,
+    Equivalence,
+    Indicateur,
+    IndicateurX,
     MotifAbandon,
+    MotifExemption,
+    MotifExemptionSpec,
     SituationMenage,
+    StatutFinFormation,
+    TitreDelivre,
     TYPES_INTERVENTION_EXTERIEURE,
+    TypeEnseignement,
     TypeInterventionExterieure,
+    ValorisationAcquis,
+    ValorisationAcquisSanction,
 )
 
 
@@ -94,6 +108,81 @@ class TestSituationMenage:
     def test_xsd_values_present(self):
         values = {m.value for m in SituationMenage}
         assert values == {"ISOL", "SSEM", "A1EM", "X"}
+
+
+# ---------------------------------------------------------------------------
+# Inscription enums — drift guards pinned against inscription_v1.xsd
+# ---------------------------------------------------------------------------
+
+# (enum, exact set of XSD enumeration values)
+_INSCRIPTION_ENUM_XSD_VALUES = [
+    (CodeStatut, {"DE", "AN"}),
+    (Indicateur, {"O", "N"}),
+    (IndicateurX, {"O", "N", "X"}),
+    (MotifExemption, {"C01", "C02", "C03", "C04", "C05", "C06", "C07"}),
+    (MotifExemptionSpec, {f"C{n:02d}" for n in range(1, 14)}),
+    (TypeEnseignement, {"PRI", "SIPE", "SSPE", "SIPS", "SSPS", "SCPE", "SLPE", "SCPS", "SLPS"}),
+    (TitreDelivre, {
+        "CEB", "CE1D", "CESI", "CE2D", "CQ4", "CESSG", "CESST", "CESSQ", "CESSP",
+        "CESSA", "CE6P", "CQ6", "CQ7", "DAES", "BES", "BACH", "MAST", "CESS",
+        "CQSUP", "CQINF", "MASTSPE", "DOC", "BACHSPE",
+    }),
+    (Equivalence, {"C01", "C02", "C03", "C04"}),
+    (ValorisationAcquis, {"C01", "C02", "C03", "C04", "C10", "C20", "C30", "C40"}),
+    (ValorisationAcquisSanction, {"C00", "C01", "C02", "C03", "C04", "C05"}),
+    (StatutFinFormation, {"C01", "C02", "C03", "C04", "C05", "C06"}),
+    (CodeNiveau, {"SI", "SS", "SC", "SL"}),
+]
+
+
+@pytest.mark.parametrize(
+    "enum_cls, expected",
+    _INSCRIPTION_ENUM_XSD_VALUES,
+    ids=[e.__name__ for e, _ in _INSCRIPTION_ENUM_XSD_VALUES],
+)
+def test_inscription_enum_values_match_xsd(enum_cls, expected):
+    """Each inscription enum must carry exactly the XSD enumeration values."""
+    assert {m.value for m in enum_cls} == expected
+
+
+@pytest.mark.parametrize(
+    "enum_cls",
+    [e for e, _ in _INSCRIPTION_ENUM_XSD_VALUES],
+    ids=[e.__name__ for e, _ in _INSCRIPTION_ENUM_XSD_VALUES],
+)
+def test_inscription_enum_members_are_str(enum_cls):
+    """Every member must be a str subclass that compares to its raw value."""
+    for m in enum_cls:
+        assert isinstance(m, str)
+        assert m == m.value
+
+
+def test_titre_delivre_has_23_members():
+    assert len(TitreDelivre) == 23
+
+
+def test_statut_fin_formation_uses_c_prefix_not_bare_digits():
+    """XSD imposes C01-C06; the PDF's bare 01-06 must never sneak in."""
+    assert {m.value for m in StatutFinFormation} == {f"C{n:02d}" for n in range(1, 7)}
+    assert "01" not in {m.value for m in StatutFinFormation}
+
+
+def test_indicateur_and_indicateurx_are_distinct():
+    assert "X" not in {m.value for m in Indicateur}
+    assert "X" in {m.value for m in IndicateurX}
+
+
+def test_new_inscription_enums_exported_from_seps_namespace():
+    import pyetnic.seps as seps
+
+    for name in (
+        "CodeStatut", "Indicateur", "IndicateurX", "MotifExemption",
+        "MotifExemptionSpec", "TypeEnseignement", "TitreDelivre", "Equivalence",
+        "ValorisationAcquis", "ValorisationAcquisSanction", "StatutFinFormation",
+        "CodeNiveau",
+    ):
+        assert hasattr(seps, name), f"missing seps export: {name}"
+        assert name in seps.__all__
 
 
 class TestLegacyConstant:

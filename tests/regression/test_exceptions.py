@@ -137,3 +137,56 @@ def test_specialized_business_errors_inherit_constructor():
 
     val = EtnicValidationError("bad input", code="X")
     assert val.code == "X"
+
+
+# ---------------------------------------------------------------------------
+# extract_error_info — requestId resolution (latent bug #4)
+# ---------------------------------------------------------------------------
+
+def test_extract_error_info_reads_header_request_id():
+    """v1/v3 services carry requestId in a SOAP header."""
+    from pyetnic.exceptions import extract_error_info
+
+    result = {
+        "header": {"requestId": "header-rid"},
+        "body": {
+            "success": False,
+            "messages": {"error": [{"code": "00009", "description": "rien"}]},
+        },
+    }
+    code, _, request_id = extract_error_info(result)
+    assert code == "00009"
+    assert request_id == "header-rid"
+
+
+def test_extract_error_info_falls_back_to_body_request_id():
+    """Common_v2 (Organisation v7) carries requestId as a body attribute, not a
+    SOAP header — extract_error_info must still surface it."""
+    from pyetnic.exceptions import extract_error_info
+
+    result = {
+        "body": {
+            "requestId": "body-rid",
+            "success": False,
+            "messages": {"error": [{"code": "30004", "description": "type IE incorrect"}]},
+        },
+    }
+    code, _, request_id = extract_error_info(result)
+    assert code == "30004"
+    assert request_id == "body-rid"
+
+
+def test_extract_error_info_header_request_id_takes_precedence():
+    """When both are present, the header value wins (non-regressive)."""
+    from pyetnic.exceptions import extract_error_info
+
+    result = {
+        "header": {"requestId": "header-rid"},
+        "body": {
+            "requestId": "body-rid",
+            "success": False,
+            "messages": {"error": [{"code": "1", "description": "x"}]},
+        },
+    }
+    _, _, request_id = extract_error_info(result)
+    assert request_id == "header-rid"
