@@ -152,3 +152,36 @@ def _as_list(value: Any) -> list:
     if isinstance(value, (dict, str, bytes)):
         return [value]
     return list(value)
+
+
+def _flatten_messages(messages: Any) -> list:
+    """Flatten a SOAP ``messagesType`` block into a list of strings.
+
+    ``messagesType`` is a dict with ``error`` / ``warning`` / ``info`` sub-lists
+    of ``MessageType`` ({code, description, zone}); zeep may return a single
+    dict or a list per category. This normalizes the whole block to
+    ``["<code>: <description>", ...]`` — suitable for a ``List[str]`` field such
+    as ``FormationsListeResult.messages`` — instead of leaking the raw dict
+    (which breaks ``" ".join(result.messages)`` and friends).
+
+    Args:
+        messages: The raw ``body['messages']`` value (a dict, or None).
+
+    Returns:
+        A list of human-readable strings, always (empty if no messages).
+    """
+    if not isinstance(messages, dict):
+        return []
+    out: list = []
+    for kind in ("error", "warning", "info"):
+        for msg in _as_list(messages.get(kind)):
+            if isinstance(msg, dict):
+                code = msg.get("code")
+                desc = msg.get("description")
+                parts = [str(code)] if code is not None else []
+                if desc is not None:
+                    parts.append(str(desc))
+                out.append(": ".join(parts) if parts else str(msg))
+            elif msg is not None:
+                out.append(str(msg))
+    return out
