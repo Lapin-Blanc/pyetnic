@@ -12,6 +12,11 @@ logger = logging.getLogger(__name__)
 
 _NISS_RE = re.compile(r'[0-9]{6}-?[0-9]{3}-?[0-9]{2}')
 
+# Codes SEPS signifiant « aucun résultat » : ils NE doivent PAS lever
+# d'exception — le contrat « non trouvé » se traduit par None / [] côté
+# appelant (lireEtudiant : 30110 fin de traitement, 30115 warning).
+_NOT_FOUND_CODES = frozenset({"30110", "30115"})
+
 
 class SepsEtnicError(Exception):
     """Erreur retournée par le serveur ETNIC SEPS (success=False).
@@ -72,6 +77,48 @@ class NissMutationError(SepsEtnicError):
             f"NISS {ancien_niss!r} remplacé par {nouveau_niss!r} — "
             "relancer la recherche avec nouveau_niss",
         )
+
+
+def _check_seps_errors(result, *, ancien_niss: Optional[str] = None) -> None:
+    """Inspecte le bloc retour SEPS et lève une exception typée si success=False.
+
+    Partagé par tous les services SEPS Étudiant (recherche, lecture,
+    enregistrement, modification) pour éviter que les erreurs métier soient
+    avalées silencieusement (un simple ``return None`` masquerait un certificat
+    invalide, une mutation NISS, un doublon…).
+
+    Les codes « aucun résultat » (``_NOT_FOUND_CODES``) sont ignorés : la
+    méthode appelante renverra alors None / [] de façon intentionnelle.
+
+    Args:
+        result: La réponse SOAP désérialisée (dict avec clé ``body``).
+        ancien_niss: Le NISS de la requête, propagé dans ``NissMutationError``.
+
+    Raises:
+        NissMutationError: code 30401.
+        TropDeResultatsError: code 30501.
+        SepsAuthError: code 30550.
+        SepsEtnicError: tout autre code métier.
+    """
+    if not (result and result.get("body")):
+        return
+    body = result["body"]
+    if body.get("success", True):
+        return
+    errors = (body.get("messages") or {}).get("error") or []
+    for err in (errors if isinstance(errors, list) else [errors]):
+        code = str(err.get("code"))
+        if code in _NOT_FOUND_CODES:
+            continue
+        desc = err.get("description", "")
+        if code == "30401":
+            match = _NISS_RE.search(desc)
+            raise NissMutationError(ancien_niss or "", match.group(0) if match else "")
+        if code == "30501":
+            raise TropDeResultatsError()
+        if code == "30550":
+            raise SepsAuthError(code, desc)
+        raise SepsEtnicError(code, desc)
 
 
 class RechercheEtudiantsService:
@@ -135,7 +182,7 @@ class RechercheEtudiantsService:
             niss=d.get("niss"),
             nom=d.get("nom"),
             prenom=d.get("prenom"),
-            autrePrenom=list(autre_prenom_raw) if autre_prenom_raw else None,
+            autrePrenom=_as_list(autre_prenom_raw) or None,
             sexe=d.get("sexe"),
             naissance=RechercheEtudiantsService._parse_naissance(d.get("naissance")),
             deces=SepsDeces(date=deces_d.get("date")) if deces_d else None,
@@ -154,6 +201,7 @@ class RechercheEtudiantsService:
         )
 
     def _parse_lire_etudiant_response(self, result) -> Optional[Etudiant]:
+        _check_seps_errors(result)
         if not (
             result
             and result.get("body")
@@ -164,22 +212,7 @@ class RechercheEtudiantsService:
         return self._parse_etudiant(result["body"]["response"]["etudiant"])
 
     def _parse_rechercher_etudiants_response(self, result, ancien_niss: Optional[str] = None) -> List[Etudiant]:
-        if result and result.get("body"):
-            body = result["body"]
-            if not body.get("success", True):
-                errors = (body.get("messages") or {}).get("error") or []
-                for err in (errors if isinstance(errors, list) else [errors]):
-                    code = str(err.get("code"))
-                    if code == "30401":
-                        match = _NISS_RE.search(err.get("description", ""))
-                        nouveau_niss = match.group(0) if match else ""
-                        raise NissMutationError(ancien_niss or "", nouveau_niss)
-                    elif code == "30501":
-                        raise TropDeResultatsError()
-                    elif code == "30550":
-                        raise SepsAuthError(code, err.get("description", ""))
-                    else:
-                        raise SepsEtnicError(code, err.get("description", ""))
+        _check_seps_errors(result, ancien_niss=ancien_niss)
         if not (
             result
             and result.get("body")

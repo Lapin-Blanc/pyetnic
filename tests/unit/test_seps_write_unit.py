@@ -21,6 +21,7 @@ from pyetnic.services.models import (
     SepsNaissanceSave,
     SepsUESave,
 )
+from pyetnic.services.seps import SepsAuthError, SepsEtnicError
 
 
 @pytest.fixture(autouse=True)
@@ -99,6 +100,58 @@ class TestEnregistrerEtudiantPayload:
         assert payload["naissance"] == {"date": "1990", "codePays": "150"}
         for absent in ("niss", "prenom", "sexe", "adresse", "deces"):
             assert absent not in payload
+
+
+class TestEnregistrerEtudiantErrors:
+    """A success=False response must raise a typed error, never return None silently."""
+
+    def test_enregistrer_raises_on_business_error(self, monkeypatch):
+        service = EnregistrerEtudiantService()
+
+        def fake_call(method_name, **kwargs):
+            return {
+                "body": {
+                    "success": False,
+                    "messages": {
+                        "error": [
+                            {"code": "30201", "description": "Étudiant déjà existant"},
+                        ],
+                    },
+                },
+            }
+
+        monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+
+        with pytest.raises(SepsEtnicError) as exc_info:
+            service.enregistrer_etudiant(
+                mode_enregistrement="NISS",
+                etudiant_details=EtudiantDetailsSave(niss="12345678901"),
+            )
+        assert exc_info.value.code == "30201"
+
+    def test_modifier_raises_on_auth_error(self, monkeypatch):
+        service = EnregistrerEtudiantService()
+
+        def fake_call(method_name, **kwargs):
+            return {
+                "body": {
+                    "success": False,
+                    "messages": {
+                        "error": [
+                            {"code": "30550", "description": "Certificat invalide"},
+                        ],
+                    },
+                },
+            }
+
+        monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+
+        with pytest.raises(SepsAuthError) as exc_info:
+            service.modifier_etudiant(
+                cf_num="123-01",
+                etudiant_details=EtudiantDetailsSave(nom="DUPONT"),
+            )
+        assert exc_info.value.code == "30550"
 
 
 class TestInscriptionsPayload:
