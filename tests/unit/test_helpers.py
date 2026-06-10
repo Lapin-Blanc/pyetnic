@@ -195,3 +195,18 @@ class TestAsList:
         """A list with one element must NOT be unwrapped."""
         items = [{'name': 'A'}]
         assert _as_list(items) == [{'name': 'A'}]
+
+    def test_str_treated_as_scalar_not_char_split(self):
+        """A bare str (single simple-typed element) must be wrapped, not split.
+
+        zeep returns a bare ``str`` when a repeated simple-typed element occurs
+        once (e.g. a single ``autrePrenom``). ``list('Karim')`` would explode
+        into individual characters — the bug this guard prevents.
+        """
+        assert _as_list('Karim') == ['Karim']
+
+    def test_bytes_treated_as_scalar(self):
+        assert _as_list(b'x') == [b'x']
+
+    def test_str_list_returned_as_is(self):
+        assert _as_list(['Marc', 'Karim']) == ['Marc', 'Karim']

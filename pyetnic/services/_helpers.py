@@ -120,24 +120,35 @@ def _as_list(value: Any) -> list:
     Args:
         value: The raw value from zeep's serialized output. Can be:
             - None → returns []
-            - a dict (single element) → returns [dict]
+            - a dict (single complex element) → returns [dict]
+            - a str/bytes (single simple-typed element) → returns [str]
             - a list → returns as-is
 
     Returns:
         A list, always.
 
+    Note:
+        ``str``/``bytes`` are treated as a single scalar element, never as an
+        iterable to walk. zeep returns a bare ``str`` (not a one-element list)
+        when a repeated *simple-typed* element occurs once — e.g. a single
+        ``autrePrenom``. Without this guard, ``list("Karim")`` would explode
+        into ``['K', 'a', 'r', 'i', 'm']``.
+
     Examples:
         # Multiple results → already a list, returned as-is
         _as_list([{'name': 'A'}, {'name': 'B'}])  # → [{'name': 'A'}, {'name': 'B'}]
 
-        # Single result → zeep returned a dict, wrapped in a list
+        # Single complex result → zeep returned a dict, wrapped in a list
         _as_list({'name': 'A'})  # → [{'name': 'A'}]
+
+        # Single simple-typed result → zeep returned a bare str, wrapped (not split)
+        _as_list('Karim')  # → ['Karim']
 
         # No results → empty list
         _as_list(None)  # → []
     """
     if value is None:
         return []
-    if isinstance(value, dict):
+    if isinstance(value, (dict, str, bytes)):
         return [value]
     return list(value)
