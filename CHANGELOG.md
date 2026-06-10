@@ -9,6 +9,17 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+### Added
+
+- **12 SEPS inscription nomenclature enums**, pinned against `inscription_v1.xsd`
+  and exported from `pyetnic.seps`: `CodeStatut`, `Indicateur`, `IndicateurX`,
+  `MotifExemption`, `MotifExemptionSpec`, `TypeEnseignement`, `TitreDelivre`,
+  `Equivalence`, `ValorisationAcquis`, `ValorisationAcquisSanction`,
+  `StatutFinFormation`, `CodeNiveau`.
+- **`SepsSpecificiteSave.regulier1` / `regulier5`** input fields — the inscription
+  input element is typed `SpecificiteDataType` (which carries them), not the dead
+  `SpecificiteDataInputType`.
+
 ### Fixed
 
 - **SEPS responses no longer fail to parse in production.** The SOAP client now
@@ -16,6 +27,22 @@ that supports `bN` pre-releases).
   responses carrying elements absent from the embedded WSDL/XSD (e.g. the SEPS
   inscription `audit` block) are tolerated instead of raising `XMLParseError`.
   Applies to all services (EPROM and SEPS).
+- **SEPS student services no longer swallow server errors as `None`.**
+  `lire_etudiant`, `enregistrer_etudiant` and `modifier_etudiant` now inspect the
+  response block and raise the typed SEPS exceptions (e.g. `SepsAuthError`,
+  `SepsEtnicError`) instead of returning `None`. "Not found" codes (30110/30115)
+  still yield `None`/`[]`.
+- **A single `autrePrenom` is no longer split into characters** — `_as_list`
+  treats `str`/`bytes` as a scalar element.
+- **`creer_organisation` / `modifier_organisation` no longer serialize `None`
+  fields** as empty XML elements (which ETNIC reads as "erase"); they are stripped
+  like the document services.
+- **`FormationsListeResult.messages` is now a flat `List[str]`** on error, instead
+  of leaking the raw SOAP `messagesType` dict.
+- **`Doc2ActiviteEnseignementLine` field order realigned to the XSD** (`coEtuReg`
+  last; the four regroupement fields are required, no misleading `=0` defaults).
+- **`extract_error_info` resolves `requestId` from the Common_v2 body attribute**
+  (Organisation v7) when no SOAP header value is present.
 
 ## [0.1.0b1] - 2026-06-02
 
