@@ -1,7 +1,7 @@
 from datetime import date
 from pprint import pformat
 from typing import Optional
-from ._helpers import organisation_request_id
+from ._helpers import organisation_request_id, _strip_none_recursive
 from .models import Organisation, OrganisationId, StatutDocument
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
@@ -134,7 +134,11 @@ class OrganisationService:
             'typeInterventionExterieure': typeInterventionExterieure,
             'interventionExterieure50p': interventionExterieure50p,
         }
-        result = self.client_manager.call_service("CreerOrganisation", **request_data)
+        # Strip None-valued optional fields: zeep would otherwise emit empty
+        # XML elements that ETNIC interprets as "erase this value" (D2 defect).
+        result = self.client_manager.call_service(
+            "CreerOrganisation", **_strip_none_recursive(request_data)
+        )
         # L'id complet (avec numOrganisation) est dans la réponse
         return self._parse_organisation_response(result)
 
@@ -156,7 +160,11 @@ class OrganisationService:
             'typeInterventionExterieure': organisation.typeInterventionExterieure,
             'interventionExterieure50p': organisation.interventionExterieure50p,
         }
-        result = self.client_manager.call_service("ModifierOrganisation", **request_data)
+        # Strip None-valued optional fields (D2): an empty XML element would be
+        # read by ETNIC as "erase", causing partial-update corruption on modify.
+        result = self.client_manager.call_service(
+            "ModifierOrganisation", **_strip_none_recursive(request_data)
+        )
         return self._parse_organisation_response(result, organisation.id)
 
     def supprimer_organisation(self, organisation_id: OrganisationId) -> bool:
