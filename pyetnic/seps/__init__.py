@@ -25,6 +25,19 @@ from ..nomenclatures import (
     MotifAbandon,
     DureeInoccupation,
     SituationMenage,
+    # Énumérations inscription (inscription_v1.xsd)
+    CodeStatut,
+    Indicateur,
+    IndicateurX,
+    MotifExemption,
+    MotifExemptionSpec,
+    TypeEnseignement,
+    TitreDelivre,
+    Equivalence,
+    ValorisationAcquis,
+    ValorisationAcquisSanction,
+    StatutFinFormation,
+    CodeNiveau,
 )
 
 # Modèles
@@ -105,4 +118,17 @@ __all__ = [
     "MotifAbandon",
     "DureeInoccupation",
     "SituationMenage",
+    # Nomenclatures inscription (inscription_v1.xsd)
+    "CodeStatut",
+    "Indicateur",
+    "IndicateurX",
+    "MotifExemption",
+    "MotifExemptionSpec",
+    "TypeEnseignement",
+    "TitreDelivre",
+    "Equivalence",
+    "ValorisationAcquis",
+    "ValorisationAcquisSanction",
+    "StatutFinFormation",
+    "CodeNiveau",
 ]

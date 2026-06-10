@@ -525,7 +525,15 @@ class SepsUESave:
 
 @dataclass
 class SepsSpecificiteSave:
-    """Spécificités d'inscription à envoyer (SpecificiteDataInputType — sans regulier1/5)."""
+    """Spécificités d'inscription à envoyer (SpecificiteDataType).
+
+    L'élément d'entrée ``inscription/specificite`` est typé ``SpecificiteDataType``
+    (inscription_v1.xsd l.18), et non ``SpecificiteDataInputType`` — ce dernier
+    est un type XSD mort, jamais référencé. Le contrat d'entrée porte donc bien
+    ``regulier1`` / ``regulier5`` (IndicateurType, "O"/"N").
+    """
+    regulier1: Optional[str] = None                       # "O" | "N"
+    regulier5: Optional[str] = None                       # "O" | "N"
     droitInscription: Optional[SepsDroitInscription] = None
     droitInscriptionSpecifique: Optional[SepsDroitInscriptionSpecifique] = None
     dureeInoccupation: Optional[str] = None               # C00|C06|C12|C24
