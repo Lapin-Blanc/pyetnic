@@ -1,0 +1,261 @@
+code_pays,co_onss_id,iso2,iso3,nom_pays,nom_pays_long,code_nationalite,co_natio_id,date_debut,date_fin
+00101,101,AL,ALB,Albanie,République d'Albanie,00101,101,1900-01-01,2999-12-31
+00102,102,AD,AND,Andorre,Principauté d'Andorre,00102,102,1900-01-01,2999-12-31
+00103,103,DE,DEU,Allemagne,République fédérale d'Allemagne,00103,103,1949-05-23,2999-12-31
+00105,105,AT,AUT,Autriche,République d'Autriche,00105,105,1900-01-01,2999-12-31
+00106,106,BG,BGR,Bulgarie,République de Bulgarie,00106,106,1900-01-01,2999-12-31
+00107,107,CY,CYP,Chypre,République de Chypre,00107,107,1900-01-01,2999-12-31
+00108,108,DK,DNK,Danemark,Royaume de Danemark,00108,108,1900-01-01,2999-12-31
+00109,109,ES,ESP,Espagne,Royaume d'Espagne,00109,109,1900-01-01,2999-12-31
+00110,110,FI,FIN,Finlande,République de Finlande,00110,110,1900-01-01,2999-12-31
+00111,111,FR,FRA,France,République française,00111,111,1900-01-01,2999-12-31
+00112,112,GB,GBR,Royaume-Uni,Royaume-Uni de Grande-Bretagne et d'Irlande du Nord,00112,112,1900-01-01,2999-12-31
+00113,113,LU,LUX,Luxembourg,Grand-Duché du Luxembourg,00113,113,1900-01-01,2999-12-31
+00114,114,GR,GRC,Grèce,République hellénique,00114,114,1900-01-01,2999-12-31
+00115,115,HU,HUN,Hongrie,République de Hongrie,00115,115,1900-01-01,2999-12-31
+00116,116,IE,IRL,Irlande,Irlande,00116,116,1900-01-01,2999-12-31
+00117,117,IS,ISL,Islande,République d'Islande,00117,117,1900-01-01,2999-12-31
+00118,118,LI,LIE,Liechtenstein,Principauté de Liechtenstein,00118,118,1900-01-01,2999-12-31
+00119,119,MT,MLT,Malte,République de Malte,00119,119,1900-01-01,2999-12-31
+00120,120,MC,MCO,Monaco,Principauté de Monaco,00120,120,1900-01-01,2999-12-31
+00121,121,NO,NOR,Norvège,Royaume de Norvège,00121,121,1900-01-01,2999-12-31
+00122,122,PL,POL,Pologne,République de Pologne,00122,122,1900-01-01,2999-12-31
+00123,123,PT,PRT,Portugal,République portugaise,00123,123,1900-01-01,2999-12-31
+00124,124,RO,ROU,Roumanie,Roumanie,00124,124,1900-01-01,2999-12-31
+00125,125,SM,SMR,Saint-Marin,République de Saint-Marin,00125,125,1900-01-01,2999-12-31
+00126,126,SE,SWE,Suède,Royaume de Suède,00126,126,1900-01-01,2999-12-31
+00127,127,CH,CHE,Suisse,Confédération suisse,00127,127,1900-01-01,2999-12-31
+00128,128,IT,ITA,Italie,République italienne,00128,128,1900-01-01,2999-12-31
+00129,129,NL,NLD,Pays-Bas,Royaume des Pays-Bas,00129,129,1900-01-01,2999-12-31
+00130,130,CS,CSK,Tchécoslovaquie,Tchécoslovaquie,00130,130,1900-01-01,1992-12-31
+00131,131,  ,SUN,Union soviétique,Union soviétique,00131,131,1900-01-01,1992-12-31
+00132,132,YU,SCG,Serbie et Monténégro,Serbie et Monténégro,00132,132,1995-05-24,2006-06-23
+00133,133,VA,VAT,Saint-Siège,Saint-Siège,00133,133,1900-01-01,2999-12-31
+00135,135,LV,LVA,Lettonie,République de Lettonie,00135,135,1900-01-01,2999-12-31
+00136,136,EE,EST,Estonie,République d'Estonie,00136,136,1900-01-01,2999-12-31
+00137,137,LT,LTU,Lituanie,République de Lituanie,00137,137,1900-01-01,2999-12-31
+00140,140,CZ,CZE,Tchéquie,République tchèque,00140,140,1993-01-01,2999-12-31
+00141,141,SK,SVK,Slovaquie,République slovaque,00141,141,1993-01-01,2999-12-31
+00142,142,BY,BLR,Biélorussie,République de Biélorussie,00142,142,1991-12-31,2999-12-31
+00143,143,UA,UKR,Ukraine,Ukraine,00143,143,1991-12-31,2999-12-31
+00144,144,MD,MDA,Moldavie,République de Moldavie,00144,144,1991-12-31,2999-12-31
+00145,145,RU,RUS,Russie,Fédération de Russie,00145,145,1991-12-27,2999-12-31
+00146,146,HR,HRV,Croatie,République de Croatie,00146,146,1992-01-15,2999-12-31
+00147,147,SI,SVN,Slovénie,République de Slovénie,00147,147,1992-01-15,2999-12-31
+00148,148,MK,MKD,Macédoine,ancienne République yougoslave de Macédoine,00148,148,1993-04-09,2999-12-31
+00149,149,BA,BIH,Bosnie-Herzégovine,Bosnie-Herzégovine,00149,149,1992-04-10,2999-12-31
+00150,150,BE,BEL,Belgique,Royaume de Belgique,00150,150,1900-01-01,2999-12-31
+00151,151,ME,MNE,Monténégro,Monténégro,00151,151,1900-01-01,2999-12-31
+00152,152,RS,SRB,Serbie,République de Serbie,00152,152,1900-01-01,2999-12-31
+00153,153,XK,RKS,Kosovo,Kosovo,00153,153,2008-02-24,2999-12-31
+00169,169,YU,YUG,Yougoslavie,Yougoslavie,00169,169,1900-01-01,1995-05-24
+00170,170,DE,DEU,Allemagne,République démocratique d'Allemagne,00170,170,1949-05-23,1990-10-03
+00173,173,DE,DEU,Allemagne,Zones d'occupation en Allemagne,00173,173,1900-01-01,1949-05-23
+00180,180,GI,GIB,Gibraltar,Gibraltar,00112,112,1900-01-01,2999-12-31
+00201,201,MM,MMR,Myanmar,Union du Myanmar,00201,201,1900-01-01,2999-12-31
+00203,203,LK,LKA,Sri Lanka,République socialiste démocratique de Sri Lanka,00203,203,1900-01-01,2999-12-31
+00204,204,TW,TWN,Taïwan,Taïwan,00204,204,1900-01-01,2999-12-31
+00205,205,SG,SGP,Singapour,République de Singapour,00205,205,1900-01-01,2999-12-31
+00206,206,KR,KOR,Corée du Sud,République de Corée,00206,206,1900-01-01,2999-12-31
+00207,207,IN,IND,Inde,République de l'Inde,00207,207,1900-01-01,2999-12-31
+00208,208,ID,IDN,Indonésie,République d'Indonésie,00208,208,1900-01-01,2999-12-31
+00209,209,JP,JPN,Japon,Japon,00209,209,1900-01-01,2999-12-31
+00210,210,LA,LAO,Laos,République démocratique populaire lao,00210,210,1900-01-01,2999-12-31
+00211,211,KH,KHM,Cambodge,Royaume du Cambodge,00211,211,1900-01-01,2999-12-31
+00212,212,MY,MYS,Malaisie,Malaisie,00212,212,1900-01-01,2999-12-31
+00213,213,NP,NPL,Népal,Népal,00213,213,1900-01-01,2999-12-31
+00214,214,PH,PHL,Philippines,République des Philippines,00214,214,1900-01-01,2999-12-31
+00218,218,CN,CHN,Chine,République populaire de Chine,00218,218,1900-01-01,2999-12-31
+00219,219,KP,PRK,Corée du Nord,République populaire démocratique de Corée,00219,219,1900-01-01,2999-12-31
+00220,220,VN,VNM,Vietnam,République socialiste du Vietnam,00220,220,1900-01-01,2999-12-31
+00221,221,MN,MNG,Mongolie,Mongolie,00221,221,1900-01-01,2999-12-31
+00222,222,MV,MDV,Maldives,République des Maldives,00222,222,1900-01-01,2999-12-31
+00223,223,BT,BTN,Bhoutan,Royaume du Bhoutan,00223,223,1900-01-01,2999-12-31
+00224,224,BN,BRN,Brunei,Negara Brunei Darussalam,00224,224,1900-01-01,2999-12-31
+00225,225,KZ,KAZ,Kazakhstan,République du Kazakhstan,00225,225,1991-12-31,2999-12-31
+00226,226,KG,KGZ,Kirghizie,République kirghize,00226,226,1900-01-01,2999-12-31
+00227,227,UZ,UZB,Ouzbékistan,République d'Ouzbékistan,00227,227,1991-12-31,2999-12-31
+00228,228,TJ,TJK,Tadjikistan,République de Tadjikistan,00228,228,1992-01-10,2999-12-31
+00229,229,TM,TKM,Turkménistan,Turkménistan,00229,229,1991-12-31,2999-12-31
+00231,231,MO,MAC,Macao,région administrative spéciale de Macao,00218,218,1997-07-01,2999-12-31
+00233,233,IR,IRN,Iran,Empire d'Iran,00233,233,1900-01-01,1979-03-31
+00234,234,HK,HKG,Hong Kong,région administrative spéciale de Hong Kong,00218,218,1997-07-01,2999-12-31
+00235,235,TH,THA,Thaïlande,Royaume de Thaïlande,00235,235,1900-01-01,2999-12-31
+00237,237,BD,BGD,Bangladesh,République populaire du Bangladesh,00237,237,1900-01-01,2999-12-31
+00249,249,AM,ARM,Arménie,République d'Arménie,00249,249,1991-12-31,2999-12-31
+00250,250,AZ,AZE,Azerbaïdjan,République d'Azerbaïdjan,00250,250,1991-12-31,2999-12-31
+00251,251,AF,AFG,Afghanistan,République islamique d'Afghanistan,00251,251,1900-01-01,2999-12-31
+00252,252,SA,SAU,Arabie saoudite,Royaume d'Arabie saoudite,00252,252,1900-01-01,2999-12-31
+00253,253,GE,GEO,Géorgie,Géorgie,00253,253,1992-03-23,2999-12-31
+00254,254,IQ,IRQ,Irak,République d'Irak,00254,254,1900-01-01,2999-12-31
+00255,255,IR,IRN,Iran,République islamique d'Iran,00255,255,1979-04-01,2999-12-31
+00256,256,IL,ISR,Israël,État d'Israël,00256,256,1900-01-01,2999-12-31
+00257,257,JO,JOR,Jordanie,Royaume hachémite de Jordanie,00257,257,1900-01-01,2999-12-31
+00258,258,LB,LBN,Liban,République libanaise,00258,258,1900-01-01,2999-12-31
+00259,259,PK,PAK,Pakistan,République islamique du Pakistan,00259,259,1900-01-01,2999-12-31
+00260,260,AE,ARE,Émirats arabes unis,Émirats arabes unis,00260,260,1900-01-01,2999-12-31
+00261,261,SY,SYR,Syrie,République arabe syrienne,00261,261,1900-01-01,2999-12-31
+00262,262,TR,TUR,Turquie,République de Turquie,00262,262,1900-01-01,2999-12-31
+00263,263,  ,,Yémen du Nord,République arabe du Yémen,00263,263,1900-01-01,1990-05-21
+00264,264,KW,KWT,Koweït,État du Koweït,00264,264,1900-01-01,2999-12-31
+00266,266,OM,OMN,Oman,Sultanat d'Oman,00266,266,1900-01-01,2999-12-31
+00267,267,QA,QAT,Qatar,État du Qatar,00267,267,1900-01-01,2999-12-31
+00268,268,BH,BHR,Bahreïn,Royaume du Bahreïn,00268,268,1900-01-01,2999-12-31
+00269,269,  ,,Abu Dhabi,Emirat d'Abu Dhabi,00269,269,1900-01-01,1971-12-08
+00270,270,YE,YEM,Yémen,République du Yémen,00270,270,1900-01-01,2999-12-31
+00279,279,VN,,Vietnam du Sud,République du Viêt Nam,00279,279,1900-01-01,1976-07-02
+00280,280,HK,HKG,Hong Kong,Hong Kong  (Royaume Uni),00280,280,1900-01-01,1997-06-30
+00281,281,MO,MAC,Macao,Macao (Portugal),00218,218,1900-01-01,1997-07-01
+00282,282,TL,TLS,Timor oriental,République démocratique du Timor oriental,00282,282,1900-01-01,2999-12-31
+00283,283,PS,PSE,Palestine,Palestine,00283,283,1900-01-01,2999-12-31
+00301,301,LS,LSO,Lesotho,Royaume du Lesotho,00301,301,1900-01-01,2999-12-31
+00302,302,BW,BWA,Botswana,République du Botswana,00302,302,1900-01-01,2999-12-31
+00303,303,BI,BDI,Burundi,République du Burundi,00303,303,1962-07-01,2999-12-31
+00304,304,CM,CMR,Cameroun,République du Cameroun,00304,304,1900-01-01,2999-12-31
+00305,305,CF,CAF,République centrafricaine,République centrafricaine,00305,305,1900-01-01,2999-12-31
+00306,306,CD,COD,Congo (Rép.Dém.),République démocratique du Congo,00306,306,1900-01-01,2999-12-31
+00307,307,CG,COG,Congo-Brazzaville,République du Congo,00307,307,1900-01-01,2999-12-31
+00308,308,BF,BFA,Burkina Faso,Burkina Faso,00308,308,1900-01-01,2999-12-31
+00309,309,CI,CIV,Côte d'Ivoire,République de Côte d'Ivoire,00309,309,1900-01-01,2999-12-31
+00310,310,BJ,BEN,Bénin,République du Bénin,00310,310,1900-01-01,2999-12-31
+00311,311,ET,ETH,Éthiopie,République démocratique fédérale d'Éthiopie,00311,311,1900-01-01,2999-12-31
+00312,312,GA,GAB,Gabon,République gabonaise,00312,312,1900-01-01,2999-12-31
+00313,313,GM,GMB,Gambie,République de Gambie,00313,313,1900-01-01,2999-12-31
+00314,314,GH,GHA,Ghana,République du Ghana,00314,314,1900-01-01,2999-12-31
+00315,315,GN,GIN,Guinée,République de Guinée,00315,315,1900-01-01,2999-12-31
+00316,316,  ,HVO,Haute-Volta,République de Haute-Volta,00316,316,1900-01-01,1984-11-29
+00317,317,MU,MUS,Maurice,République du Maurice,00317,317,1900-01-01,2999-12-31
+00318,318,LR,LBR,Libéria,République du Libéria,00318,318,1900-01-01,2999-12-31
+00319,319,ML,MLI,Mali,République du Mali,00319,319,1900-01-01,2999-12-31
+00320,320,SN,SEN,Sénégal,République du Sénégal,00320,320,1900-01-01,2999-12-31
+00321,321,NE,NER,Niger,République du Niger,00321,321,1900-01-01,2999-12-31
+00322,322,NG,NGA,Nigéria,République fédérale du Nigeria,00322,322,1900-01-01,2999-12-31
+00323,323,UG,UGA,Ouganda,République d'Ouganda,00323,323,1900-01-01,2999-12-31
+00324,324,MG,MDG,Madagascar,République de Madagascar,00324,324,1900-01-01,2999-12-31
+00325,325,ZA,ZAF,Afrique du Sud,République d'Afrique du Sud,00325,325,1900-01-01,2999-12-31
+00327,327,RW,RWA,Rwanda,République du rwanda,00327,327,1900-01-01,2999-12-31
+00328,328,SL,SLE,Sierra Leone,République de Sierra Leone,00328,328,1900-01-01,2999-12-31
+00329,329,SO,SOM,Somalie,Somalie,00329,329,1900-01-01,2999-12-31
+00331,331,SZ,SWZ,Ngwane,Royaume du Swaziland,00331,331,1900-01-01,9999-12-31
+00332,332,TZ,TZA,Tanzanie,République unie de Tanzanie,00332,332,1900-01-01,2999-12-31
+00333,333,TD,TCD,Tchad,République du Tchad,00333,333,1900-01-01,2999-12-31
+00334,334,TG,TGO,Togo,République togolaise,00334,334,1900-01-01,2999-12-31
+00335,335,ZM,ZMB,Zambie,République de Zambie,00335,335,1900-01-01,2999-12-31
+00336,336,KE,KEN,Kenya,République du Kenya,00336,336,1900-01-01,2999-12-31
+00337,337,GQ,GNQ,Guinée équatoriale,République de Guinée équatoriale,00337,337,1900-01-01,2999-12-31
+00338,338,GW,GNB,Guinée-Bissau,République de Guinée-Bissau,00338,338,1974-09-10,2999-12-31
+00339,339,CV,CPV,Cap-Vert,République du Cap-Vert,00339,339,1975-07-05,2999-12-31
+00340,340,MZ,MOZ,Mozambique,République du Mozambique,00340,340,1975-06-25,2999-12-31
+00341,341,AO,AGO,Angola,République d'Angola,00341,341,1975-11-11,2999-12-31
+00342,342,SC,IOT,Seychelles (Iles),Territoire britannique de l'océan indien,00112,112,1976-06-29,2999-12-31
+00343,343,KM,COM,Comores,Union des Comores,00343,343,1975-07-06,2999-12-31
+00344,344,ZW,ZWE,Zimbabwe,République du Zimbabwe,00344,344,1980-04-18,2999-12-31
+00345,345,DJ,DJI,Djibouti,République de Djibouti,00345,345,1977-06-27,2999-12-31
+00346,346,ST,STP,Sao Tomé et Principe,République démocratique de Sao Tomé e Principe,00346,346,1900-01-01,2999-12-31
+00347,347,SZ,SWZ,Swaziland,Royaume du Swaziland,00347,347,1900-01-01,2999-12-31
+00349,349,ER,ERI,Érythrée,État d'Érythrée,00349,349,1993-05-24,2999-12-31
+00350,350,YT,MYT,Mayotte,DOM Mayotte,00111,111,1900-01-01,2999-12-31
+00351,351,DZ,DZA,Algérie,République algérienne démocratique et populaire,00351,351,1900-01-01,2999-12-31
+00352,352,EG,EGY,Égypte,République arabe d'Égypte,00352,352,1900-01-01,2999-12-31
+00353,353,LY,LBY,Libye,Jamahiriya arabe libyenne populaire et socialiste,00353,353,1900-01-01,2999-12-31
+00354,354,MA,MAR,Maroc,Royaume du Maroc,00354,354,1900-01-01,2999-12-31
+00355,355,MR,MRT,Mauritanie,République islamique de Mauritanie,00355,355,1900-01-01,2999-12-31
+00356,356,SD,SDN,Soudan,République du Soudan,00356,356,1900-01-01,2999-12-31
+00357,357,TN,TUN,Tunisie,République tunisienne,00357,357,1900-01-01,2999-12-31
+00358,358,MW,MWI,Malawi,République du Malawi,00358,358,1900-01-01,2999-12-31
+00365,365,SS,SSD,Soudan du Sud,République du Soudan du Sud,00365,365,2011-08-29,2999-12-31
+00381,381,AO,AGO,Angola,Colonie portugaise d'Angola,00381,381,1900-01-01,1975-11-11
+00382,382,  ,,Cabinda,Enclave de Cabinda,00381,381,1900-01-01,9999-12-31
+00384,384,NA,NAM,Namibie,République de Namibie,00384,384,1900-01-01,2999-12-31
+00387,387,RE,REU,Réunion,DOM Réunion,00111,111,1900-01-01,2999-12-31
+00388,388,EH,ESH,Sahara Occidental,République arabe sahraouie démocratique,00354,354,1900-01-01,2999-12-31
+00389,389,SH,SHN,Sainte Hélène,"Sainte Hélène, Ascension et Tristan da Cunha",00112,112,1900-01-01,2999-12-31
+00396,396,  ,,Transkei,Transkei,00396,396,1900-01-01,2999-12-31
+00397,397,  ,,Bophuthatswana,Bophuthatswana,00397,397,1900-01-01,2999-12-31
+00401,401,CA,CAN,Canada,Canada,00401,401,1900-01-01,2999-12-31
+00402,402,US,USA,États-Unis,États-Unis d'Amérique,00402,402,1900-01-01,2999-12-31
+00411,411,CR,CRI,Costa Rica,République du Costa Rica,00411,411,1900-01-01,2999-12-31
+00412,412,CU,CUB,Cuba,République de Cuba,00412,412,1900-01-01,2999-12-31
+00413,413,GT,GTM,Guatemala,République du Guatemala,00413,413,1900-01-01,2999-12-31
+00414,414,HN,HND,Honduras,République du Honduras,00414,414,1900-01-01,2999-12-31
+00415,415,JM,JAM,Jamaïque,Jamaïque,00415,415,1900-01-01,2999-12-31
+00416,416,MX,MEX,Mexique,États-Unis mexicains,00416,416,1900-01-01,2999-12-31
+00417,417,NI,NIC,Nicaragua,République du Nicaragua,00417,417,1900-01-01,2999-12-31
+00418,418,PA,PAN,Panama,République du Panama,00418,418,1900-01-01,2999-12-31
+00419,419,HT,HTI,Haïti,République d'Haïti,00419,419,1900-01-01,2999-12-31
+00420,420,DO,DOM,République dominicaine,République dominicaine,00420,420,1900-01-01,2999-12-31
+00421,421,SV,SLV,El Salvador,République d'El Salvador,00421,421,1900-01-01,2999-12-31
+00422,422,TT,TTO,Trinidad et Tobago,République de Trinidad et Tobago,00422,422,1900-01-01,2999-12-31
+00423,423,BB,BRB,Barbade,Barbade,00423,423,1900-01-01,2999-12-31
+00424,424,  ,,Antilles britanniques,Antilles britanniques,00112,112,1900-01-01,9999-12-31
+00425,425,BS,BHS,Bahamas,Commonwealth des Bahamas,00425,425,1973-07-10,2999-12-31
+00426,426,GD,GRD,Grenade,Grenade,00426,426,1900-01-01,2999-12-31
+00427,427,DM,DMA,Dominique,Commonwealth de Dominique,00427,427,1900-01-01,2999-12-31
+00428,428,LC,LCA,Sainte-Lucie,Sainte-Lucie,00428,428,1900-01-01,2999-12-31
+00429,429,VC,VCT,Saint-Vincent et les Grenadines,Saint-Vincent et les Grenadines,00429,429,1900-01-01,2999-12-31
+00430,430,BZ,BLZ,Belize,Royaume de Belize,00430,430,1981-09-21,2999-12-31
+00431,431,KN,KNA,Saint Kitts et Nevis,Saint-Kitts et Nevis,00431,431,1983-09-19,2999-12-31
+00481,481,  ,,Antilles françaises,Antilles françaises,00111,111,1900-01-01,2999-12-31
+00482,482,AN,ANT,Antilles néerlandaises,Antilles néerlandaises,00129,129,1900-01-01,2999-12-31
+00483,483,AW,VIR,Îles Vierges des Etats-Unis,Îles Vierges des Etats-Unis,00402,402,1900-01-01,2999-12-31
+00485,485,BM,BMU,Bermudes,Bermudes,00112,112,1900-01-01,2999-12-31
+00486,486,VG,VGB,Îles Vierges britanniques,Îles Vierges britanniques,00112,112,1900-01-01,2999-12-31
+00487,487,PR,PRI,Porto Rico,Commonwealth de Porto Rico,00402,402,1900-01-01,2999-12-31
+00488,488,TC,TCA,Turks et Caicos,Îles Turks et Caicos,00112,112,1900-01-01,2999-12-31
+00489,489,BZ,BLZ,Belize (R.U.),Belize (Honduras britanniques),00489,489,1900-01-01,1981-09-21
+00490,490,AI,AIA,Anguilla,Anguilla,00112,112,1900-01-01,2999-12-31
+00491,491,AG,ATG,Antigua et Barbuda,Antigua et Barbuda,00491,491,1900-01-01,2999-12-31
+00492,492,KY,CYM,Îles Caïmanes,Îles Caïmanes,00112,112,1900-01-01,2999-12-31
+00493,493,MS,MSR,Montserrat,Montserrat,00112,112,1900-01-01,2999-12-31
+00495,495,PM,SPM,Saint-Pierre et Miquelon,collectivité territoriale de Saint-Pierre et Miquelon,00111,111,1900-01-01,2999-12-31
+00496,496,GP,GLP,Guadeloupe,DOM Guadeloupe et COM Saint-Barthélemy et Saint-Martin,00111,111,1900-01-01,2999-12-31
+00497,497,MQ,MTQ,Martinique,DOM Martinique,00111,111,1900-01-01,2999-12-31
+00498,498,GL,GRL,Groenland,Groenland,00108,108,1900-01-01,2999-12-31
+00499,499,BL,BLM,Saint Barthélemy,Ile de Saint Barthélemy,00111,111,1900-01-01,2999-12-31
+00511,511,AR,ARG,Argentine,République d'Argentine,00511,511,1900-01-01,2999-12-31
+00512,512,BO,BOL,Bolivie,État plurinational de Bolivie,00512,512,1900-01-01,2999-12-31
+00513,513,BR,BRA,Brésil,République fédérative du Brésil,00513,513,1900-01-01,2999-12-31
+00514,514,CL,CHL,Chili,République du Chili,00514,514,1900-01-01,2999-12-31
+00515,515,CO,COL,Colombie,République de Colombie,00515,515,1900-01-01,2999-12-31
+00516,516,EC,ECU,Équateur,République de l'Équateur,00516,516,1900-01-01,2999-12-31
+00517,517,PY,PRY,Paraguay,République du Paraguay,00517,517,1900-01-01,2999-12-31
+00518,518,PE,PER,Pérou,République du Pérou,00518,518,1900-01-01,2999-12-31
+00519,519,UY,URY,Uruguay,République orientale de l'Uruguay,00519,519,1900-01-01,2999-12-31
+00520,520,VE,VEN,Vénézuela,République bolivarienne du Venezuela,00520,520,1900-01-01,2999-12-31
+00521,521,GY,GUY,Guyana,République coopérative de Guyana,00521,521,1900-01-01,2999-12-31
+00522,522,SR,SUR,Suriname,République du Suriname,00522,522,1900-01-01,2999-12-31
+00580,580,FK,FLK,Malouines (Falkland),Îles Malouines (Falkland),00112,112,1900-01-01,2999-12-31
+00581,581,GF,GUF,Guyane française,DOM Guyane française,00111,111,1900-01-01,2999-12-31
+00602,602,FM,FSM,Micronésie,États fédérés de Micronésie,00402,402,1986-11-03,9999-12-31
+00603,603,FM,MHL,Îles Marshall,République des Îles Marshall,00402,402,1986-10-21,9999-12-31
+00611,611,AU,AUS,Australie,Commonwealth d'Australie,00611,611,1900-01-01,2999-12-31
+00613,613,NZ,NZL,Nouvelle-Zélande,Nouvelle-Zélande,00613,613,1900-01-01,2999-12-31
+00614,614,WS,WSM,Samoa,État indépendant du Samoa,00614,614,1900-01-01,2999-12-31
+00615,615,NR,NRU,Nauru,République de Nauru,00615,615,1900-01-01,2999-12-31
+00616,616,TO,TON,Tonga,Royaume des Tonga,00616,616,1900-01-01,2999-12-31
+00617,617,FJ,FJI,Fidji,République des Iles Fidji,00617,617,1900-01-01,2999-12-31
+00619,619,PG,PNG,Papouasie-Nouvelle-Guinée,État indépendant de Papouasie-Nouvelle-Guinée,00619,619,1900-01-01,2999-12-31
+00621,621,TV,TUV,Tuvalu,Tuvalu,00621,621,1900-01-01,2999-12-31
+00622,622,KI,KIR,Iles Gilbert,Iles Gilbert et Ellice,00714,714,1979-07-17,9999-12-31
+00623,623,SB,SLB,Salomon (Îles),Îles Salomon,00623,623,1900-01-01,2999-12-31
+00624,624,VU,VUT,Vanuatu,République de Vanuatu,00624,624,1900-01-01,2999-12-31
+00679,679,PW,PLW,Palaos,République de Palaos,00679,679,1900-01-01,2999-12-31
+00681,681,GU,GUM,Guam,territoire de Guam,00402,402,1900-01-01,2999-12-31
+00682,682,  ,,Hawaï,Iles Hawaï,00402,402,1900-01-01,2999-12-31
+00683,683,NC,NCL,Nouvelle Calédonie,Nouvelle Calédonie,00111,111,1900-01-01,2999-12-31
+00684,684,PF,PYF,Polynésie française,pays d'outre-mer de la polynésie française,00111,111,1900-01-01,2999-12-31
+00685,685,NU,NIU,Niué,République de Niué,00613,613,1900-01-01,2999-12-31
+00686,686,TK,TKL,Tokelau,Iles Tokelau,00613,613,1900-01-01,2999-12-31
+00687,687,CK,COK,Cook,Îles Cook,00613,613,1900-01-01,2999-12-31
+00689,689,WF,WLF,Wallis et Futuna,collectivité de Wallis et Futuna,00111,111,1900-01-01,2999-12-31
+00690,690,AS,ASM,Samoa américaines,territoire des Samoa américaines,00402,402,1900-01-01,2999-12-31
+00691,691,FM,UMI,Îles mineures éloignées des Etats-unis,Îles mineures éloignées des Etats-unis,00402,402,1900-01-01,2999-12-31
+00692,692,PN,PCN,Pitcairn,Îles Pitcairn,00112,112,1900-01-01,2999-12-31
+00693,693,MH,XOX,Océanie australienne,Océanie australienne,00611,611,1900-01-01,2999-12-31
+00700,700,  ,,Réfugié politique,,00700,700,1900-01-01,2999-12-31
+00711,711,  ,,Indéterminé,,00711,711,1900-01-01,2999-12-31
+00714,714,KI,KIR,Kiribati,République de Kiribati,00714,714,1900-01-01,1979-07-16
+00730,730,  ,,Réfugié ONU,,00730,730,1900-01-01,2999-12-31
+00900,900,  ,XEX,Apatride,Apatride,00900,900,1900-01-01,2999-12-31
+00901,901,  ,XHX,Pas encore définitivement établi,Pas encore définitivement établi,00901,901,1900-01-01,9999-12-31
+00999,999,  ,XXX,Indéterminé,Indéterminé,00999,999,1900-01-01,9999-12-31

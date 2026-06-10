@@ -216,13 +216,90 @@ UML ont permis de **trancher les coquilles de typage du texte** (types `string` 
 
 ---
 
-### Session 6 — (à planifier) : Synthèse + Architecture + Mock server
+### Session 6 — 2026-06-05 : Circulaire 9589 (rentrée 2025-2026, personnel EA)
+
+**Document analysé** :
+- ✅ Circulaire 9589 du 19/09/2025 — rentrée scolaire 2025-2026 des MDP, Enseignement pour
+  Adultes (`circulaires/53089_0000.pdf`, 356 p. PDF = 293 p. + annexes A1-A36). Texte natif
+  (pas d'OCR nécessaire). Abroge la 9343 du 24/08/2024.
+
+**Fichiers produits** :
+- `specs/07_circulaire_9589_contexte_personnel.md` — contexte métier « personnel/paie » :
+  acteurs (PR/PO/MDP), identifiants (ECOT vs FASE, matricule, NISS/NISS bis), calendrier
+  2025-2026, échéancier de paie, écosystème applicatif (GEDI-PRO/**GEDI-WS**, GESP,
+  Mon Espace, DIMONA/DDRS, CAMMAT, VALEXU, Primoweb), sigles, annexes.
+- `specs/08_circulaire_9589_ea12_attributions.md` — modèle EA12/EA12bis/EA12ter (demande de
+  mise en liquidation) : structure des documents, référentiel des types d'événement, ligne
+  d'attribution, situations administratives, codes DI, régimes de titres (RTF), dénominateurs
+  de charge, EPT/CQ/CF/RRF, plafonds experts, codes RTF/RL10/FADI, cumul, règles de validation.
+
+**Découvertes clés (jonctions avec les specs EPROM)** :
+- **Code U.E. de l'EA12 (« 9 chiffres et 2 lettres ») = `codeFormation` EPROM** (ex. `761001U31C1`).
+- **Matricule enseignant** (11 positions : sexe + date naissance inversée AAMMJJ + 4 chiffres)
+  = `noMatEns` du Doc 3 (l'exemple `28208171112` de la spec 05 se décode : femme, 17/08/1982, n°1112).
+- **Codes DI** de la circulaire ≈ table `coDispo` du Doc 3 (même univers, la circulaire ajoute
+  la sémantique rémunéré/non rémunéré et le classement thématique).
+- ⚠️ **Faux ami** : situation administrative EA12 (D/Z/V/S/I/St/P/R/A/T/M) ≠ `teStatut` Doc 3
+  (C/P/A/D/E/X/T) — deux tables distinctes malgré le recouvrement partiel (D, T).
+- L'EA12 référence les **documents 2 et 8/8bis** (classification CLA, intitulés de cours) —
+  les mêmes que `nbPeriodesPrevuesDoc2`/`nbPeriodesReellesDoc2`/`nbPeriodesDoc8` du Doc 3.
+- **Terminologie officielle** : « Enseignement pour adultes » remplace « promotion sociale »
+  (D.-27/03/2025, MB 08/04/2025) — à refléter dans la doc utilisateur pyetnic (les identifiants
+  techniques EPROM/PS restent inchangés).
+- **GEDI-WS** : canal web service officiel pour transmettre les documents personnel depuis une
+  application locale (ProEco, CREOS, EPHEC connectés) — monde distinct des services EPROM.
+- Incohérence interne relevée : RL10 coordinateur qualité = `384` (p.152) vs `394` (p.224).
+
+**Portée** : analyse cadrée « complément de contexte pyetnic » (pas d'app de gestion du
+personnel visée). Les grandes tables RTF/RL10/FADI (≈ 480 fonctions, p.212-225) sont
+décrites structurellement, extraction CSV possible ultérieurement si besoin.
+
+---
+
+### Session 7 — 2026-06-09 : Famille SEPS (Étudiants & Inscriptions) + circulaire 9593 + référentiels
+
+**Services analysés** (5 — nouvelle famille **SEPS**, Enseignement pour Adultes) :
+- ✅ SEPS Recherche Étudiants v1 (release 2.1.9) — `lireEtudiant`, `rechercherEtudiants`
+- ✅ SEPS Sauvegarde Étudiant v1 (2.1.9) — `enregistrerEtudiant`, `modifierEtudiant`
+- ✅ SEPS Enregistrer Inscription v1 (2.1.9) — `enregistrerInscription`, `modifierInscription`
+- ✅ SEPS Recherche Inscriptions v1 (2.1.9) — `rechercherInscriptions`
+- ✅ SEPS Notifications v1 (release 1.0.8) — `lireNotifications`
+
+**Documents fonctionnels** :
+- ✅ Circulaire **9593** du 23/09/2025 (dossier personnel, registre matricule, DI, présences ; 34 p. ; abroge 9350)
+- ✅ Référentiels **Codes_Pays.xls** (260) + **INS_communesNais200723.xlsx** (communes INS)
+
+**Fichiers produits** :
+- `specs/09_seps_recherche_etudiants_v1.md` … `specs/13_seps_notifications_v1.md` (5 specs services)
+- `specs/14_circulaire_9593_dossier_personnel.md` + `specs/15_referentiels_seps.md`
+- `specs/referentiels/codes_pays.{csv,json}`, `codes_communes_ins.{csv,json}`, `codes_communes_ins_actives.csv`
+- `specs/00_REGISTRE.md` — **section 7 « Famille SEPS »** ajoutée
+
+**Méthode PDF** : manuel SEPS (67 p.) **texte natif** exploitable (`pdftotext -layout`, ~5000 c/page) — pas d'OCR. Rendu image (`pdftoppm` 150 dpi) des pages à diagrammes UML 8/11/12 → confirment le XSD.
+
+**Découvertes clés** :
+
+- **Famille distincte d'EPROM** : auth **WS-Security X.509** (pas UsernameToken), **SOAP 1.1 only**, namespaces `ws.etnic.be/seps/…`, bloc retour `AbstractExternalResponseType` en **`external/v1`** (forme identique à Common_v1, autre namespace). `ResponseStatus_v3`/`requestId_v1` byte-for-byte identiques à EPROM.
+- **Identité étudiant** : `cfNum` (numéro Communauté française, pattern `[0-9]{1,10}-[0-9]{2}`) ; double signalétique **`rnDetails`** (Registre National/BCSS) vs **`cfwbDetails`** (établissement). NISS + **NISS bis** (createBisFlag → PUBLISHPERSON).
+- **2 niveaux d'erreur** : SOAP Fault technique (`SECU-*`/`ROUT-*`/`VALI-*`) ≠ erreur métier (`success=false` + messages). **Codes métier non universels** (`30042` a 2 sens) → indexer par (service, code). Absence de résultat souvent en **warning + success=false**.
+- **Inscription très riche** : `SpecificiteDataType` (regulier1/5, droitInscription/DI, droitInscriptionSpecifique/DIS hors-CEE, FSE, admission, sanction). ~16 énumérations métier documentées (MotifExemption C01-C07, MotifExemptionSpec C01-C13, admission/titre/sanction…).
+- **Référentiels** : `codePays`/`codeNationalite` = code INS **5 chiffres** (`CO_ONSS_ID`/`CO_NATIO_ID`, Belgique=00150) ; `localite.code` = INS commune 5 chiffres (obligatoire si belge). Extraits en CSV/JSON.
+- **Jonctions** : `regulier1`/`regulier5` ↔ comptage 1/10ᵉ-5/10ᵉ (circulaire) ↔ Doc 1 EPROM ; `MotifExemption` ↔ exemptions DI circulaire ; colonnes 7/7'' du Doc 1 = `nbEleveDem`/`nbEleveExm`.
+
+**Divergences XSD ↔ PDF recensées** (≈ 15) — détail dans chaque spec : host endpoint (ws-tq vs services-web) ; `rnDetail(s)`/`cfwbDetail(s)` ; champs réponse hors XSD (`rnValidityEndDate`, `codeEtatCivil`) ; `anneeScolaire`/`ue`/`specificite` (minOccurs=0 vs obligatoires) ; `SpecificiteDataInputType` type mort ; `StatutFinFormationType` C01-C06 vs 01-06 ; `NotificationDescriptionType` enum incomplet (pas de « STATUT ») ; `forceRnFlag`/`forceRn` ; `dateRequete`/`dateRequest` ; réponse `etudiant` vs `etudiantDetails` ; `codeNationalite` BE vs 00150.
+
+**Points à confirmer ETNIC** : host endpoint à retenir ; mapping fin `MotifExemption ↔ libellés circulaire` ; comportement code `08` (changement statut) sans description enum ; périmètre DIC (hors SEPS).
+
+---
+
+### Session 8 — (à planifier) : Synthèse + Architecture + Mock server
 
 **À faire** :
-- Synthèse cross-services
-- Architecture cible pyetnic v2
+- Synthèse cross-services (EPROM + **SEPS**)
+- Architecture cible pyetnic v2 (gérer **2 familles** : auth UsernameToken EPROM **et** X.509 SEPS)
 - Prototype mock server SOAP stateful
 - Plan d'implémentation
+- Intégrer les **référentiels** (pays/communes) comme données embarquées + helpers de validation
 
 **Points à trancher / confirmer (hérités des sessions précédentes)** :
 - **Mapping « Doc A »** : confirmer formellement que le « Doc A » de l'erreur `20102` (Doc 3) = Document 1
@@ -255,3 +332,21 @@ UML ont permis de **trancher les coquilles de typage du texte** (types `string` 
 | Formation Périodes (Document 2) | 1.0 | ✅ session 3 | ✅ `04_formation_periodes_v1.md` |
 | Document 3 (Attributions) | 1.0 | ✅ session 4 | ✅ `05_document3_v1.md` |
 | Formation Droits Inscription (Document 1D) | 1.0 | ✅ session 5 | ✅ `06_formation_droits_inscription_v1.md` |
+
+## Documents fonctionnels analysés (hors services SOAP)
+
+| Document | Référence | Analysé | Spec produite |
+|---|---|---|---|
+| Circulaire de rentrée 2025-2026 — MDP Enseignement pour Adultes | 9589 du 19/09/2025 | ✅ session 6 | ✅ `07_circulaire_9589_contexte_personnel.md` + `08_circulaire_9589_ea12_attributions.md` |
+| Circulaire dossier personnel étudiant / matricule / DI / présences (EA) | 9593 du 23/09/2025 | ✅ session 7 | ✅ `14_circulaire_9593_dossier_personnel.md` |
+| Référentiels codes pays / nationalités / communes INS | Catalogue SOA ETNIC | ✅ session 7 | ✅ `15_referentiels_seps.md` + `referentiels/*.csv,json` |
+
+## Services SEPS identifiés (Étudiants & Inscriptions — Enseignement pour Adultes)
+
+| Service | Contrat / release | Opérations | Analysé | Spec produite |
+|---|---|---|---|---|
+| SEPS Recherche Étudiants | external v1 / 2.1.9 | lireEtudiant, rechercherEtudiants | ✅ session 7 | ✅ `09_seps_recherche_etudiants_v1.md` |
+| SEPS Sauvegarde Étudiant | external v1 / 2.1.9 | enregistrerEtudiant, modifierEtudiant | ✅ session 7 | ✅ `10_seps_enregistrer_etudiant_v1.md` |
+| SEPS Enregistrer Inscription | external v1 / 2.1.9 | enregistrerInscription, modifierInscription | ✅ session 7 | ✅ `11_seps_enregistrer_inscription_v1.md` |
+| SEPS Recherche Inscriptions | external v1 / 2.1.9 | rechercherInscriptions | ✅ session 7 | ✅ `12_seps_recherche_inscriptions_v1.md` |
+| SEPS Notifications | external v1 / 1.0.8 | lireNotifications | ✅ session 7 | ✅ `13_seps_notifications_v1.md` |
