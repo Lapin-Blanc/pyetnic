@@ -292,7 +292,281 @@ décrites structurellement, extraction CSV possible ultérieurement si besoin.
 
 ---
 
-### Session 8 — (à planifier) : Synthèse + Architecture + Mock server
+### Session 8 — 2026-06-10 : Circulaires légales (DI, calendrier, hybride, renseignements annuels)
+
+**Documents analysés** :
+- ✅ Circulaire **9217** du 03/04/2024 (DI 2024-2025) — texte intégral via miroir ICC Bruxelles
+  (Gallilex/enseignement.be bloquent l'accès automatisé — WAF ; PDF Gallilex téléchargés manuellement
+  dans `circulaires/`)
+- ✅ Circulaire **9488** du 16/04/2025 (DI 2025-2026) — montants via synthèse GHA-WBE
+- ✅ Circulaire **9731** du 27/05/2026 (DI **2026-2027**, en vigueur) — `circulaires/53231_0000.pdf`
+- ✅ Circulaire **9487** du 16/04/2025 (calendrier EA 2025-2026, dotation) — `circulaires/52387_0000.pdf`
+- ✅ Circulaire **8829** du 01/02/2023 (enseignement hybride, AGCF 21/12/2022) — `circulaires/50609_000.pdf`
+- ✅ Circulaire **8684** du 16/08/2022 (**Renseignements annuels** : instructions d'encodage EPROM,
+  toujours en vigueur) — `circulaires/49854_000.pdf` (90 p.)
+
+**Fichiers produits** :
+- `specs/16_circulaires_droit_inscription.md` — formule DI (forfait + tarif×min(p,800), montants
+  2024→2027), assiette (dossier pédagogique, 1ᵉʳ dixième), exonérations ↔ `MotifExemptionType`,
+  recalcul global multi-établissements + remboursement, arrondi, règle Doc 1D « constaté ≠ perçu » (9731)
+- `specs/17_circulaire_9487_calendrier_dotation.md` — année académique, congés, **100 % planifiés /
+  90 % dispensés**, dotation par année civile (découpage 16+24 semaines), numérotation des semaines
+- `specs/18_circulaire_8829_hybride.md` — hybride : organisation distincte, neutralité dotation/DI,
+  bascule 48 h, **« DOC A » = déclaration d'ouverture**
+- `specs/19_circulaire_8684_renseignements_annuels.md` — instructions complètes Doc A/1/2/1D/3 :
+  sémantique des colonnes, règles de cohérence, lignes 91-96, regroupements, IE, échéancier
+- Renvois croisés ajoutés dans `02`, `03`, `04`, `05`, `06`, `11` ; registre (`20102`) mis à jour
+
+**Découvertes clés** :
+- ⭐ **« Doc A » = document Organisation (déclaration d'ouverture EPROM)** — confirmé deux fois
+  (8829 §Encodage du Document A ; 8684 §2.1 « Déclaration d'organisation DOCUMENT A »). Hypothèse
+  « Doc A = Doc 1 » des sessions 4-5 **corrigée** ; chaîne `20102` : Organisation + Doc 2 approuvés
+  → Doc 3.
+- ⭐ **Les web services EPROM (Doc A, 2, 1D, 3) sont officiellement documentés** dans la 8684 comme
+  canal pour les applications de gestion (ENORA, GIPS, PROSOC…).
+- **Règle 100 %/90 %** (9487) : prévu Doc 2 = 100 % du Doc 8bis ; réel ≥ 90 % (CO/VH réputées
+  dispensées, pas VA/VD/VP/VE) → explique `nbPeriodesPrevuesDoc2`/`nbPeriodesReellesDoc2`.
+- **Dotation gérée par année civile** (16+24 semaines) → explique la ventilation an 1 / an 2 des
+  périodes du Doc 2 (`nbPerAn1`/`nbPerAn2`).
+- **Règles de multiples** (8684) : réel = multiple entier du prévu ; total = multiple entier **ou
+  entier-et-demi** du Doc 8bis (→ les périodes sont des `float`) ; encadrement = effectif ×
+  périodes/étudiant ; total 18+19 = plafond des attributions Doc 3 (`1574`).
+- **Recalcul global du DI** multi-établissements avec obligation de remboursement → helper pyetnic
+  sur l'ensemble des inscriptions de l'année. Assiette DI = dossier pédagogique, pas le Doc 2.
+- **DI 2026-2027** : 34 € / 0,30 (sec) / 0,47 (sup), plafond 800 ; nouvelle exonération boursiers
+  BES AeSI ; VA désormais régie par la circ. **9447** (25/02/2025).
+- Lignes spéciales Doc 2 : 91-94 valorisation (92/94 encodables jusqu'au 31/10 N+1 après
+  approbation !), 95 expertise (≥40 p./chargé de cours), 96 suivi pédagogique (sans DI ni population —
+  Doc 1/1D à valider vides).
+- Échéancier : Doc A ≤ 5 j ouvrables ; Doc 1+2 ≤ 35 j (1ᵉʳ dixième) ; Doc 1D ≤ 25 j (5ᵉ dixième) ;
+  Doc 3 ≤ 35 j (approbation Doc 2).
+
+**Points restants** : « colonnes A et B » du Doc 1 (réf. des circulaires DI) non élucidées (annexes 7-8
+de la 8684 = manuels HOD/CICS-EPROM à dépouiller au besoin) ; test TQ du déclencheur `20102` ;
+mapping fin exonérations ↔ C01-C07 ; circulaires connexes non traitées : 9448 (inclusif, périodes
+complémentaires), 9447 (VA), 6351 (activités de formation), 4462/6677 (conventions).
+
+---
+
+### Session 9 — 2026-06-10 : Exploration de l'application EPROM Web (lecture seule)
+
+**Méthode** : navigation dans l'application de production (`EPROM_WEB` 2.12.0, IBM Faces) via Chrome
+piloté en JavaScript (les boutons exigent des séquences de `MouseEvent` réels ; notes techniques
+complètes dans la spec 20 §3). Compte école EICA, année 2024-2025, formation témoin 157.
+
+**Fichier produit** : `specs/20_exploration_ui_eprom.md` + mises à jour specs 05/16/19.
+
+**Confirmations / résolutions** :
+- ⭐ **Doc A définitivement confirmé** = l'organisation : tableau « DOCUMENTS ANNUELS » de l'UI
+  (Doc A / Doc 1 et 2 / Doc 1D / Doc 3 avec statuts « Approuvé » / « Encodé école » = `StatutCT`).
+  « Doc 1 et 2 » = une entrée à 2 statuts → cohérent avec `statutDocumentPopulationPeriodes` unique.
+- ⭐ **« Colonnes A et B » résolu** : colonnes UI « Elèves A » (col 2) / « Elèves B » (col 5) du Doc 1.
+- ⭐ **Référentiels `teStatut` et `coDispo` extraits avec libellés** depuis les listes déroulantes du
+  Doc 3 (60 codes dispo ; 7 statuts ACS/ACS DP/Déf. Accessoire/Définitif/Expert/eXpertise/Temporaire).
+- Tuple `(O - O - O - O - E)` de la liste = statuts des 5 documents (A, 1, 2, 1D, 3).
+- Champs UI = mapping 1:1 avec `FormationOrganisationCT` (dont « conseiller en prévention ou DPO »),
+  `Doc3ActiviteDetailCT`/`Doc3EnseignantDetailCT`, colonnes 12-19 du Doc 2 ventilées **par année
+  civile** dans les en-têtes (« Prévue 2024 / Prévue 2025 / Réel 2024 / Réel 2025 »).
+- **Lignes 97-99 du Doc 2** découvertes (97 PeSu périodes suppl., 98 PSup part supplémentaire,
+  99 CEtu conseil des études) — absentes de la 8684.
+- Onglet IE : périodes par année civile en 3 lignes « Cas généraux / Cas particuliers / Suppléments ».
+
+---
+
+### Session 9bis — 2026-06-10 : Calcul de l'encadrement et de la dotation de périodes (spec 21)
+
+**Déclencheur** : question utilisateur — pyetnic peut-il calculer la dotation d'une école à partir de ses chiffres ?
+
+**Fichier produit** : `specs/21_calcul_encadrement_dotation.md`.
+
+**Découvertes clés** :
+- ⭐ **Deux grandeurs distinctes** (précision utilisateur) : **encadrement** (équipe administrative) = sur
+  **périodes-élèves (PE)** ; **dotation de périodes** (rémunération enseignants) = **PE *pondérées*** (coefficients par catégorie).
+- **Aucun service SOAP analysé** ne renvoie la dotation/encadrement (vérifié : 0 champ `dotation/encadrement/NTPP`
+  dans WSDL/XSD). La **dotation de base** est communiquée par l'administration (juillet, par année civile ;
+  consultée historiquement via HOD/CICS « pot K », écran 59).
+- **Cadre du calcul localisé** : décret 16/04/1991 **art. 82-93, 102, 111 §1, 115** ; **arrêté GCF 22/11/2002**
+  (ajustements) ; **arrêté 09/07/2004** + circ. **5447** (part d'autonomie ≈ 20 %) ; circulaires **PS 327/96**
+  (calcul PE + cas particuliers encadrement), **PS 402/03** (ajustements), **PS 357/98 / 422/06** (expertise,
+  périodes suppl.) ; le tout recensé par la circulaire-**répertoire 2816 du 13/07/2009**.
+- **Décret coordonné déposé et analysé** (`circulaires/16184_0036.pdf`, MAJ 19/12/2025, 71 p., texte natif) →
+  **verbatim confirmé** : **PE = périodes réellement organisées × élèves réguliers, sommées** (art. 99) ;
+  **catégories A (sec. sup.) / B (sec. inf.) / C (supérieur)** (art. 83) = axe de pondération ; norme
+  **30 000/40 000 PE** (art. 100, « autonomie de l'établissement », ≠ part d'autonomie du dossier péda) ;
+  période **50 min** (art. 82) ; dotation **par année civile** (art. 86) ; **déductions** (art. 87bis) ;
+  **réserve + dépassement 1,5×** (art. 91/93) ; **plafond 10 %** activités hors cours, **≤ 1 %** formation (art. 91/6) ;
+  expertise **40-800 périodes** (art. 91/4) ; **supplément suivi pédagogique** 100/200/300/400/500 **périodes B**
+  selon PE générées (30k/120k/240k/360k/500k, art. 36 §2 — ⚠️ corrige une table provisoire erronée).
+- ⭐ **Arrêté GCF 22/11/2002 obtenu** (numac 2003029045, version coordonnée Justel 18/08/2025) → **table de pondération
+  verbatim** : coef. pédagogique **1 / 1,6 / 2,8** × coef. niveau **B=1 / A=1,25 / C=1,5 / D=1,8** ; PE pondérées en
+  6 étapes (cas généraux / part d'autonomie au prorata / organique / cas particuliers / neutralisation augmentations /
+  dépassements) ; ajustement par **intervalle de neutralisation ±8 %**, baisse plafonnée à **50 périodes**, redistribution
+  au prorata (enveloppe fermée). Base = **avant-dernière année civile** ; dotation de référence = année précédente.
+- **Faisabilité pyetnic** : le calcul est désormais **entièrement spécifié** → simulateur/vérificateur complet ; seul
+  intrant non récupérable par service = la **dotation de référence** (communiquée par l'administration). Recommander un
+  module « financement » paramétrable par millésime (coefficients, ±8 %, plafond 50, plafonds 10 %/1 %).
+
+- **Table de pondération figée** : `referentiels/coefficients_ponderation_coCategorie.csv` — 30 codes `coCategorie`
+  (spec 04) → coefficient pédagogique (1 / 1,6 / 2,8), croisés avec l'arrêté art. 3 (15 cas généraux ; 1 autonomie ;
+  12 cas particuliers à la moyenne PEP/période ; 2 à confirmer : `PSup`, `PRET`).
+
+**Points mineurs restants** : catégorie « D » du barème (1,8) vs « D » abrogé du décret en 2021 (à clarifier) ;
+taux exact part d'autonomie (arrêté 09/07/2004) ; `coCategorie` `PSup`/`PRET` (2/30) ; modèle d'annexe de l'arrêté. **Aucun bloquant.**
+PDF arrêté : `ejustice.just.fgov.be/img_l/pdf/2002/11/22/2003029045_F.pdf` (à déposer dans `circulaires/` si souhaité).
+
+---
+
+### Session 9ter — 2026-06-11 : Test prod — UE hors PEP 2024-2025 (limitation organique, Doc 2)
+
+**Déclencheur** : question utilisateur — quelles UE ne sont pas comptabilisées pour les PEP en 2024-2025 ?
+
+**Test prod (lecture seule, étab 3052)** : `lister_formations` + `lire_organisation` + `lire_document_2`
+sur les **123 organisations** de 2024-2025 (110 formations). Scripts jetables `/tmp/pep_*.py`.
+
+**Résultats** :
+- **45/123 organisations** financées hors dotation (toutes avec `interventionExterieure50p = true`) :
+  **32 Convention (C)**, **9 Publics infra-scolarisés (I)**, **3 Validation des compétences (V)**,
+  **1 Fonds Européens (F)** — soit **3 691,5 périodes IE** sur 7 986,5 prévues déclarées.
+- ⭐ **Cohérence parfaite** flag organisation (`typeInterventionExterieure`) ↔ lignes IE du Doc 2 :
+  zéro divergence sur 123 organisations (le flag est un résumé fiable des lignes IE).
+
+**Patterns d'encodage Doc 2 découverts (constat prod, à généraliser avec prudence)** :
+1. **IE totale (« miroir »)** : total périodes activités = total périodes IE (ex. 490 : 120 = 120) → UE
+   entièrement hors dotation, zéro PEP.
+2. **IE partielle 50 %** (395, 396, 568) : `nbTotPeriodeReelle = nbTotPeriodePrevue − périodes IE`
+   (ex. 395 : 30 prévues, 15 IE, 15 réelles) → 🔶 hypothèse : les **périodes réelles** du Doc 2 ne
+   comptent que la **part dotation** ; les périodes IE vivent uniquement sur leurs lignes propres.
+3. **Placeholder** (403/4·7, 455/3-6, 510/3-4, 511/3, 528 — VC et conventions) : activités déclarées à
+   **0,5 ou 1 période symbolique**, tout le volume réel porté par les lignes IE (ex. 455/3 : 0,5 prévue,
+   300 IE) → ⚠️ le total activités du Doc 2 **n'est pas une assiette fiable** seul ; toujours croiser
+   avec `interventionExterieureListe`.
+4. **IE composite** : 518/org1 a `typeInterventionExterieure = F` mais **deux lignes** Doc 2
+   (`F/WL` = 105 + `K/PR` = 105) → le flag organisation ne reflète que le type dominant.
+
+**Impact spec 21** : note de lecture ajoutée à l'étape 3 (limitation organique) — l'exclusion des
+périodes hors dotation est calculable par organisation via les lignes IE du Doc 2.
+
+**Suite (même session) — premier calcul PEP complet, année civile 2025** (`rapport_pep_2025.md`) :
+chaîne spec 21 exécutée de bout en bout sur la prod (lecture seule, 207 organisations des années
+scolaires 2024-2025 + 2025-2026). Assiette civile 2025 = réelles An2 (24-25) + réelles An1 (25-26).
+⭐ **Coefficient de niveau dérivable du `codeFormation`** (segment `Uxx` : U1x → B, U2x → A, U3x → C —
+validé sur 971111U21D2 « ESS »). Résultat : **102 175 PEP** (73 104 cas généraux + 17 312 autonomie +
+11 759 cas particuliers à la moyenne 18,40 PEP/période ; 4 913,5 périodes organiques ; 54 409 PE).
+Aucun `PSup`/`PRET` rencontré. Limites consignées dans le rapport (élèves = `nbEleveC1`, DI non payé
+non exclu, prévu vs réel art. 4, étapes 5-6 hors API).
+⭐ **Règle de calcul confirmée par l'utilisateur (organisations bi-annuelles)** : le prorata de la part
+d'autonomie se base sur la **structure du dossier pédagogique** (`nbPeriodeBranche` des cas généraux),
+pas sur la tranche civile — cas 510/org1 2024-2025 (08/04/2024 → 28/01/2025, `org2AnneesScolaires`) :
+58 pér. CTln réelles en civil 2024, 24 pér. d'autonomie en civil 2025 → les 24 héritent du coef CTln
+(1,6 × 1,25) bien qu'aucun cours général ne tombe en 2025.
+
+⭐ **Écrans officiels HOD identifiés (captures utilisateur, 11/06/2026)** : transaction `MENP052`,
+écrans **57L** (`PMM5DM1`, liste PE par année civile 2018-2027) et **57D** (`PMM5EM1`, détail par
+école — PE, chef d'atelier, emplois calculés dir./s-dir./surv./chef at., régimes « anciens »/« new »).
+PE officielles EICA 2025 = **99 748** (chef at. 18 526) ; série complète dans `rapport_pep_2025.md`.
+⚠️ PE (encadrement) ≠ PEP (dotation) — la proximité avec les 102 175 PEP calculées est fortuite.
+**Validation** : reconstruction PE encadrement pyetnic (organique 57 772 + cas part. ≈ 3 521 +
+IE ≈ 28 895) = **90 189 ≈ 90,4 % de l'officiel** ; écart attribué aux élèves des UE conventionnées
+(absents du Doc 2 → croiser Doc 1/SEPS). Complète la mention « pot K écran 59 » de la spec 19.
+
+🎯 **Écran 55L (« pot K ») extrait également** (`PMM5BM1`, « Liste dotations périodes par an. civile ») :
+dotation organique initiale/utilisable/solde + **PEP référence/calculée/%** depuis 2018.
+**PEP calculée officielle 2025 = 101 710 vs 102 175 pyetnic → +0,46 %** — la chaîne spec 21 est
+**validée de bout en bout**. Mécanismes vérifiés exactement sur la série : décalage **N → N+2**,
+neutralisation **±8 %** (2022/2023/2025), hausse 2026 = +3 pér. (enveloppe fermée, calc 2024 +9,77 %),
+baisse 2021 = **¼ × 6 772 × 10,25 % = 174 pér.** (🔶 **plafond 50 non appliqué** — à clarifier),
+référence re-proratisée à la dotation (98 586 × 6 601/6 598 ≈ 98 635). Prévision dotation 2027 :
+inchangée (+3,12 % dans ±8 %). Série complète dans `rapport_pep_2025.md`.
+
+⭐ **Écart PE encadrement expliqué** (capture UI Doc 2 web de la 490 + précision utilisateur) : les UE
+conventionnées « miroir » portent bien leurs élèves (490 : 7 él. cohérents Doc 1/Doc 2/SEPS) ; les
+**11 organisations VC/convention sans élèves** (455 VC ×5, 528/1, 403/7, 510/2+4, 546/1 — 1 005 pér.
+IE 2025, aucune population Doc 1/Doc 2/SEPS, vérifié) sont des activités de type **EPT** : pas
+d'élèves par nature → valorisées à la **moyenne PE/période** comme les cas particuliers.
+Reconstruction corrigée : **100 748 PE (+1,0 % vs officiel 99 748)** avec la moyenne globale
+(10,634 PE/pér.) — résidu ≈ DI non payés + arrondis. **Règle PE encadrement complète** :
+PE = Σ(pér. × élèves) [lignes avec élèves, IE comprises] + (pér. réservées + pér. EPT) × moyenne.
+⭐ Au passage, l'UI Doc 2 web (onglet Intervention extérieure) confirme **en prod** la table
+`coCodePar` de la spec 04 (`CG`/`CP`/`SU`, ventilés par année civile) et l'équivalence des colonnes
+UI avec l'annexe 8684 (col. 12-19, spec 19).
+
+⭐ **Rapport hôte `ppm_1614` extrait** (« Documents 2 - Année scolaire 2526 », 27 p., 11/06/2026) —
+vue mainframe des Doc 2 par UE/organisation, colonnes prévu/réel **ventilées par année civile**
+(25/26/TOTAL) + élèves + flag `App`. **Données identiques au SOAP** (sondages : 537/1, 568/1, 396/1,
+564/1 — exacts). Confirmations majeures :
+1. **Réelles = part dotation, prouvé verbatim** : 568/1 (CTni 10→5, 6→3 ; Auto 9→4,5) et 396/1
+   (20→10 ; Auto 4→2) — toutes les réelles = 50 % des prévues sur les UE convention mixtes ;
+   réelles = 0 sur les conventions 100 % (qui gardent prévues + élèves).
+2. **Placeholders = prévues d'EPT** : ligne 95, prévu symbolique (0,5/1) et **réel = volume effectif**
+   (403/1 : 1,00 prévu → 160 réel dont 159 en civil 2026 ; 402/1 : 1 → 40).
+3. **Sémantique `PRET` élucidée** : lignes « PRESTATION ETUDIANT (stage/EI) » en tête des UE
+   stage/épreuve intégrée — heures prestées par l'étudiant, **toujours 0** chez EICA → relevé pour
+   mémoire, pas de valorisation observée (CSV mis à jour, valorisation à confirmer).
+4. **Numérotation standard des cas particuliers** : lignes **91-94** VAF/VANFI (`SEtu`), **95** `ExPT`,
+   **96** `SEtu` admission/suivi/sanction, **97** `PeSu`, **98** `PSup`, **99** `CEtu` — correspond aux
+   `coNumBranche` 91-99 renvoyés par le SOAP, gabarit présent sur toutes les UE.
+5. **`App` = `swAppD2`** (O/blanc — les blancs correspondent exactement aux Doc 2 non approuvés).
+6. 🔶 **537/1 (flag K)** : les 80 périodes « octroi cabinet-projets transversaux » apparaissent en
+   **ligne 96 SEtu prévues** (= les 80 pér. du bloc IE K en SOAP) — mapping type IE → ligne cas
+   particulier à creuser.
+
+⭐ **Inventaire du menu hôte A5** (`PMM02M1`, « Année scolaire - Documents annuels ») — rapports
+extractibles pour les sessions futures : 1 Documents annuels en attente d'encodage · 2 DI et DIO
+encodés /école/formation · 3 Périodes utilisées /formation/école · **4 Doc2 : périodes organiques** ·
+**5 Doc2 : EPT organiques** · **6 Int.Ext. : périodes organisées** · **7 Int.Ext. : EPT** ·
+8 Organisations illicites · **9 IE /école/projet/année civile** · A Recherche **pots d'heures**/groupe
+(fonction) · B Catalogue **pots d'heures**/groupe(fonction) · C Doc1 : population scolaire.
+→ Le système distingue nativement **EPT organique** (5) et **EPT en intervention extérieure** (7) —
+exactement la dichotomie identifiée pour l'écart PE ; les « pots d'heures » (A/B) sont la matérialisation
+du « pot K » (spec 19). Extractions prioritaires : 4+5 (assiette organique PEP), 6+7+9 (valorisation IE,
+résidu ~1 000 PE, mapping K→ligne 96), C (élèves comptabilisés / exclusions DI).
+
+**Extractions reçues (suite, 11/06/2026 — les autres rapports vides ou indisponibles)** :
+- ⭐ **`ppm_1613` (A55) « Périodes EPT » 2526** = la liste officielle des **EPT organiques** : 402/1
+  (40 pér. réelles 2025) + 403/1 (1 pér. 2025 + 159 pér. 2026) — **exactement** l'assiette EPT 25-26
+  du calcul pyetnic (41 pér. civil 2025 ✓). Attendu dans l'édition 2425 : 403/5 (179) + 403/6 (99)
+  → total EPT organique 2025 = 319 = l'assiette « réservées » du rapport PEP. **Confirme aussi que
+  les sessions VC/convention sans élèves ne sont PAS des EPT organiques.**
+- ⭐ **`PPM_2002` « IE de type EPT » : vide même correctement relancé** → l'école n'a **aucune IE de
+  type EPT** officiellement. Les sessions VC/convention sans élèves sont des **IE ordinaires (C/V/K)** ;
+  la question du résidu PE (~1 000) se joue à la valorisation (élèves/moyenne), pas au classement.
+- ⭐ **`ppm_2003` (B87) « Liste des Interventions Extérieures »** (éditions 2425 + 2526) — la vue
+  officielle des blocs IE du Doc 2 : type (= `coCatCol`), **sous-cat (= `coObjFse`** : FO, WL, FP, SP,
+  IN, PR), **agrément**, **projet global** (22516, 22976, 21651… = la « Référence » de l'UI), périodes
+  an.1/an.2, classement par **niveau SI/SS**. **Réconciliation exacte** : IE civil 2025 = 1 982,5
+  (an.2 éd. 2425) + 1 939,0 (an.1 éd. 2526) = **3 921,5 pér. = lecture SOAP à l'identique** (2 916,5
+  avec élèves + 1 005 sans). Par type : C 2 554,5 · I 598 · F 289 · K 181 · V 299. Enseignements :
+  (1) **le type d'IE est attaché au projet et à l'année scolaire** — 522/2, 523/3, 524/2 passent de
+  `I` (FO 1096/21651) en 2425 à `C` (FO 1153/22550) en 2526 ; (2) **une UE peut cumuler deux types**
+  (518/1 : F/WL **et** K/PR sur le même projet 18690 « 3-3111RE », 105 + 105 pér.) ; (3) K se décline
+  en sous-cat SP (537/1) et IN (546/1).
+
+**Décision d'architecture (validée par l'utilisateur)** : le moteur de calcul PE/PEP reste **hors de
+pyetnic** (conforme spec 21 §7 — pyetnic = client SOAP fidèle, la logique réglementaire vivra dans un
+projet dédié, p.ex. la future application école). Les scripts validés sont promus en **démonstrations**
+dans `examples/` : `calcul_pep_annee_civile.py` (PEP d'une année civile + rapport markdown, reproduit
+102 175,26 pour 2025 ✓) et `calcul_pe_encadrement.py` (PE encadrement, reproduit 100 747,6 ✓) —
+paramétrés par année civile, prorata autonomie sur `nbPeriodeBranche`, niveau via `codeFormation`.
+- ⭐ **Rapport 4 « Doc2 : périodes organiques » reçu pour 2425 + 2526** : c'est le `ppm_1614`
+  (l'extraction précédente 2526 l'était déjà) — il ne contient **pas** le bloc IE, confirmant que
+  « périodes organiques » = lignes d'activité du Doc 2. **Réconciliation exacte de l'assiette
+  civile 2025** : officiel = 4 126,5 (réel25, éd. 2425) + 1 426,0 (réel25, éd. 2526) = **5 552,5 pér.
+  organiques réelles** = **4 913,5 (cas généraux + autonomie) + 639 (cas particuliers) pyetnic — à
+  la période près**. La couche d'entrée du calcul PEP est validée à 100 % ; le résidu PEP (+0,46 %)
+  ne peut venir que de la pondération/arrondis officiels, plus de l'assiette. (Édition 2425 :
+  EPT 403/5 = 1+179, 403/6 = 1+99 ✓ ; conventions 50 % : 395/396/568 réelles = moitié des prévues ✓.)
+- ⭐ **`ppm_1544` « Documents 1 : Population scolaire par organisation »** (éditions 2425 + 2526) —
+  vue Doc 1 + Doc 1D fusionnée : colonnes annexe 8684 (2)-(10'), **montants DI/DIO perçus par
+  organisation** et **comptage au 5/10ᵉ** (`nb elv 5/10`). Enseignements : (1) les organisations
+  **placeholder VC/convention n'apparaissent même pas** dans le rapport officiel (455/3-6, 510/3-4,
+  528/1, 403/5-7 absents — cohérent avec Doc 1/SEPS vides) ; (2) les conventions « miroir » portent
+  leurs élèves surtout en col. (8) « comptés plusieurs fois » ; (3) les organisations **bi-annuelles
+  figurent dans les DEUX éditions** (157/2-2425 = 157/1-2526, mêmes dates) ; (4) totaux officiels :
+  2425 = **1 285 comptés / 1 060 au 5/10ᵉ**, 2526 (partiel) = 647/550.
+
+---
+
+### Session 10 — (à planifier) : Synthèse + Architecture + Mock server
 
 **À faire** :
 - Synthèse cross-services (EPROM + **SEPS**)
@@ -302,12 +576,13 @@ décrites structurellement, extraction CSV possible ultérieurement si besoin.
 - Intégrer les **référentiels** (pays/communes) comme données embarquées + helpers de validation
 
 **Points à trancher / confirmer (hérités des sessions précédentes)** :
-- **Mapping « Doc A »** : confirmer formellement que le « Doc A » de l'erreur `20102` (Doc 3) = Document 1
-  (Population). Le Doc 1D (session 5) **ne mentionne pas « Doc A »** → hypothèse inchangée. Nomenclature
-  interne consolidée : Doc 1 (Population), Doc 1D (Droits), Doc 2 (Périodes), Doc 3 (Attributions), Doc 8bis.
-  Reconstituer la chaîne d'approbation : Organisation → Population (Doc A/1) + Périodes (Doc 2) →
-  Attributions (Doc 3) ; **Droits d'Inscription (Doc 1D) = branche indépendante** (pas de `20102`, workflow
-  interne population→montants).
+- **Mapping « Doc A »** : ✅ **résolu en session 8** (circulaire 8829, spec 18) — « Doc A » =
+  **document Organisation (déclaration d'ouverture EPROM)**, pas le Document 1. Chaîne corrigée :
+  Organisation (Doc A, `StatutCT` Approuvé) + Périodes (Doc 2, `swAppD2`) → Attributions (Doc 3) ;
+  Population (Doc 1) et Droits (Doc 1D) = workflows propres non bloquants. Reste : test TQ de
+  confirmation (approuver Organisation+Doc 2 sans Doc 1, appeler Doc 3). Nomenclature consolidée :
+  Doc A (Organisation), Doc 1 (Population), Doc 1D (Droits), Doc 2 (Périodes), Doc 3 (Attributions),
+  Doc 8bis (dossier pédagogique/horaire).
 - **Divergences de type périodes** : décider de la stratégie zeep pour les champs `xs:int` recevant des
   valeurs « 24.0 » (Doc 3 : `nbPeriodesDoc8`, `nbPeriodesPrevuesDoc2`, `nbPeriodesReellesDoc2`).
   ⚠️ **Spécifique au Doc 3** : le Doc 1D n'a pas ce problème (`nbEleves5ieme` vrai `int`, montants `float`).
@@ -340,6 +615,11 @@ décrites structurellement, extraction CSV possible ultérieurement si besoin.
 | Circulaire de rentrée 2025-2026 — MDP Enseignement pour Adultes | 9589 du 19/09/2025 | ✅ session 6 | ✅ `07_circulaire_9589_contexte_personnel.md` + `08_circulaire_9589_ea12_attributions.md` |
 | Circulaire dossier personnel étudiant / matricule / DI / présences (EA) | 9593 du 23/09/2025 | ✅ session 7 | ✅ `14_circulaire_9593_dossier_personnel.md` |
 | Référentiels codes pays / nationalités / communes INS | Catalogue SOA ETNIC | ✅ session 7 | ✅ `15_referentiels_seps.md` + `referentiels/*.csv,json` |
+| Circulaires DI annuelles (calcul, exonérations, déclaration) | 9217 / 9488 / 9731 | ✅ session 8 | ✅ `16_circulaires_droit_inscription.md` |
+| Calendrier général EA + gestion dotation de périodes | 9487 du 16/04/2025 | ✅ session 8 | ✅ `17_circulaire_9487_calendrier_dotation.md` |
+| Enseignement hybride (conditions, encodage Doc A) | 8829 du 01/02/2023 | ✅ session 8 | ✅ `18_circulaire_8829_hybride.md` |
+| Renseignements annuels (instructions encodage EPROM Doc A/1/2/1D/3) | 8684 du 16/08/2022 | ✅ session 8 (annexes 7-8 partiellement) | ✅ `19_circulaire_8684_renseignements_annuels.md` |
+| Calcul de l'encadrement & de la dotation de périodes (PE, pondération, autonomie) | décret 16/04/1991 art. 82-93 + arrêté 22/11/2002 + PS 327/96, 402/03 (répertoire 2816) | ✅ session 9bis (cadre ; verbatim à confirmer 🔶) | ✅ `21_calcul_encadrement_dotation.md` |
 
 ## Services SEPS identifiés (Étudiants & Inscriptions — Enseignement pour Adultes)
 
