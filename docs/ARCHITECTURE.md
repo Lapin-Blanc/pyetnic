@@ -15,6 +15,38 @@ config → soap_client → services → public namespaces (eprom, seps)
 - `services/` — internal service classes + dataclasses (`models.py`). Not imported directly.
 - `eprom/`, `seps/` — public namespaces re-exporting the stable API.
 
+## Scope Boundary
+
+pyetnic is a **contract-fidelity layer**, not a business layer. It accumulates business
+*knowledge* in its documentation (`specs/`, `docs/SPEC.md`) but must not implement business
+*logic* in its code. Decision recorded 2026-06-11 after the first full-scale production tests.
+
+**Litmus test:** pyetnic code changes only when the ETNIC *contract* changes (WSDL, XSD,
+error codes, nomenclatures). If a *circulaire* changes and pyetnic must change, the business
+logic landed in the wrong place.
+
+In scope (contract fidelity):
+
+- Typed models mirroring the XSD contracts (including the Read/Save split).
+- The typed exception hierarchy mapping ETNIC error codes (e.g. `20030`, `20028`) — error
+  codes are part of the wire protocol, not policy.
+- Nomenclature enums (wire-level value sets).
+- Wire-safety transforms (`None`-stripping, D2) and request-shape gotchas (`implId`, D5).
+- Documenting server-side business rules in docstrings and `specs/` (e.g. the 4-month
+  anticipation limit, the two-school-year organisation linking semantics).
+
+Out of scope (belongs to applications built on top, e.g. a school-management Django app):
+
+- **Client-side pre-validation duplicating server rules** (e.g. rejecting a start date
+  beyond 4 months before calling). Rules change by circulaire; the server is the authority.
+  pyetnic surfaces the server's verdict as a typed exception instead of predicting it.
+- **Workflow orchestration** (e.g. deciding which organisations to open from an inspector
+  schedule, locating the head of a two-school-year UE and copying its dates).
+- **Derived computations** the services do not expose (dixièmes, dotation/encadrement —
+  spec 21 is reference material for consumers, not for this library).
+- **Convenience helpers that decide**: helpers may compose reads and fill wire-level
+  requirements, never encode policy thresholds or fabricate decisions.
+
 ## Key Decisions
 
 ### Lazy Config via metaclass (Sprint 0)
