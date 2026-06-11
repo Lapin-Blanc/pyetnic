@@ -121,6 +121,14 @@ ResponseType (abstract, extends ResponseAttributesType)
 
 > **Règle métier** : `implId` est **obligatoire** dans CreerOrganisation (contrairement à Lire/Modifier/Supprimer où il est absent du bloc id de la requête).
 
+> **Sémantique observée en production (11/06/2026, étab 3052)** — UE sur 2 années scolaires :
+> chaque année porte son propre enregistrement d'organisation, et **les deux portent les dates
+> complètes** de l'UE (y compris la portion hors de leur année scolaire). L'enregistrement de la
+> **première** année a `numOrganisation2AnneesScolaires = 0` ; celui de la **seconde** année pointe
+> vers le `numOrganisation` de la première. Exemple réel : UE 511, org 4 de 2024-2025 et org 2 de
+> 2025-2026 portent toutes deux 22/05/2025 → 30/01/2026, la seconde avec
+> `numOrganisation2AnneesScolaires = 4`.
+
 ### Réponse
 
 **Type** : `CreerOrganisationReponseCT` extends `ResponseType`
