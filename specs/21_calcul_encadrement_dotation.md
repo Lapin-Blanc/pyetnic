@@ -104,6 +104,16 @@ issue des dossiers / arrêté 09/07/2004 art. 7 ; circ. 5447 — 🔶 taux exact
 ### 5.1 Encadrement (équipe administrative)
 Calculé directement sur les **PE** (cas généraux + particuliers), sans pondération de catégorie. Sert à déterminer les charges du **personnel administratif / direction / auxiliaire d'éducation** (décret art. 35 pour le comptage des étudiants réguliers ; art. 82-93 pour l'encadrement). 🔶 (paramètres/seuils exacts à confirmer).
 
+⭐ **Source officielle (HOD/CICS, transaction `MENP052` — session 9ter)** : écrans **57L** (`PMM5DM1`,
+« Liste des périodes-élèves » par année civile, clé = n° administratif école, ex. 9017001) et **57D**
+(`PMM5EM1`, « Détail périodes-élèves par école ») — donnent les **PE officielles**, le sous-total
+**« chef d'atelier »** et les **emplois calculés/attribués/sur dépêche** en deux régimes (« anciens »
+et « new ») pour 4 fonctions : **direction, sous-direction, surveillance, chef d'atelier**.
+Points de calibration EICA : 2025 = 99 748 PE (18 526 chef at.) → dir. 1,00 + surv. 1,50 ;
+chef at. 0 malgré 18 526 PE (seuil non atteint). **Reconstruction pyetnic à +1,0 %** (100 748 PE) avec
+la règle : PE = Σ(pér. × élèves) [lignes avec élèves, **IE comprises**] + (pér. réservées + pér. **EPT
+sans élèves**, normales pour l'expertise) × **moyenne PE/période** — cf. `rapport_pep_2025.md`.
+
 ### 5.2 Dotation de périodes (rémunération des enseignants)
 
 **Unité & catégories (✅ décret)** : la dotation est exprimée en **périodes de 50 minutes** (art. 82, « périodes
@@ -139,6 +149,28 @@ PE pondérées(cours) = périodes-élèves(cours) × coefficient pédagogique ×
 | **C** (supérieur) | **1,5** |
 | **D** | **1,8** *(⚠️ « D » abrogé du décret en 2021 mais toujours présent au barème de l'arrêté — à clarifier)* |
 
+#### Table figée — `coCategorie` (Doc 2) → coefficient pédagogique
+
+> Croisement du référentiel `coCategorie` (spec 04, 30 codes) avec l'art. 3, 1° a) de l'arrêté. Fichier exploitable :
+> `referentiels/coefficients_ponderation_coCategorie.csv`. Le **coefficient de niveau** (B/A/C/D ci-dessus) s'applique
+> **en plus**, selon le niveau de l'UE (orthogonal à la catégorie).
+
+**Cas généraux** (génèrent des PEP avec leur coefficient propre) :
+
+| coef. | `coCategorie` |
+|---|---|
+| **1** | `CG` (cours généraux) · `CPPM` (psychopédagogie/méthodologie) · `CS` (cours spéciaux) · `CTin` (techniques industriels) · `CTni` (techniques non-industriels) |
+| **1,6** | `CGms` (généraux méth. spéciale) · `CGrn` (généraux remise à niveau) · `CSda` (spéciaux dactylo) · `CTms` (techniques méth. spéciale) · `CTli` (labo industriels) · `CTln` (labo non-industriels) · `CTPP` (techniques et pratique prof.) · `PPni` (pratique prof. non industrielle) |
+| **2,8** | `PPin` (pratique prof. industrielle) · `PPnu` (pratique prof. nursing) |
+
+**Part d'autonomie** : `Auto` → pas de coef propre, **réparti au prorata** des cas généraux (hérite leur coef ; cf. étape 2).
+
+**Cas particuliers** (pas de coef propre → valorisés à la **moyenne PEP/période**, étape 4) :
+`CGen` · `CSen` · `CTen` · `CTPe` · `PPen` (encadrement) · `CTst` · `PPst` (encadrement de stage 🔶) · `SEtu` (admission/suivi/sanction) · `CEtu` (conseil des études) · `ExPT` (expertise pédagogique et technique) · `PeSu` (périodes supplémentaires) · `CP` (générique).
+
+**🔶 À confirmer auprès de l'ETNIC** : `PSup` (part supplémentaire — cas général au prorata, ou cours à coef propre ?) ·
+`PRET` (prestations étudiant — rattachement/coef ?).
+
 **Définition des assiettes (art. 1)** :
 - **Cas généraux** = périodes des cours du dossier pédagogique **hors part d'autonomie et hors encadrement**.
 - **Cas particuliers** = encadrement, périodes supplémentaires, valorisation des acquis (formels/informels/non-formels),
@@ -148,10 +180,26 @@ PE pondérées(cours) = périodes-élèves(cours) × coefficient pédagogique ×
 **Calcul des PE pondérées d'un établissement (art. 4, procédure en 6 étapes)** :
 1. **Cas généraux** : cours par cours, PE pondérées générées par les **périodes prévues** de l'**avant-dernière année
    civile** (art. 2).
-2. **Part d'autonomie** : on ajoute ses PE pondérées — la part d'autonomie se **répartit au prorata des autres cours**
-   du dossier pédagogique.
+2. **Part d'autonomie** : on ajoute ses PE pondérées — la part d'autonomie se **répartit au prorata (des périodes)
+   des autres cours** du dossier pédagogique (les **cas généraux**, hors autonomie et hors cas particuliers).
+   ⭐ **Conséquence quand l'UE mélange des cours de natures différentes** : l'autonomie **n'a pas de coefficient propre** ;
+   sa quote-part allouée à chaque cours **hérite du coefficient (pédagogique × niveau) de ce cours**. Elle est donc
+   pondérée comme la **moyenne pondérée-par-périodes** des cours de l'UE.
+   *Ex. (Doc 2 UE 558) : activité 8 « AUTONOMIE » = 28 pér. réparties sur les 7 cours (112 pér.) → 28 × pér_cours/112,
+   chaque quote-part prenant le coef. de son cours (CTms, CTni, PPni…).*
+   ⭐ **Base du prorata = `nbPeriodeBranche` (structure du dossier), pas la tranche civile** (confirmé
+   utilisateur, session 9ter) : sur une organisation **bi-annuelle** (`numOrganisation2AnneesScolaires`,
+   spec 02), l'autonomie peut tomber dans une année civile sans aucun cours général — ex. 510/org1
+   2024-2025 (08/04/2024 → 28/01/2025) : 58 pér. CTln réelles en civil 2024, 24 pér. d'autonomie en
+   civil 2025, qui héritent du coef CTln (1,6 × niveau).
 3. **Limitation « organique »** : réduction au prorata des périodes **ne provenant pas** de la dotation de l'établissement
    → PE pondérées **organiques** par formation, totalisées.
+   ⭐ **Lecture Doc 2 (constat prod 2024-2025, session 9ter)** : les périodes hors dotation sont les lignes
+   `interventionExterieureListe` du Doc 2 (conventions `C`, infra-scolarisés `I`, validation des compétences `V`,
+   fonds européens `F`…) ; le flag organisation `typeInterventionExterieure`/`interventionExterieure50p` (spec 02)
+   les résume fidèlement (45/123 organisations, zéro divergence). ⚠️ Pièges d'encodage : UE « placeholder »
+   (activités à 0,5/1 période symbolique, volume réel sur les lignes IE) et 🔶 périodes **réelles** du Doc 2
+   qui semblent ne compter que la part dotation (`réelles = prévues − IE` sur les UE mixtes 50 %).
 4. **Cas particuliers** : ajout sur la base du **nombre moyen de PE pondérées par période** des activités hors cas
    particuliers. → chaque période d'un cas particulier « vaut » la **moyenne PE pondérées/période** de l'établissement.
    - **EPT = Expertise Pédagogique et Technique** (cas particulier ; = flag `organisationPeriodesSupplOuEPT` spec 02,
@@ -240,6 +288,14 @@ SEPS Inscriptions (spec 11-12)            EPROM Doc 1 / 1D (spec 03/06)
 
 **Non disponible via les web services** :
 - La **dotation de base / dotation de référence** (enveloppe de l'année précédente) — **communiquée par l'administration** (juillet, par année civile), historiquement consultée via le système hôte **HOD/CICS « pot K » (écran 59)**, hors API (spec 19). C'est le **seul intrant non récupérable** par service.
+  ⭐ **Écran localisé (session 9ter)** : transaction `MENP052`, écran **55L** (`PMM5BM1`, « Liste dotations
+  périodes par an. civile ») — dotation organique **initiale/utilisable/solde** + **PEP de référence /
+  calculée / %** par année civile (série depuis 2018 extraite, cf. `rapport_pep_2025.md`). Mécanismes
+  **vérifiés sur la série EICA** : décalage **N → N+2** ; neutralisation **±8 %** ; baisse **¼ × dotation
+  × |%|** (🔶 **observée SANS le plafond de 50 périodes** en 2021 : −174 pér. — version d'arrêté à
+  clarifier) ; **référence re-proratisée** à la dotation après ajustement (98 586 × 6 601/6 598 ≈ 98 635).
+  🎯 **Validation pyetnic** : PEP calculée officielle 2025 = **101 710** vs **102 175** reproduites
+  (+0,46 %).
 
 **Conclusion** : pyetnic peut désormais **reproduire le calcul** — périodes-élèves, **pondération** (table embarquée), encadrement, consommation, contrôle 90 %/100 %, plafonds Doc 3 — et **estimer la dotation** dès lors qu'on lui fournit la **dotation de référence** (saisie) et qu'on neutralise l'effet « enveloppe fermée » (l'ajustement inter-établissements ±8 % dépend des autres écoles, donc une **estimation par établissement** est exacte *à la dotation de référence + variation d'enveloppe près*). La **valeur officielle** reste celle de l'administration. Un module « financement » paramétrable par **millésime** (coefficients, ±8 %, plafond 50, plafonds 10 %/1 %) est recommandé, séparé du client SOAP.
 
@@ -263,9 +319,12 @@ Restent ouverts (mineurs, **non bloquants**) :
    l'art. 83 du décret en 2021** → clarifier ce que recouvre encore « D » (sortie en voie d'extinction ?).
 2. 🔶 **Arrêté GCF du 09/07/2004** (dossiers pédagogiques, art. 7) : **taux exact** de la part d'autonomie (≈ 20 %).
    Gallilex `textes-normatifs/40726` (à confirmer) ; circ. **5273**/**5447**.
-3. 🔶 **Modèle d'annexe** de l'arrêté 22/11/2002 (documents administratifs de calcul, art. 2) : utile pour le mapping
+3. 🔶 **`coCategorie` PSup (part supplémentaire) et PRET (prestations étudiant)** : seuls 2 codes sur 30 non tranchés
+   dans la table de pondération (`referentiels/coefficients_ponderation_coCategorie.csv`) — cas général au prorata vs
+   coef propre, à confirmer avec l'ETNIC.
+4. 🔶 **Modèle d'annexe** de l'arrêté 22/11/2002 (documents administratifs de calcul, art. 2) : utile pour le mapping
    exact avec les colonnes des Doc 1/2 (déjà largement couvert par les specs 19 et 20).
-4. ✅ **Actualisation EA** : décret coordonné 19/12/2025 et arrêté coordonné 18/08/2025 — **tous deux à jour**.
+5. ✅ **Actualisation EA** : décret coordonné 19/12/2025 et arrêté coordonné 18/08/2025 — **tous deux à jour**.
 
 ---
 
@@ -275,4 +334,5 @@ Restent ouverts (mineurs, **non bloquants**) :
 - **Arrêté GCF du 22/11/2002 (coordonné, MAJ 18/08/2025)** — règles d'ajustement + **table de pondération** (art. 1-7), source verbatim §5.2. [Justel](https://www.ejustice.just.fgov.be/eli/arrete/2002/11/22/2003029045/justel) · [PDF consolidé](https://www.ejustice.just.fgov.be/img_l/pdf/2002/11/22/2003029045_F.pdf) (à déposer dans `circulaires/` si souhaité).
 - [Enseignement.be — dossiers pédagogiques / part d'autonomie (circ. 5447/2015)](https://gallilex.cfwb.be/sites/default/files/imports/41427_000.pdf)
 - [Circulaire 4903 du 26/06/2014 — DI (redevables non payés exclus du calcul de l'encadrement / ajustement de la dotation)](https://gallilex.cfwb.be/sites/default/files/imports/39963_000.pdf)
+- **Table de pondération figée** : `referentiels/coefficients_ponderation_coCategorie.csv` (30 codes `coCategorie` → coefficient pédagogique, croisement spec 04 × arrêté art. 3).
 - Specs internes liées : `04_formation_periodes_v1.md`, `05_document3_v1.md`, `06_formation_droits_inscription_v1.md`, `16_circulaires_droit_inscription.md`, `17_circulaire_9487_calendrier_dotation.md`, `19_circulaire_8684_renseignements_annuels.md`.
