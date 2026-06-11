@@ -280,3 +280,56 @@ The two highest-leverage fixes:
 2. **Replace `asdict()` with None-stripping serialization (D2)**: eliminates a whole class of silent bugs on partial updates.
 
 The decision to migrate to Pydantic v2 is a heavier one, to be evaluated separately — it brings much (validation, clean serialization, JSON schema) but requires touching all models and reconverging tests. Keeping dataclasses with a `to_soap_dict(exclude_none=True)` helper captures 80% of the benefit for 20% of the effort.
+
+---
+
+## Addendum — post-0.0.12 empirical findings
+
+> The body above (D1–D6, Q1–Q10, H1–H11) is the immutable 0.0.12 snapshot.
+> Findings below were added later from runtime observation and are dated
+> individually. They continue the defect numbering so they stay referenceable.
+
+### D7 — Doc3 `nbPeriodes*` models typed `float` while the XSD declares `xs:int`
+
+> **Date**: 2026-06-10 · **Provenance**: read-only referential audit of
+> `LireDocument3` (see `rapport_referentiels_doc3.md`). · **Severity**: latent
+> (typing/correctness), no active impact on current data.
+
+In `services/models.py`, `Doc3ActiviteDetail` declares the three period counters
+as floats:
+
+```python
+nbPeriodesDoc8: Optional[float] = None
+nbPeriodesPrevuesDoc2: Optional[float] = None
+nbPeriodesReellesDoc2: Optional[float] = None
+```
+
+But `resources/EPROM_Document_3_1.0/xsd/FormationDocument3_v1.xsd` declares all
+three as **`xs:int`**. zeep deserializes against the (embedded) XSD, i.e. via
+`int(text)` — so the `float` annotation never takes effect. The practical
+consequences:
+
+- If ETNIC ever serialized a decimal (the suspected `"24.0"`) on one of these
+  elements, **zeep would raise `ValueError: invalid literal for int()` inside
+  `call_service` — before** any pyetnic dataclass is constructed. The `float`
+  type, presumably added to tolerate decimals, is therefore **inert**: it can
+  never catch a decimal because zeep rejects it upstream.
+- `nbPeriodesAttribuees` is correctly `float` ↔ `xs:float`; only the three
+  counters above are mismatched. (`coNumBranche`, `coNumAttribution` are
+  correctly `int` ↔ `xs:int`.)
+
+**Empirical check (2026-06-10)**: a read-only sweep of `LireDocument3` over all
+**123 organisations** of `etabId=3052` / `2024-2025` on TQ (765 attributions)
+found **zero** non-integer values on these `xs:int` fields and zeep raised **no**
+`ValueError`. Current data is clean ⇒ no live impact. This is a latent
+typing/correctness defect, not an active bug.
+
+**Fix** — decide the source of truth:
+- If ETNIC truly emits integers → align the models to `Optional[int]` (remove the
+  misleading `float`).
+- If decimals are genuinely expected → the **embedded** XSD is wrong and should be
+  `xs:float`/`xs:decimal`. Note that zeep validates against the *embedded* copy,
+  not the live ETNIC schema, so the embedded file governs parsing regardless of
+  what ETNIC publishes.
+
+Until arbitrated, treat the `float` annotation on these three fields as decorative.
