@@ -1,0 +1,31 @@
+code,libelle,coef_pedagogique,groupe,confiance,note
+CG,COURS GENERAUX,1,cas_general,haute,arrêté art.3 1°a i (cours généraux)
+CGms,COURS GENERAUX-methodologie speciale,1.6,cas_general,haute,arrêté art.3 1°a ii (cours généraux de méthodologie spéciale)
+CGrn,COURS GENERAUX-remise à niveau,1.6,cas_general,haute,arrêté art.3 1°a ii (cours généraux de remise à niveau)
+CPPM,COURS PSYCHO-PEDAGOGIE ET METHODOLOGIE,1,cas_general,haute,arrêté art.3 1°a i (psychopédagogie et méthodologie)
+CS,COURS SPECIAUX,1,cas_general,haute,arrêté art.3 1°a i (cours spéciaux)
+CSda,COURS SPECIAUX-dactylo,1.6,cas_general,haute,arrêté art.3 1°a ii (cours spéciaux de dactylographie)
+CTin,COURS TECHNIQUES industriels,1,cas_general,haute,arrêté art.3 1°a i (cours techniques industriels)
+CTni,COURS TECHNIQUES non industriels,1,cas_general,haute,arrêté art.3 1°a i (cours techniques non-industriels)
+CTms,COURS TECHNIQUES-methodologie speciale,1.6,cas_general,haute,arrêté art.3 1°a ii (cours techniques de méthodologie spéciale)
+CTli,COURS TECHNIQUES-labo industriels,1.6,cas_general,haute,arrêté art.3 1°a ii (travaux de laboratoire industriels)
+CTln,COURS TECHNIQUES-labo non industriels,1.6,cas_general,haute,arrêté art.3 1°a ii (travaux de laboratoire non-industriels)
+CTPP,COURS TECHNIQUES ET PRATIQUE PROFESSION.,1.6,cas_general,haute,arrêté art.3 1°a ii (cours techniques et de pratique professionnelle)
+PPni,PRATIQUE PROFESSION. non industrielle,1.6,cas_general,haute,arrêté art.3 1°a ii (pratique professionnelle non industrielle)
+PPin,PRATIQUE PROFESSIONNELLE industrielle,2.8,cas_general,haute,arrêté art.3 1°a iii (pratique professionnelle à caractère industriel)
+PPnu,PRATIQUE PROFESSION.-nursing,2.8,cas_general,haute,arrêté art.3 1°a iii (pratique professionnelle de nursing)
+Auto,AUTONOMIE,,autonomie,haute,part d'autonomie — pas de coef propre ; répartie au prorata des périodes des cas généraux (hérite leur coef) — arrêté art.4 2°
+CGen,COURS GENERAUX - encadrement,,cas_particulier_encadrement,haute,cas particulier (encadrement) — valorisé à la moyenne PEP/période (arrêté art.4 4°)
+CSen,COURS SPECIAUX-encadrement,,cas_particulier_encadrement,haute,cas particulier (encadrement) — moyenne PEP/période
+CTen,COURS TECHNIQUES-encadrement,,cas_particulier_encadrement,haute,cas particulier (encadrement) — moyenne PEP/période
+CTPe,COURS TECHN.& PRATIQUE PROF. - encadrement,,cas_particulier_encadrement,haute,cas particulier (encadrement) — moyenne PEP/période
+PPen,PRATIQUE PROFESSION.-encadrement,,cas_particulier_encadrement,haute,cas particulier (encadrement) — moyenne PEP/période
+CTst,COURS TECHNIQUES-stages,,cas_particulier_encadrement,moyenne,cas particulier (encadrement de stage) — moyenne PEP/période ; à confirmer
+PPst,PRATIQUE PROFESSION.-stages,,cas_particulier_encadrement,moyenne,cas particulier (encadrement de stage) — moyenne PEP/période ; à confirmer
+SEtu,"ADMISSION, SUIVI PEDAGOGIQUE, SANCTION",,cas_particulier,haute,cas particulier (suivi pédagogique / admission / sanction) — moyenne PEP/période
+CEtu,CONSEIL DES ETUDES,,cas_particulier,haute,cas particulier (conseil des études) — moyenne PEP/période
+ExPT,EXPERTISE PEDAGOGIQUE ET TECHNIQUE,,cas_particulier,haute,cas particulier (EPT) — moyenne PEP/période ; volume 40-800 pér. (décret art.91/4)
+PeSu,PERIODES SUPPLEMENTAIRES,,cas_particulier,haute,cas particulier (périodes supplémentaires) — moyenne PEP/période
+CP,Cas particuliers,,cas_particulier,haute,catégorie générique cas particulier — moyenne PEP/période
+PSup,PART SUPPLEMENTAIRE,,a_confirmer,faible,"part supplémentaire de l'horaire de référence — statut (cas général au prorata ? cours avec coef propre ?) à confirmer auprès de l'ETNIC"
+PRET,PRESTATIONS ETUDIANT,,a_confirmer,moyenne,"heures prestées par l'étudiant en stage/EI — lignes dédiées en tête des UE stage/épreuve intégrée (rapport hôte ppm_1614, session 9ter) ; toujours 0 chez EICA, relevé pour mémoire ; valorisation éventuelle à confirmer auprès de l'ETNIC"
