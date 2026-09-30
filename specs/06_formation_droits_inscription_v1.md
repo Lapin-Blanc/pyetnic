@@ -518,8 +518,8 @@ Les codes numériques **ne sont pas universels** : un même code a un libellé d
 
 > **Dépendance amont éventuelle du Doc 1D** : le manuel ne déclare **aucune** erreur de type `20102`
 > (« document X doit être approuvé pour accéder »). Le Doc 1D semble donc **gérable indépendamment** des
-> autres documents — sa logique d'approbation est purement interne (population → montants). À confirmer en
-> session 6 (le `nbEleves5ieme` « au 5/10ᵉ » suppose toutefois qu'une organisation existe et est en cours).
+> autres documents - sa logique d'approbation est purement interne (population → montants). Reste à confirmer
+> (le `nbEleves5ieme` « au 5/10ᵉ » suppose toutefois qu'une organisation existe et est en cours).
 
 ### Notion « population au 5/10ᵉ »
 
@@ -672,7 +672,7 @@ class DroitInscriptionResponse:
    qu'au Doc 1/Doc 2. Ne pas mutualiser un registre de codes global naïf.
 6. **`mt_droits_inscription_occupationnel`** : exposer en lecture seule, marquer *deprecated* (« n'est plus
    utilisé »).
-7. **Mock server stateful (session 6)** : modéliser les deux switches `swAppPopD1D`/`swAppD1D` et les trois
+7. **Mock server stateful (à faire)** : modéliser les deux switches `swAppPopD1D`/`swAppD1D` et les trois
    transitions (encodage → appro. pop. → appro. admin) pour tester `1546`, `1545`, `1530` et `00011`.
 
 ---

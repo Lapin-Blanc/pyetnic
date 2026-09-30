@@ -2,7 +2,7 @@
 
 ## Overview
 
-**pyetnic** is a Python client for the SOAP web services operated by ETNIC (the IT agency of the Fédération Wallonie-Bruxelles, Belgium). It targets the education sector: EPROM services (Enseignement de Promotion Sociale — adult/continuing education) covering formations, organisations and administrative documents, and SEPS services (student registry, enrolments).
+**pyetnic** is a Python client for the SOAP web services operated by ETNIC (the IT agency of the Fédération Wallonie-Bruxelles, Belgium). It targets the education sector: EPROM services (Enseignement pour adultes, formerly Enseignement de promotion sociale; the EPROM identifiers keep the old name) covering formations, organisations and administrative documents, and SEPS services (student registry, enrolments).
 
 It is used by schools and school management software to interact programmatically with the official ETNIC back-office: listing offered formations, creating/updating a given school-year "organisation" of a formation, filling in the three administrative documents (Document 1 — population, Document 2 — activity periods and external interventions, Document 3 — teacher assignments), and — through SEPS — searching for and registering students and their enrolments.
 
@@ -80,14 +80,16 @@ It is used by schools and school management software to interact programmaticall
 > Save types: `InscriptionInputDataSave`, `InscriptionInputSave`, `SepsUESave`, `SepsSpecificiteSave`.
 > `InscriptionInputDataSave` required fields: `cfNum`, `idEtab`, `idImplantation`, `codePostalLieuCours`, `inscription`.
 > `InscriptionInputSave` required fields: `dateInscription`, `statut`.
-> `SpecificiteDataInputType` (Save) does **not** have `regulier1` / `regulier5` — do not include them.
+> The inscription input element is typed `SpecificiteDataType`, which carries `regulier1` / `regulier5`;
+> the XSD also defines a `SpecificiteDataInputType` without them, used by no element. `SepsSpecificiteSave`
+> follows `SpecificiteDataType`.
 
 ## Authentication
 
 Two authentication schemes coexist:
 
 - **EPROM — WSSE UsernameToken.** Credentials from `.env` (`USERNAME`, `PASSWORD`, plus separate dev/prod as per `ENV`). Available in both dev (`ws-tq.etnic.be`) and prod (`ws.etnic.be`).
-- **SEPS — X509 BinarySignature.** A PFX bundle (path via `Config.SEPS_PFX_PATH`) is loaded via `cryptography`, extracted in memory (no disk writes), and used to sign outgoing SOAP envelopes through a custom `_EtnicBinarySignature` plugin (subclass of zeep's `MemorySignature`). Response signature verification is intentionally skipped because the ETNIC CA is not publicly distributed. SEPS works **only in production** (`ws.etnic.be`); dev endpoints return `SECU-0104` because the prod certificate is not registered in TQ. Dependencies: `cryptography` (mandatory) + `xmlsec` (optional, extra `pip install pyetnic[seps]`).
+- **SEPS - X509 BinarySignature.** A PFX bundle (path via `Config.SEPS_PFX_PATH`) is loaded via `cryptography` (extra `[seps]`), extracted in memory (no disk writes), and used to sign outgoing SOAP envelopes through a custom `_EtnicBinarySignature` plugin (subclass of zeep's `MemorySignature`). Response signature verification is intentionally skipped because the ETNIC CA is not publicly distributed. SEPS works **only in production** (`ws.etnic.be`); dev endpoints return `SECU-0104` because the prod certificate is not registered in TQ. Dependencies: `cryptography` (mandatory) + `xmlsec` (optional, extra `pip install pyetnic[seps]`).
 
 ### Endpoints
 
@@ -147,7 +149,7 @@ D) enregistrer_inscription(cfNum + UE data)
 `OrganisationResIdCT` (server response) additionally contains `implId`.
 Only `CreerOrganisation` accepts `implId` in its `id`.
 
-All services implement `_organisation_id_dict()` to build the request id without `implId`. **Never** use `dataclasses.asdict(organisation_id)` directly — that would include `implId=None` and be rejected server-side.
+All services build the request id with `organisation_request_id()` (`services/_helpers.py`), which leaves `implId` out. **Never** use `dataclasses.asdict(organisation_id)` directly - that would include `implId=None` and be rejected server-side.
 
 ### Document accessibility is workflow-gated
 

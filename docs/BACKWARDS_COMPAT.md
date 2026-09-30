@@ -71,24 +71,18 @@ When we want to change a stable symbol, the process is:
 4. **Wait at least one minor version** before removing the old behavior.
 5. **Remove in the next major version** (e.g. deprecated in 0.2.0, removed in 1.0.0).
 
-Example from Sprint 1 phase 1.3:
+Example: typed errors. Readers and writers return `None` when the server refuses a call
+(the old behaviour). Callers opt in to typed exceptions, without any signature change:
 
 ```python
-def lire_organisation(
-    self,
-    organisation_id: OrganisationId,
-    raise_on_error: bool = False,  # NEW
-) -> Optional[Organisation]:
-    """
-    ...
-    Args:
-        raise_on_error: If True, raises EtnicBusinessError on server failure.
-                        If False (default, deprecated), returns None on failure.
-                        Default will change to True in 0.2.0.
-    """
+from pyetnic.eprom import strict_errors, lire_organisation
+
+with strict_errors():          # or Config.RAISE_ON_ERROR = True
+    org = lire_organisation(org_id)   # raises EtnicBusinessError subclasses
 ```
 
-Callers who want the new behavior opt in by passing `raise_on_error=True`. Callers who do nothing keep the old behavior until 0.2.0.
+Callers who do nothing keep the old behaviour until the default switches, which is itself a
+breaking change for a later version.
 
 ---
 

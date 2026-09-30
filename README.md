@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/Lapin-Blanc/pyetnic/actions/workflows/tests.yml/badge.svg)](https://github.com/Lapin-Blanc/pyetnic/actions/workflows/tests.yml)
 
-Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.be/) pour l'enseignement de promotion sociale (Wallonie-Bruxelles).
+Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.be/) pour l'Enseignement pour adultes, ex-promotion sociale (Fédération Wallonie-Bruxelles).
 
 Les services web EPROM sont le canal que l'Administration met à la disposition des
 logiciels de gestion des établissements (ENORA, GIPS, PROSOC...) : pyetnic en est un client
@@ -268,13 +268,13 @@ details = EtudiantDetailsSave(
     nom="DUPONT",
     prenom="Jean",
     sexe="M",
-    naissance=SepsNaissanceSave(date="1985-01-15", codePays="BE"),
+    naissance=SepsNaissanceSave(date="1985-01-15", codePays="00150"),
 )
 etudiant = enregistrer_etudiant("DETAILS", etudiant_details=details)
 
 # Modification d'un étudiant existant
 etudiant = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave(
-    adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="BE"),
+    adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="00150"),
 ))
 ```
 
@@ -299,7 +299,7 @@ data = InscriptionInputDataSave(
     codePostalLieuCours="4000",
     inscription=InscriptionInputSave(
         dateInscription="2024-09-15",
-        statut="I",
+        statut="DE",  # CodeStatut : DE (définitive) ou AN (annulée)
         ue=SepsUESave(noAdministratif=455, noOrganisation=1),
     ),
 )
@@ -494,8 +494,8 @@ Les tests d'intégration nécessitent un `.env` valide. Ils skipent automatiquem
 | [zeep](https://docs.python-zeep.org/) | Client SOAP |
 | [python-dotenv](https://pypi.org/project/python-dotenv/) | Chargement `.env` |
 | [requests](https://pypi.org/project/requests/) | Transport HTTP |
-| [cryptography](https://pypi.org/project/cryptography/) | Extraction PFX en mémoire (SEPS) |
-| [openpyxl](https://pypi.org/project/openpyxl/) | Export Excel |
+| [cryptography](https://pypi.org/project/cryptography/) *(extra seps)* | Extraction PFX en mémoire |
+| [openpyxl](https://pypi.org/project/openpyxl/) *(extra excel)* | Export Excel des exemples |
 | [xmlsec](https://pypi.org/project/xmlsec/) *(extra seps)* | Signature XML X509 |
 
 ## Licence
