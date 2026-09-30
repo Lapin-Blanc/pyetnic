@@ -28,7 +28,7 @@ that supports `bN` pre-releases).
 ### Removed
 
 - **`pyetnic.log_config`** (internal): it called `logging.basicConfig()`, which a
-  library must never do (audit Q10). Applications configure logging.
+  library must never do. Applications configure logging.
 - **Regulatory and school-specific material** from the repository: circular
   analyses, the financing calculation spec and its PE/PEP demo scripts, and the
   production test reports of one establishment. pyetnic documents the ETNIC SOAP

@@ -129,3 +129,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Local data dumps at the root: nominative data must never be committed
+/*.csv
+/*.txt
+/*.xls
+/*.xlsx
+/liste_*
+/scratch_*

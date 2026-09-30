@@ -1,8 +1,8 @@
 # pyetnic — Architecture
 
-This document records the architectural decisions made across Sprints 0-2. For the
-business rules and ETNIC contracts, see `docs/SPEC.md`. For the defect catalogue, see
-`docs/AUDIT.md`.
+This document records the architectural decisions of the library. For the business rules
+and ETNIC contracts, see `docs/SPEC.md`. Audit ids (`D1`, `D6`...) and sprint numbers
+below resolve in tag `refactoring-records`: see "History" in `docs/SOURCES.md`.
 
 ## Layering
 
@@ -54,6 +54,8 @@ Out of scope (belongs to applications built on top, e.g. a school-management Dja
 `__getattr__` checks programmatic overrides first, then loads `.env` lazily, then reads
 `os.environ`. This lets integrators (e.g. Django) set `Config.USERNAME = ...` before the
 first SOAP call without manipulating `os.environ`. No side effects at `import pyetnic`.
+The `.env` loader retries in cp1252 when UTF-8 decoding fails, because `.env` files edited
+on Windows commonly come in that encoding.
 
 ### SOAP client manager + cache key (Sprint 1)
 `SoapClientManager` caches one zeep client per `(service_name, ENV, USERNAME)` tuple, so a

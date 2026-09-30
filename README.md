@@ -4,6 +4,11 @@
 
 Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.be/) pour l'enseignement de promotion sociale (Wallonie-Bruxelles).
 
+Les services web EPROM sont le canal que l'Administration met à la disposition des
+logiciels de gestion des établissements (ENORA, GIPS, PROSOC...) : pyetnic en est un client
+Python, qui s'en tient aux contrats SOAP. Les calculs réglementaires (dotation, encadrement)
+relèvent des applications qui l'utilisent.
+
 ## Fonctionnalités
 
 | Namespace | Service | Opérations |
@@ -411,6 +416,21 @@ EtnicError
 | 00009 | Aucun enregistrement trouvé |
 | 20102 | Doc 1 et Doc 2 doivent être approuvés pour accéder au Doc 3 |
 | SECU-0104 | Certificat X509 non enregistré dans l'annuaire (SEPS en dev) |
+
+---
+
+## Dépannage
+
+| Symptôme | Cause probable | Que faire |
+|---|---|---|
+| Une lecture renvoie `None` | Document pas encore accessible (statut de l'organisation), ou refus du serveur avalé par le mode permissif | Lire les statuts via `eprom.lister_formations()` ; rejouer sous `strict_errors()` pour voir l'erreur |
+| Les `statutDocument*` d'une organisation valent `None` | `lire_organisation()` ne les reçoit pas du serveur | Les lire via `eprom.lister_formations()` |
+| `SoapError` au démarrage | Identifiants erronés ou `.env` absent | Vérifier le `.env`, au besoin `pyetnic init-config` |
+| `SECU-0104` (SEPS) | Appel SEPS en `ENV=dev` | SEPS n'existe qu'en production : `ENV=prod` |
+| `ImportError` sur `xmlsec` | Extra SEPS non installé | `pip install "pyetnic[seps]"` |
+| `TropDeResultatsError` | Critères de recherche trop larges | Ajouter `prenom`, `date_naissance`, `sexe` |
+| `NissMutationError` | Le NISS a été remplacé | Relancer avec `e.nouveau_niss` |
+| `SepsEtnicError` | Erreur métier SEPS | Lire `e.code` et `e.description` |
 
 ---
 
