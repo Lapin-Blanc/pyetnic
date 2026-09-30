@@ -119,7 +119,11 @@ class Document2Service:
     # ------------------------------------------------------------------
 
     def lire_document_2(self, organisation_id: OrganisationId) -> Optional[FormationDocument2]:
-        """Lit les informations d'un document 2."""
+        """Read Doc 2 (teaching periods).
+
+        Returns ``None`` until the Doc 1 population has been validated: the
+        Doc 2 does not exist before that.
+        """
         logger.info("Lecture du document 2 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
             "LireDocument2",
@@ -133,10 +137,12 @@ class Document2Service:
         activite_enseignement_liste: Optional[Doc2ActiviteEnseignementListSave] = None,
         intervention_exterieure_liste: Optional[Doc2InterventionExtListSave] = None,
     ) -> Optional[FormationDocument2]:
-        """Modifie le document 2 (périodes de formation).
+        """Write Doc 2 (teaching periods).
 
-        Seuls les champs fournis sont envoyés au serveur ; les champs absents ne
-        sont pas modifiés.
+        Only the fields provided are sent; fields and activity lines left out
+        are not modified. There is no school-side approval of Doc 2: the
+        administration sets ``swAppD2``, after which writes are refused
+        (error 1530).
         """
         logger.info("Modification du document 2 pour l'organisation : %s", organisation_id)
         request_data: dict = {'id': organisation_request_id(organisation_id)}

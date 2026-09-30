@@ -93,7 +93,11 @@ class EnregistrerEtudiantService:
         cf_num: str,
         etudiant_details: Optional[EtudiantDetailsSave] = None,
     ) -> Optional[Etudiant]:
-        """Modifie les données d'un étudiant existant.
+        """Modify an existing student (the establishment's ``cfwbDetails`` version).
+
+        An optional field left out is **erased** by the server, and a field
+        required at creation stays required: send the complete record, as
+        read, with the changes applied.
 
         Args:
             cf_num: Numéro CF de l'étudiant (format : [0-9]{1,10}-[0-9]{2}).

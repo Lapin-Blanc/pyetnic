@@ -111,10 +111,13 @@ class Document1Service:
         organisation_id: OrganisationId,
         population_liste: Optional[Doc1PopulationListSave] = None,
     ) -> Optional[FormationDocument1]:
-        """Approuve le document 1.
+        """Validate the Doc 1 population (``swAppPopD1``, the "Validé" box).
 
-        Une liste de populations peut optionnellement être fournie pour
-        mettre à jour les données au moment de l'approbation.
+        Although the XSD makes ``population_liste`` optional, the server
+        compares it with what it stores and refuses with error 20104 when it
+        differs or is missing: pass back the lines just read with
+        :func:`lire_document_1`. The administration's own approval
+        (``swAppD1``) is out of the school's reach.
         """
         logger.info("Approbation du document 1 pour l'organisation : %s", organisation_id)
         request_data: dict = {'id': organisation_request_id(organisation_id)}

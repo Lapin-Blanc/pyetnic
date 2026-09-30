@@ -87,7 +87,12 @@ class Document3Service:
     # ------------------------------------------------------------------
 
     def lire_document_3(self, organisation_id: OrganisationId) -> Optional[FormationDocument3]:
-        """Lit les informations d'un document 3."""
+        """Read Doc 3 (teacher attributions).
+
+        Not reachable until "Doc A" (the organisation) and Doc 2 are approved:
+        error 20102, ``None`` by default, ``EtnicDocumentNotAccessibleError``
+        under :func:`strict_errors`.
+        """
         logger.info("Lecture du document 3 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
             "LireDocument3",
@@ -100,9 +105,20 @@ class Document3Service:
         organisation_id: OrganisationId,
         activite_liste: Doc3ActiviteListeSave,
     ) -> Optional[FormationDocument3]:
-        """Modifie le document 3 (attributions d'enseignants).
+        """Write the teacher attributions of Doc 3.
 
-        activite_liste est obligatoire (contrat XSD : activiteListe requis).
+        .. warning::
+           For every branch present in ``activite_liste``, the server
+           **replaces** the branch's teacher list with the one sent; it does
+           not add to it. Sending only the attribution to add deletes the other
+           attributions of that branch. Always send the complete list of each
+           branch touched (branches left out are not modified), and read the
+           whole document back afterwards: a check limited to the lines sent
+           cannot see what was deleted.
+
+        ``activite_liste`` is required by the XSD. ``coNumAttribution`` is a
+        server-side counter; freed numbers are not reused. The total attributed
+        is capped by the real periods of Doc 2 (error 1574).
         """
         logger.info("Modification du document 3 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
