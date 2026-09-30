@@ -471,7 +471,7 @@
 
 # 7. Famille SEPS (Étudiants & Inscriptions — Enseignement pour Adultes)
 
-> **NOUVEAU — session 7.** Famille **distincte d'EPROM**. Specs 09-13 (services) + 14 (circulaire 9593) + 15 (référentiels).
+> **NOUVEAU — session 7.** Famille **distincte d'EPROM**. Specs 09-13 (services) + 15 (référentiels). Les circulaires (dont la 9593) sont du réglementaire, hors de ce dépôt.
 > 5 services : Recherche Étudiants (09), Sauvegarde Étudiant (10), Enregistrer Inscription (11),
 > Recherche Inscriptions (12), Notifications (13). Contrat **external_v1** ; releases 2.1.9 (sauf Notifications 1.0.8).
 

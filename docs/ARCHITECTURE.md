@@ -43,7 +43,7 @@ Out of scope (belongs to applications built on top, e.g. a school-management Dja
 - **Workflow orchestration** (e.g. deciding which organisations to open from an inspector
   schedule, locating the head of a two-school-year UE and copying its dates).
 - **Derived computations** the services do not expose (dixièmes, dotation/encadrement —
-  spec 21 is reference material for consumers, not for this library).
+  the regulatory reference material lives with the consuming projects, not in this repository).
 - **Convenience helpers that decide**: helpers may compose reads and fill wire-level
   requirements, never encode policy thresholds or fabricate decisions.
 
