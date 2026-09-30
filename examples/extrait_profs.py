@@ -1,9 +1,8 @@
 import logging
 from pprint import pprint
-from pyetnic.services import lister_formations, lire_document_3
-from pyetnic.log_config import configure_logging
+from pyetnic.eprom import lister_formations, lire_document_3
 
-configure_logging()
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
