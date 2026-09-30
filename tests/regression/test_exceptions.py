@@ -128,7 +128,7 @@ def test_specialized_business_errors_inherit_constructor():
     err = EtnicDocumentNotAccessibleError(
         "Doc 3 not accessible",
         code="20102",
-        description="Doc 1 and Doc 2 must be approved",
+        description='Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3"',
     )
     assert err.code == "20102"
 

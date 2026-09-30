@@ -114,7 +114,7 @@ All SEPS inscription enums are pinned against `inscription_v1.xsd`.
 | `EtnicError` | Base class, catch to handle any pyetnic error |
 | `EtnicTransportError` | Network/SOAP-level failures |
 | `EtnicBusinessError` | Server-side refusals (`success=False`) |
-| `EtnicDocumentNotAccessibleError` | Doc1/Doc2/Doc3 workflow violation (e.g. error 20102) |
+| `EtnicDocumentNotAccessibleError` | Document not yet reachable in the workflow (e.g. error 20102) |
 | `EtnicNotFoundError` | Resource not found (e.g. error 00009) |
 | `EtnicValidationError` | Input rejected by validation (most `20xxx`/`30xxx` codes, `4004`-`4012`, …) |
 | `EtnicAlreadyApprovedError` | Document already approved by the administration (codes 1530, 1545) |

@@ -212,7 +212,7 @@ from pyetnic.eprom import (
 )
 
 doc3 = lire_document_3(org_id)
-# doc3 est None si Doc 1 et Doc 2 ne sont pas encore approuvés
+# doc3 est None tant que le Doc A (l'organisation) et le Doc 2 ne sont pas approuvés
 
 liste_save = Doc3ActiviteListeSave(activite=[
     Doc3ActiviteDetailSave(
@@ -316,20 +316,18 @@ inscription = modifier_inscription(inscription_input_data=data)
 Les documents suivent un workflow séquentiel imposé par ETNIC :
 
 ```
-Créer organisation  →  statut "Encodé école"
+Doc A : créer l'organisation      →  statut "Encodé école"
+        ↓  l'administration approuve  →  "Approuvé"
+Doc 1 : encoder la population, puis la valider (approuver_document_1)
         ↓
-Inspection approuve →  statut "Approuvé"
-        ↓
-Doc 1 accessible (lecture/modification/approbation)
-        ↓
-Doc 2 accessible (lecture/modification)
-        ↓
-Doc 1 ET Doc 2 approuvés  →  Doc 3 accessible
+Doc 2 : n'existe qu'une fois la population validée ; l'école l'encode
+        ↓  l'administration approuve Doc 1 et Doc 2 ensemble
+Doc A ET Doc 2 approuvés  →  Doc 3 accessible (l'école encode, rien à approuver)
 ```
 
 **Règles de blocage :**
 - Doc 1 : inaccessible si l'organisation est "Encodé école"
-- Doc 3 : nécessite que Doc 1 **et** Doc 2 soient approuvés (erreur ETNIC 20102)
+- Doc 3 : nécessite que le Doc A (l'organisation) **et** le Doc 2 soient approuvés (erreur ETNIC 20102)
 - L'approbation de l'organisation est effectuée par l'inspection, pas par l'école
 
 ---
@@ -414,7 +412,8 @@ EtnicError
 | Code | Description |
 |---|---|
 | 00009 | Aucun enregistrement trouvé |
-| 20102 | Doc 1 et Doc 2 doivent être approuvés pour accéder au Doc 3 |
+| 20102 | Le Doc A (l'organisation) et le Doc 2 doivent être approuvés pour accéder au Doc 3 |
+| 20104 | Validation du Doc 1 refusée : renvoyer la population telle qu'elle vient d'être lue |
 | SECU-0104 | Certificat X509 non enregistré dans l'annuaire (SEPS en dev) |
 
 ---

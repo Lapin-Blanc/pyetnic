@@ -165,7 +165,7 @@ def test_strict_mode_context_manager_nested_preserves_outer():
 def test_strict_mode_raises_document_not_accessible_on_20102(mock_soap_call):
     """ETNIC error code 20102 maps to EtnicDocumentNotAccessibleError."""
     mock_soap_call.return_value = _error_response(
-        "20102", "Doc 1 et Doc 2 doivent être approuvés"
+        "20102", 'Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3"'
     )
     with strict_errors():
         with pytest.raises(EtnicDocumentNotAccessibleError) as exc_info:

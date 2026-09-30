@@ -48,7 +48,8 @@ It is used by schools and school management software to interact programmaticall
 - `LireDocument2` → `lire_document_2(org_id)`
 - `ModifierDocument2` → `modifier_document_2(org_id, activite_enseignement_liste?, intervention_exterieure_liste?)`
 
-> TODO: no `ApprouverDocument2` found in WSDL v1 — verify whether a later version exists.
+> There is no `ApprouverDocument2`: the administration approves Doc 2 (switch `swAppD2`). The
+> school's work on Doc 2 ends with `modifier_document_2`.
 
 **Document3 (v1)**
 - `LireDocument3` → `lire_document_3(org_id)`
@@ -100,18 +101,19 @@ SSL verification is disabled in `dev` for EPROM, enabled in `prod`, and always e
 ## Business Workflow
 
 ```
-Créer organisation
-    → statut "Encodé école"
-    → Doc 1, 2, 3: inaccessible
+Doc A  creer_organisation                     -> "Encodé école"
+       the administration approves it          -> "Approuvé" (no school-side operation)
 
-Inspection approves organisation
-    → statut "Approuvé"
-    → Doc 1: readable and modifiable
-    → Doc 2: readable and modifiable
+Doc 1  modifier_document_1 (population), then approuver_document_1 -> swAppPopD1 = True
+       the approval must carry back the population as read (error 20104 otherwise)
 
-School approves Doc 1 (ApprouverDocument1)
-School approves Doc 2 (no school-side operation — inspection-driven?)
-    → Doc 3: accessible (error 20102 otherwise)
+Doc 2  exists once the Doc 1 population is validated (lire_document_2 -> None before)
+       modifier_document_2: the school's work ends here, status "Encodé école"
+       the administration approves Doc 1 and Doc 2 together (swAppD1 + swAppD2);
+       later writes are refused (error 1530)
+
+Doc 3  reachable once Doc A and Doc 2 are approved (error 20102 otherwise)
+       modifier_document_3: no approval switch, encoding is all the school does
 ```
 
 Notes:
@@ -150,7 +152,7 @@ All services implement `_organisation_id_dict()` to build the request id without
 ### Document accessibility is workflow-gated
 
 - Doc 1/2/3 inaccessible while organisation is "Encodé école".
-- Doc 3 inaccessible (error 20102) unless Doc 1 and Doc 2 are approved.
+- Doc 3 inaccessible (error 20102) unless Doc A (the organisation) and Doc 2 are approved.
 - `_parse_*_response` methods must guard against `response=None` in the serialized SOAP body and return `None` when the document cannot be read.
 
 ### Save vs read types
@@ -204,7 +206,9 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 
 | Code | Meaning |
 |---|---|
-| 20102 | Document 3 inaccessible because Doc 1 and/or Doc 2 are not yet approved. |
+| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. |
+| 20102 | Document 3 inaccessible until Doc A (the organisation) and Doc 2 are approved. Server text: « Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3" ». |
+| 20104 | Doc 1 approval refused: the population sent differs from the stored one, or none was sent. Send back the lines just read. |
 | 30401 | NISS mutation — an old NISS has been replaced by a new one. Raised as `NissMutationError(ancien_niss, nouveau_niss)` from SEPS `rechercher_etudiants`. |
 | SECU-0104 | SEPS call in dev (`tq`) with a prod certificate — the prod X509 is not registered in the TQ environment. SEPS is prod-only. |
 

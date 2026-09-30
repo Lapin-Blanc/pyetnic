@@ -511,11 +511,10 @@ Les codes numériques **ne sont pas universels** : un même code a un libellé d
 > switches `swAppPopD1D`/`swAppD1D` dans la vue Formations Liste.
 
 > **« Doc A » (erreur `20102` du Doc 3)** : ce manuel **ne mentionne pas « Doc A »** (aucune occurrence).
-> L'hypothèse de la session 4 (« Doc A » = Document 1 / Population) reste donc la plus probable et **n'est
-> pas remise en cause** par le Doc 1D. La nomenclature interne complète des documents EPROM promotion
-> sociale est désormais : **Doc 1** (Population), **Doc 1D** (Droits d'Inscription), **Doc 2** (Périodes),
-> **Doc 3** (Attributions), **Doc 8bis** (référencé par le Doc 3). Le mapping littéral de la lettre « A »
-> reste à confirmer côté ETNIC.
+> « Doc A » est **l'organisation elle-même** (confirmé depuis par les circulaires et l'écran EPROM, voir
+> spec 05 et spec 20 §1.1). La nomenclature des documents EPROM est donc : **Doc A** (Organisation),
+> **Doc 1** (Population), **Doc 1D** (Droits d'Inscription), **Doc 2** (Périodes), **Doc 3** (Attributions),
+> **Doc 8bis** (référencé par le Doc 3).
 
 > **Dépendance amont éventuelle du Doc 1D** : le manuel ne déclare **aucune** erreur de type `20102`
 > (« document X doit être approuvé pour accéder »). Le Doc 1D semble donc **gérable indépendamment** des
@@ -694,7 +693,7 @@ class DroitInscriptionResponse:
   `mtDroitsInscription` modifiable *après* (erreurs `1546`/`1545`/`1530`).
 - **`statutDocumentDroitsInscription`** (Formations Liste) = statut **de ce Doc 1D**, distinct de
   `statutDocumentPopulationPeriodes` (Doc 1 + Doc 2). Quatre statuts au total dans `OrganisationApercuCT`.
-- **« Doc A » non mentionné** ici → hypothèse session 4 (Doc A = Population) inchangée. Pas d'erreur `20102`
+- **« Doc A » non mentionné** ici ; c'est l'organisation (voir spec 05). Pas d'erreur `20102`
   (pas de dépendance inter-documents bloquante déclarée pour le Doc 1D).
 - **Coquilles de typage du PDF résolues par l'UML + le XSD** : `coAnnEtude` = `string` (pas int),
   `tsMaj`/`teUserMaj` = `string` (pas boolean), `nbEleves5ieme` (Approuver) = obligatoire (pas facultatif).
