@@ -84,8 +84,9 @@ class EtnicDocumentNotAccessibleError(EtnicBusinessError):
     """A document is not yet accessible in the workflow.
 
     Raised when accessing Doc 1 / Doc 2 / Doc 3 before the prerequisite
-    documents have been approved. Most notably, ETNIC error code 20102
-    ("Doc 1 and Doc 2 must be approved before Doc 3 is accessible").
+    documents have been approved. Most notably, ETNIC error code 20102:
+    Doc 3 is reachable only once "Doc A" (the organisation itself) and
+    Doc 2 are approved.
 
     This is a NORMAL workflow state, not a hard error — calling code may
     legitimately catch this exception to mean "not ready yet".

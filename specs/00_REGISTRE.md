@@ -259,7 +259,7 @@
   ├── coCategorie           : string  — code catégorie (table identique au Doc 2, 30 codes)
   ├── teNomBranche          : string  — nom de l'activité
   ├── noAnneeEtude          : string  — numéro de l'année d'étude
-  ├── nbPeriodesDoc8        : int     — périodes au Doc 8bis (⚠️ flux "24.0")
+  ├── nbPeriodesDoc8        : int     — périodes au Doc 8bis ("24.0" seulement dans l'exemple du manuel)
   ├── nbPeriodesPrevuesDoc2 : int     — ⚠️ PDF : float obligatoire
   ├── nbPeriodesReellesDoc2 : int     — ⚠️ PDF : float obligatoire
   └── enseignantListe       : Doc3EnseignantLstCT [0..1] → enseignant [0..*]

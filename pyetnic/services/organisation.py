@@ -82,7 +82,13 @@ class OrganisationService:
     # ------------------------------------------------------------------
 
     def lire_organisation(self, organisation_id: OrganisationId) -> Optional[Organisation]:
-        """Lit les informations d'une organisation de formation existante."""
+        """Read an existing organisation.
+
+        The server returns only the organisation's own status here: the
+        ``statutDocumentPopulationPeriodes``, ``statutDocumentDroitsInscription``
+        and ``statutDocumentAttributions`` fields are always ``None``. Read the
+        document statuses with :func:`lister_formations`.
+        """
         logger.info("Lecture de l'organisation %s", organisation_id)
         result = self.client_manager.call_service(
             "LireOrganisation",
@@ -109,9 +115,12 @@ class OrganisationService:
         typeInterventionExterieure: Optional[str] = None,
         interventionExterieure50p: Optional[bool] = None,
     ) -> Optional[Organisation]:
-        """Crée une nouvelle organisation de formation.
+        """Declare a new organisation of a formation.
 
-        Le numOrganisation est attribué par le serveur et renvoyé dans la réponse.
+        The server assigns ``numOrganisation`` in declaration order and returns
+        it; it cannot be chosen. Two declarations run in parallel therefore
+        cannot know which number each will get. Read the organisation back
+        after creating it rather than trusting the response alone.
         """
         logger.info("Création d'une organisation pour la formation %s", num_adm_formation)
         request_data = {

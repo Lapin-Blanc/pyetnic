@@ -172,10 +172,12 @@ FormationDocument3CT
 > `nbPeriodesReellesDoc2` en `xs:int` `minOccurs="0"`, alors que le PDF (§3.1.3.4, p.10) les décrit en
 > **`float` obligatoire**. De plus, **l'exemple de réponse du PDF sérialise les trois compteurs avec
 > décimales** (`<nbPeriodesDoc8>24.0</…>`, `<nbPeriodesPrevuesDoc2>24.0</…>`, `<nbPeriodesReellesDoc2>24.0</…>`),
-> ce qui est incohérent avec le type `xs:int` du contrat. **Impact client** : un parseur strict (zeep
-> appliquant le XSD) tentera de lire `"24.0"` comme `int` → `ValueError`. Prévoir une tolérance
-> (coercition float→int, ou patch du type en `xs:float`/`xs:decimal`) sur ces trois champs. À confirmer
-> par un appel réel ; le XSD reste la référence contractuelle mais semble en retard sur la réalité du flux.
+> ce qui est incohérent avec le type `xs:int` du contrat.
+>
+> **Tranché par la lecture réelle** : un balayage de 765 attributions (123 organisations) n'a trouvé
+> **aucune décimale** dans le flux ; le « 24.0 » ne vient que de l'exemple du manuel. zeep valide
+> contre le XSD embarqué (`xs:int`) : une décimale lèverait `ValueError` dans `call_service`, avant toute
+> dataclass. Reste ouvert le seul écart d'annotation des modèles (`float` côté pyetnic, `int` côté XSD).
 
 ### Doc3EnseignantDetailCT (attribution d'enseignant — réponse, 11 champs)
 
@@ -354,6 +356,10 @@ FormationDocument3ModifReqCT
 > `Doc3EnseignantDetailSaveCT` dans le XSD) est **absent de la description PDF** (§3.1.4.2), qui ne liste
 > que 4 champs. Il permet vraisemblablement de **cibler une attribution existante** pour la modifier
 > (vs en créer une nouvelle). À exposer dans le client comme paramètre optionnel.
+>
+> **Observé en production** : le numéro est un **compteur attribué par le serveur**, pas une position.
+> Les numéros libérés ne sont pas repris (une branche réécrite peut porter les n° 1 et 5) : un trou
+> dans la numérotation ne signale pas une ligne manquante.
 
 > **Comparaison réponse vs requête** : le type Save n'a pas les champs en lecture seule de la réponse
 > (`teNomEns`, `tePrenomEns`, `teAbrEns`, `teEnseignant`, `tsMaj`, `teUserMaj`, ni les périodes Doc2/Doc8 /
@@ -526,25 +532,23 @@ C'est la confirmation tant cherchée du workflow : **le Document 3 (Attributions
 (lecture/modification) que si les documents amont sont approuvés.**
 
 - `« Doc 2 »` = **Document 2 (Périodes)** — approuvé via le switch `swAppD2` (côté administration).
-- `« Doc A »` = très probablement **Document 1 (Population)** — le document portant les switches
-  d'approbation `swAppPopD1` (école/PO) + `swAppD1` (administration) documentés en session 3.
+- `« Doc A »` = **l'organisation elle-même** (service Formation Organisation v7), et non le Document 1.
+  Confirmé par trois sources : les circulaires 8829 et 8684, et l'écran EPROM, dont le tableau
+  « Documents annuels » liste `Doc A`, `Doc 1 et 2`, `Doc 1D`, `Doc 3` (spec 20, §1.1).
 
-> ⚠️ **Point à confirmer** : le libellé est littéralement « **Doc A** » (et non « Doc 1 ») dans le texte
-> du PDF (couche texte native, pas OCR — vérifié page 22). L'hypothèse « Doc A = Document 1 (Population) »
-> est la plus cohérente avec le reste du dossier, mais le mapping exact de la lettre « A » mériterait une
-> validation ETNIC ou un test réel. Aucune autre occurrence de « Doc A » dans le manuel.
-
-Chaîne de dépendance reconstituée (à valider/affiner en session 6) :
+Chaîne de dépendance :
 
 ```
-Organisation (Formation Organisation v7)
-        │  (créée, dates, type)
-        ▼
-Document 1 «Doc A»? (Population)  ──approuvé (swAppPopD1 + swAppD1)──┐
-Document 2 (Périodes)            ──approuvé (swAppD2)───────────────┤
-                                                                    ▼
-                                          Document 3 (Attributions)  ← accessible seulement ici
+Organisation = Doc A (Formation Organisation v7)  ──approuvée par l'administration──┐
+Document 2 (Périodes)                             ──approuvé (swAppD2)──────────────┤
+                                                                                    ▼
+                                                  Document 3 (Attributions)  ← accessible seulement ici
 ```
+
+Le Document 1 (Population) et le Doc 1D (droits d'inscription) suivent leurs propres circuits et ne
+conditionnent pas l'accès au Doc 3 par l'erreur `20102`. En pratique le Doc 2 n'existe qu'une fois la
+population du Doc 1 validée, et l'administration approuve Doc 1 et Doc 2 ensemble (`swAppD1` et
+`swAppD2` basculent en même temps).
 
 ### Contrôles de cohérence sur les périodes attribuées
 
@@ -560,6 +564,23 @@ Les attributions ne peuvent dépasser les périodes réellement organisées (iss
 > `CG`/`CP` renvoient à la classification des périodes (cf. `coCodePar` du Document 2 : `CG`, `CP`, `SU`).
 > Le Doc 3 **consomme** donc les périodes définies au Doc 2 ; les périodes d'intervention extérieure (IE)
 > du Doc 2 viennent augmenter le plafond attribuable.
+
+**Le plafond se lit sur le réel** (observé en production) : sur une organisation dont le Doc 2 porte
+20 périodes prévues et 60 réelles, 60 périodes attribuées passent sans `1574`. Dès que le réel est
+rempli, c'est lui qu'il faut comparer, pas le prévu.
+
+### ⚠️ Sémantique d'écriture : `ModifierDocument3` remplace la liste de chaque branche envoyée
+
+**Pour chaque branche présente dans la requête, la liste d'enseignants envoyée remplace celle du
+serveur ; elle ne la complète pas.** Envoyer la seule attribution à ajouter **efface les autres
+attributions de la branche**. Observé en production : l'envoi de la ligne d'un remplaçant a effacé
+celle du titulaire sur la même branche.
+
+- Toujours envoyer la **liste complète** de chaque branche touchée (ce qui rend une réécriture
+  idempotente : une branche renvoyée à l'identique garde son contenu, seul `tsMaj` bouge).
+- Les branches absentes de la requête ne sont pas touchées.
+- Après écriture, **relire le document entier**, pas seulement les lignes envoyées : une relecture
+  limitée à ce qu'on a envoyé ne voit pas ce qu'on a effacé.
 
 ### Validations d'attribution
 - `20108` — matricule enseignant inexistant/incorrect.
@@ -618,9 +639,9 @@ Les attributions ne peuvent dépasser les périodes réellement organisées (iss
 | # | Élément | PDF | XSD | Reco. client |
 |---|---|---|---|---|
 | 1 | `OrganisationResIdCT.implId` | obligatoire | `minOccurs="0"` | optionnel (XSD), mais toujours présent en pratique |
-| 2 | `nbPeriodesPrevuesDoc2` | float, obligatoire | `int`, `[0..1]` | tolérer décimales / traiter en float |
+| 2 | `nbPeriodesPrevuesDoc2` | float, obligatoire | `int`, `[0..1]` | le flux réel ne porte pas de décimale (voir plus haut) |
 | 3 | `nbPeriodesReellesDoc2` | float, obligatoire | `int`, `[0..1]` | idem |
-| 4 | `nbPeriodesDoc8` | int, facultatif | `int`, `[0..1]` | exemple sérialise « 24.0 » → tolérer décimales |
+| 4 | `nbPeriodesDoc8` | int, facultatif | `int`, `[0..1]` | « 24.0 » seulement dans l'exemple du manuel |
 | 5 | `Doc3ActiviteDetailSaveCT.coNumBranche` | facultatif | obligatoire | **fournir** (identifie l'activité) |
 | 6 | `Doc3ActiviteDetailSaveCT.noAnneeEtude` | facultatif | obligatoire | **fournir** |
 | 7 | `Doc3ActiviteDetailSaveCT.enseignantListe` | 0 à 1 | obligatoire | **fournir** |
@@ -695,7 +716,7 @@ class ActiviteResponse:
     co_categorie: str | None               # table partagée avec Doc 2
     te_nom_branche: str | None
     no_annee_etude: str | None
-    nb_periodes_doc8: int | None           # ⚠️ peut arriver en "24.0"
+    nb_periodes_doc8: int | None           # xs:int ; "24.0" only in the manual example
     nb_periodes_prevues_doc2: float | None # ⚠️ XSD int mais flux float
     nb_periodes_reelles_doc2: float | None # ⚠️ idem
     enseignants: list[EnseignantResponse]
@@ -703,15 +724,15 @@ class ActiviteResponse:
 
 ### Recommandations d'implémentation
 1. **Forcer SOAP 1.1** dans le transport zeep (ce service ne supporte pas SOAP 1.2).
-2. **Périodes Doc2/Doc8** : prévoir une coercition tolérante (le flux renvoie `"24.0"` alors que le XSD
-   dit `int`). Option : patcher le schéma en `xs:decimal`, ou post-traiter avant validation stricte.
+2. **Périodes Doc2/Doc8** : le flux réel respecte `xs:int` (voir la divergence de type plus haut) ;
+   seule l'annotation `float` des modèles reste à aligner.
 3. **Workflow** : avant tout `ModifierDocument3`, s'assurer (côté appelant ou via Formations Liste /
-   statuts) que Population (« Doc A ») et Périodes (Doc 2) sont approuvés, sinon erreur `20102`.
+   statuts) que l'organisation (« Doc A ») et les Périodes (Doc 2) sont approuvées, sinon erreur `20102`.
 4. **Erreurs `1538`/`1574`/`1575`/`1576`** : exposer les paramètres `$1`/`$2` du message pour aider
    l'utilisateur à corriger (valeur attribuée vs plafond).
 5. **`coNumAttribution`** : exposer en optionnel pour permettre la modification ciblée d'une attribution
    existante plutôt que la recréation.
-6. Tester le **mock server stateful** sur la contrainte `20102` (Doc 3 inaccessible tant que Doc1+Doc2
+6. Tester le **mock server stateful** sur la contrainte `20102` (Doc 3 inaccessible tant que Doc A + Doc 2
    non approuvés) — cas d'intégration prioritaire.
 
 ---
@@ -742,7 +763,7 @@ class ActiviteResponse:
 - **SOAP 1.1 uniquement** (binding WSDL + PDF) — particularité vs les autres services.
 - **Pattern Common_v1** (ancien), bloc retour `AbstractExternalResponseType`.
 - **Modèle hiérarchique** : activité (branche) → enseignants attribués + périodes.
-- **Workflow confirmé** (erreur `20102`) : Doc 3 inaccessible tant que « Doc A » (Population/Doc 1) **et**
+- **Workflow confirmé** (erreur `20102`) : Doc 3 inaccessible tant que « Doc A » (l'organisation) **et**
   Doc 2 (Périodes) ne sont pas approuvés.
 - **`coCategorie`** partagé avec le Doc 2 (référentiel commun). Pas de `coCatCol` / intervention
   extérieure propre au Doc 3.

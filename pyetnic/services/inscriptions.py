@@ -247,7 +247,11 @@ class InscriptionsService:
         self,
         inscription_input_data: Optional[InscriptionInputDataSave] = None,
     ) -> Optional[Inscription]:
-        """Modifie une inscription existante.
+        """Modify an existing inscription.
+
+        An optional field left out is **erased** by the server, and a field
+        required at creation stays required: send the complete inscription, as
+        read, with the changes applied.
 
         Args:
             inscription_input_data: Données de l'inscription à modifier.

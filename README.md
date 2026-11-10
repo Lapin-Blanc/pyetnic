@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/Lapin-Blanc/pyetnic/actions/workflows/tests.yml/badge.svg)](https://github.com/Lapin-Blanc/pyetnic/actions/workflows/tests.yml)
 
-Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.be/) pour l'enseignement de promotion sociale (Wallonie-Bruxelles).
+Bibliothèque Python d'accès aux services web SOAP d'[ETNIC](https://www.etnic.be/) pour l'Enseignement pour adultes, ex-promotion sociale (Fédération Wallonie-Bruxelles).
 
 Les services web EPROM sont le canal que l'Administration met à la disposition des
 logiciels de gestion des établissements (ENORA, GIPS, PROSOC...) : pyetnic en est un client
@@ -212,7 +212,7 @@ from pyetnic.eprom import (
 )
 
 doc3 = lire_document_3(org_id)
-# doc3 est None si Doc 1 et Doc 2 ne sont pas encore approuvés
+# doc3 est None tant que le Doc A (l'organisation) et le Doc 2 ne sont pas approuvés
 
 liste_save = Doc3ActiviteListeSave(activite=[
     Doc3ActiviteDetailSave(
@@ -268,13 +268,13 @@ details = EtudiantDetailsSave(
     nom="DUPONT",
     prenom="Jean",
     sexe="M",
-    naissance=SepsNaissanceSave(date="1985-01-15", codePays="BE"),
+    naissance=SepsNaissanceSave(date="1985-01-15", codePays="00150"),
 )
 etudiant = enregistrer_etudiant("DETAILS", etudiant_details=details)
 
 # Modification d'un étudiant existant
 etudiant = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave(
-    adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="BE"),
+    adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="00150"),
 ))
 ```
 
@@ -299,7 +299,7 @@ data = InscriptionInputDataSave(
     codePostalLieuCours="4000",
     inscription=InscriptionInputSave(
         dateInscription="2024-09-15",
-        statut="I",
+        statut="DE",  # CodeStatut : DE (définitive) ou AN (annulée)
         ue=SepsUESave(noAdministratif=455, noOrganisation=1),
     ),
 )
@@ -316,20 +316,18 @@ inscription = modifier_inscription(inscription_input_data=data)
 Les documents suivent un workflow séquentiel imposé par ETNIC :
 
 ```
-Créer organisation  →  statut "Encodé école"
+Doc A : créer l'organisation      →  statut "Encodé école"
+        ↓  l'administration approuve  →  "Approuvé"
+Doc 1 : encoder la population, puis la valider (approuver_document_1)
         ↓
-Inspection approuve →  statut "Approuvé"
-        ↓
-Doc 1 accessible (lecture/modification/approbation)
-        ↓
-Doc 2 accessible (lecture/modification)
-        ↓
-Doc 1 ET Doc 2 approuvés  →  Doc 3 accessible
+Doc 2 : n'existe qu'une fois la population validée ; l'école l'encode
+        ↓  l'administration approuve Doc 1 et Doc 2 ensemble
+Doc A ET Doc 2 approuvés  →  Doc 3 accessible (l'école encode, rien à approuver)
 ```
 
 **Règles de blocage :**
 - Doc 1 : inaccessible si l'organisation est "Encodé école"
-- Doc 3 : nécessite que Doc 1 **et** Doc 2 soient approuvés (erreur ETNIC 20102)
+- Doc 3 : nécessite que le Doc A (l'organisation) **et** le Doc 2 soient approuvés (erreur ETNIC 20102)
 - L'approbation de l'organisation est effectuée par l'inspection, pas par l'école
 
 ---
@@ -414,7 +412,8 @@ EtnicError
 | Code | Description |
 |---|---|
 | 00009 | Aucun enregistrement trouvé |
-| 20102 | Doc 1 et Doc 2 doivent être approuvés pour accéder au Doc 3 |
+| 20102 | Le Doc A (l'organisation) et le Doc 2 doivent être approuvés pour accéder au Doc 3 |
+| 20104 | Validation du Doc 1 refusée : renvoyer la population telle qu'elle vient d'être lue |
 | SECU-0104 | Certificat X509 non enregistré dans l'annuaire (SEPS en dev) |
 
 ---
@@ -495,8 +494,8 @@ Les tests d'intégration nécessitent un `.env` valide. Ils skipent automatiquem
 | [zeep](https://docs.python-zeep.org/) | Client SOAP |
 | [python-dotenv](https://pypi.org/project/python-dotenv/) | Chargement `.env` |
 | [requests](https://pypi.org/project/requests/) | Transport HTTP |
-| [cryptography](https://pypi.org/project/cryptography/) | Extraction PFX en mémoire (SEPS) |
-| [openpyxl](https://pypi.org/project/openpyxl/) | Export Excel |
+| [cryptography](https://pypi.org/project/cryptography/) *(extra seps)* | Extraction PFX en mémoire |
+| [openpyxl](https://pypi.org/project/openpyxl/) *(extra excel)* | Export Excel des exemples |
 | [xmlsec](https://pypi.org/project/xmlsec/) *(extra seps)* | Signature XML X509 |
 
 ## Licence

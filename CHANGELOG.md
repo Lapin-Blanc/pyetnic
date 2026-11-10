@@ -9,6 +9,8 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+## [0.1.0b2] - 2026-11-10
+
 ### Added
 
 - **12 SEPS inscription nomenclature enums**, pinned against `inscription_v1.xsd`
@@ -24,6 +26,15 @@ that supports `bN` pre-releases).
 
 - **Examples use the public namespaces only** (`pyetnic.eprom`, `pyetnic.config`)
   instead of `pyetnic.services.*`, and configure logging themselves.
+- **The writers' docstrings say what the server really does**, as seen in
+  production: `modifier_document_3` replaces the teacher list of every branch it
+  sends; `approuver_document_1` needs the population sent back (error 20104);
+  `creer_organisation` gets its number in declaration order; `lire_organisation`
+  never carries the document statuses; `lire_document_2` is `None` until the
+  Doc 1 population is validated; the SEPS modifiers erase every optional field
+  left out. No signature changes.
+- **"Doc A" is the organisation**: error 20102 and the workflow documentation
+  no longer read it as the Doc 1 population.
 
 ### Removed
 
@@ -33,6 +44,14 @@ that supports `bN` pre-releases).
   analyses, the financing calculation spec and its PE/PEP demo scripts, and the
   production test reports of one establishment. pyetnic documents the ETNIC SOAP
   contracts; derived computations belong to the consuming applications.
+
+### Security
+
+- **Documentation examples use fictitious identifiers only.** The README example
+  carried a teacher staff number copied from an ETNIC manual, and so did the
+  description of every release from 0.0.4 to 0.1.0b1, which are withdrawn from
+  PyPI. The repository history was rewritten on 2026-11-10: clones made earlier
+  must be re-cloned.
 
 ### Fixed
 
@@ -148,5 +167,6 @@ auto-upgraded, so the refactored library can be beta-tested without disruption.
 - **The flat top-level namespace** (`pyetnic.lire_organisation`, …) — no longer
   documented. Import from `pyetnic.eprom` / `pyetnic.seps` instead.
 
-[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b1...HEAD
+[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b2...HEAD
+[0.1.0b2]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b1...v0.1.0b2
 [0.1.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.0.12...v0.1.0b1

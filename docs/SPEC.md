@@ -2,7 +2,7 @@
 
 ## Overview
 
-**pyetnic** is a Python client for the SOAP web services operated by ETNIC (the IT agency of the Fédération Wallonie-Bruxelles, Belgium). It targets the education sector: EPROM services (Enseignement de Promotion Sociale — adult/continuing education) covering formations, organisations and administrative documents, and SEPS services (student registry, enrolments).
+**pyetnic** is a Python client for the SOAP web services operated by ETNIC (the IT agency of the Fédération Wallonie-Bruxelles, Belgium). It targets the education sector: EPROM services (Enseignement pour adultes, formerly Enseignement de promotion sociale; the EPROM identifiers keep the old name) covering formations, organisations and administrative documents, and SEPS services (student registry, enrolments).
 
 It is used by schools and school management software to interact programmatically with the official ETNIC back-office: listing offered formations, creating/updating a given school-year "organisation" of a formation, filling in the three administrative documents (Document 1 — population, Document 2 — activity periods and external interventions, Document 3 — teacher assignments), and — through SEPS — searching for and registering students and their enrolments.
 
@@ -48,7 +48,8 @@ It is used by schools and school management software to interact programmaticall
 - `LireDocument2` → `lire_document_2(org_id)`
 - `ModifierDocument2` → `modifier_document_2(org_id, activite_enseignement_liste?, intervention_exterieure_liste?)`
 
-> TODO: no `ApprouverDocument2` found in WSDL v1 — verify whether a later version exists.
+> There is no `ApprouverDocument2`: the administration approves Doc 2 (switch `swAppD2`). The
+> school's work on Doc 2 ends with `modifier_document_2`.
 
 **Document3 (v1)**
 - `LireDocument3` → `lire_document_3(org_id)`
@@ -79,14 +80,16 @@ It is used by schools and school management software to interact programmaticall
 > Save types: `InscriptionInputDataSave`, `InscriptionInputSave`, `SepsUESave`, `SepsSpecificiteSave`.
 > `InscriptionInputDataSave` required fields: `cfNum`, `idEtab`, `idImplantation`, `codePostalLieuCours`, `inscription`.
 > `InscriptionInputSave` required fields: `dateInscription`, `statut`.
-> `SpecificiteDataInputType` (Save) does **not** have `regulier1` / `regulier5` — do not include them.
+> The inscription input element is typed `SpecificiteDataType`, which carries `regulier1` / `regulier5`;
+> the XSD also defines a `SpecificiteDataInputType` without them, used by no element. `SepsSpecificiteSave`
+> follows `SpecificiteDataType`.
 
 ## Authentication
 
 Two authentication schemes coexist:
 
 - **EPROM — WSSE UsernameToken.** Credentials from `.env` (`USERNAME`, `PASSWORD`, plus separate dev/prod as per `ENV`). Available in both dev (`ws-tq.etnic.be`) and prod (`ws.etnic.be`).
-- **SEPS — X509 BinarySignature.** A PFX bundle (path via `Config.SEPS_PFX_PATH`) is loaded via `cryptography`, extracted in memory (no disk writes), and used to sign outgoing SOAP envelopes through a custom `_EtnicBinarySignature` plugin (subclass of zeep's `MemorySignature`). Response signature verification is intentionally skipped because the ETNIC CA is not publicly distributed. SEPS works **only in production** (`ws.etnic.be`); dev endpoints return `SECU-0104` because the prod certificate is not registered in TQ. Dependencies: `cryptography` (mandatory) + `xmlsec` (optional, extra `pip install pyetnic[seps]`).
+- **SEPS - X509 BinarySignature.** A PFX bundle (path via `Config.SEPS_PFX_PATH`) is loaded via `cryptography` (extra `[seps]`), extracted in memory (no disk writes), and used to sign outgoing SOAP envelopes through a custom `_EtnicBinarySignature` plugin (subclass of zeep's `MemorySignature`). Response signature verification is intentionally skipped because the ETNIC CA is not publicly distributed. SEPS works **only in production** (`ws.etnic.be`); dev endpoints return `SECU-0104` because the prod certificate is not registered in TQ. Dependencies: `cryptography` (mandatory) + `xmlsec` (optional, extra `pip install pyetnic[seps]`).
 
 ### Endpoints
 
@@ -100,18 +103,19 @@ SSL verification is disabled in `dev` for EPROM, enabled in `prod`, and always e
 ## Business Workflow
 
 ```
-Créer organisation
-    → statut "Encodé école"
-    → Doc 1, 2, 3: inaccessible
+Doc A  creer_organisation                     -> "Encodé école"
+       the administration approves it          -> "Approuvé" (no school-side operation)
 
-Inspection approves organisation
-    → statut "Approuvé"
-    → Doc 1: readable and modifiable
-    → Doc 2: readable and modifiable
+Doc 1  modifier_document_1 (population), then approuver_document_1 -> swAppPopD1 = True
+       the approval must carry back the population as read (error 20104 otherwise)
 
-School approves Doc 1 (ApprouverDocument1)
-School approves Doc 2 (no school-side operation — inspection-driven?)
-    → Doc 3: accessible (error 20102 otherwise)
+Doc 2  exists once the Doc 1 population is validated (lire_document_2 -> None before)
+       modifier_document_2: the school's work ends here, status "Encodé école"
+       the administration approves Doc 1 and Doc 2 together (swAppD1 + swAppD2);
+       later writes are refused (error 1530)
+
+Doc 3  reachable once Doc A and Doc 2 are approved (error 20102 otherwise)
+       modifier_document_3: no approval switch, encoding is all the school does
 ```
 
 Notes:
@@ -145,12 +149,12 @@ D) enregistrer_inscription(cfNum + UE data)
 `OrganisationResIdCT` (server response) additionally contains `implId`.
 Only `CreerOrganisation` accepts `implId` in its `id`.
 
-All services implement `_organisation_id_dict()` to build the request id without `implId`. **Never** use `dataclasses.asdict(organisation_id)` directly — that would include `implId=None` and be rejected server-side.
+All services build the request id with `organisation_request_id()` (`services/_helpers.py`), which leaves `implId` out. **Never** use `dataclasses.asdict(organisation_id)` directly - that would include `implId=None` and be rejected server-side.
 
 ### Document accessibility is workflow-gated
 
 - Doc 1/2/3 inaccessible while organisation is "Encodé école".
-- Doc 3 inaccessible (error 20102) unless Doc 1 and Doc 2 are approved.
+- Doc 3 inaccessible (error 20102) unless Doc A (the organisation) and Doc 2 are approved.
 - `_parse_*_response` methods must guard against `response=None` in the serialized SOAP body and return `None` when the document cannot be read.
 
 ### Save vs read types
@@ -204,7 +208,9 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 
 | Code | Meaning |
 |---|---|
-| 20102 | Document 3 inaccessible because Doc 1 and/or Doc 2 are not yet approved. |
+| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. |
+| 20102 | Document 3 inaccessible until Doc A (the organisation) and Doc 2 are approved. Server text: « Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3" ». |
+| 20104 | Doc 1 approval refused: the population sent differs from the stored one, or none was sent. Send back the lines just read. |
 | 30401 | NISS mutation — an old NISS has been replaced by a new one. Raised as `NissMutationError(ancien_niss, nouveau_niss)` from SEPS `rechercher_etudiants`. |
 | SECU-0104 | SEPS call in dev (`tq`) with a prod certificate — the prod X509 is not registered in the TQ environment. SEPS is prod-only. |
 
