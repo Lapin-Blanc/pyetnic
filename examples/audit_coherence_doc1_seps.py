@@ -23,7 +23,7 @@ Discrepancy kinds:
 - ``ORPHAN_SEPS``        — SEPS inscriptions for an org absent from EPROM.
 
 Usage:
-    python examples/audit_coherence_doc1_seps.py --annee 2025-2026 --etab 3052
+    python examples/audit_coherence_doc1_seps.py --annee 2025-2026 [--etab 1234]
 
 Requires a production-configured ``.env`` (EPROM credentials + SEPS X509 PFX).
 """
@@ -36,6 +36,7 @@ from dataclasses import dataclass
 
 import pyetnic.eprom as eprom
 import pyetnic.seps as seps
+from pyetnic.config import Config
 
 MISMATCH = "MISMATCH"
 DECLARED_NO_SEPS = "DECLARED_NO_SEPS"
@@ -174,7 +175,7 @@ def main() -> None:
         description="Cross-check EPROM Doc 1 population vs SEPS inscriptions (discrepancies only)."
     )
     parser.add_argument("--annee", default="2025-2026", help="School year, e.g. 2025-2026")
-    parser.add_argument("--etab", type=int, default=3052, help="Établissement id")
+    parser.add_argument("--etab", type=int, default=None, help="Establishment id (default: DEFAULT_ETABID from .env)")
     parser.add_argument(
         "--exclure-statuts", nargs="*", metavar="STATUT",
         default=list(DEFAULT_EXCLUDED_STATUSES),
@@ -183,8 +184,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    result = audit(args.annee, args.etab, tuple(args.exclure_statuts))
-    header = f"[{args.annee} / etab {args.etab}]"
+    etab = args.etab or int(Config.ETAB_ID)
+    result = audit(args.annee, etab, tuple(args.exclure_statuts))
+    header = f"[{args.annee} / etab {etab}]"
     excl_codes = ",".join(result.excluded_statuses) or "—"
     seps_line = (f"  SEPS : {result.seps_total} inscriptions, "
                  f"{result.seps_excluded} exclue(s) [{excl_codes}].")

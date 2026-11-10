@@ -118,7 +118,7 @@ DroitInscriptionType
     ├── indicateurExempteDroitInscription : IndicateurType [obligatoire]  ⚠️ exclusif de indicateurDroitInscription (erreur 30033)
     └── motifExemption : MotifExemptionType [obligatoire]   interprété si indicateurExempte = O
 ```
-**MotifExemptionType** (exemption du DI — cf. circulaire 9593, spec 14) :
+**MotifExemptionType** (exemption du DI — cf. circulaire 9593) :
 | Code | Motif |
 |---|---|
 | `C01` | Mineur soumis à l'obligation scolaire |

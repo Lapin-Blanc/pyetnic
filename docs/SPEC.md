@@ -119,6 +119,24 @@ Notes:
 - There is no `ApprouverOrganisation` operation on the school side — approval is the inspection's responsibility.
 - In the test environment (tq), created organisations stay in "Encodé école" until manual inspection action, so end-to-end Doc flows cannot be exercised there without out-of-band state changes.
 
+### SEPS: enrolling a student
+
+An inscription needs the student's `cfNum`. Never call `enregistrer_inscription` without
+one: resolve the identity first, in this order.
+
+```
+A) cfNum known?                       -> enrol (D)
+B) NISS known? rechercher_etudiants(niss=...)
+     found in SEPS                    -> enrol (D)
+     found at the BCED only           -> enregistrer_etudiant(mode "NISS") -> enrol (D)
+     not found                        -> C
+C) rechercher_etudiants(nom, prenom, date_naissance, sexe)
+     found in SEPS                    -> enrol (D)
+     found at the BCED only           -> enregistrer_etudiant(mode "NISS") -> enrol (D)
+     not found                        -> enregistrer_etudiant(mode "DETAILS") -> enrol (D)
+D) enregistrer_inscription(cfNum + UE data)
+```
+
 ## Critical Business Rules
 
 ### `implId` must NEVER be included in Lire/Modifier/Supprimer requests
@@ -218,11 +236,15 @@ Config.PASSWORD = "my_pass"
 
 ## Test Environment
 
-- Server: `services-web.tq.etnic.be`
-- `etabId=3052`, `implId=6050`
-- 2025-2026: 2 organisations created (F327, F328), "Encodé école" → Doc 1/2/3 inaccessible
-- 2024-2025: 34 organisations "Approuvé" → Doc 1/2 readable, Doc 3 inaccessible (Doc 1/2 not approved)
-- 2023-2024: 119/158 organisations with Doc 3 accessible — this is the reference vintage for Doc 3 tests.
+- EPROM server: `services-web.tq.etnic.be` (`ENV=dev`). SEPS has no usable test
+  environment: it runs in production only (see `SECU-0104`).
+- Organisations created there stay "Encodé école": documents 1, 2 and 3 cannot be reached
+  on a fresh organisation. Past school years with approved organisations are the only way to
+  exercise the document readers.
+- To settle an undocumented wire value, probe empirically: create an organisation on TQ,
+  read it back, then delete it. Error `30004` and the letter codes of the external
+  intervention types were settled this way.
+- Integration tests read the establishment from `DEFAULT_ETABID` and skip without it.
 
 ## XSD Verification Procedure
 

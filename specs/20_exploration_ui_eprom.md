@@ -56,7 +56,7 @@ puis les switches avec leurs libellés UI exacts :
 | Informations liées à une organisation en partenariat / Type d'intervention extérieure **à 50 % et plus** | `typeInterventionExterieure` / `interventionExterieure50p` |
 
 > La formation témoin a `numOrganisation2AnneesScolaires = 1` : UE de 60 périodes à cheval
-> 2023-2024 → 2024-2025, déclarée par deux Doc A (cf. règle 8684, spec 19 §1).
+> 2023-2024 → 2024-2025, déclarée par deux Doc A (cf. circulaire 8684, abrogée depuis par la 9797).
 
 ### 1.4. Écran « Doc 1 et 2 » (`Description du document annuel 2`) — spec 03/04
 
@@ -89,7 +89,7 @@ champs `nbEleve*` de la spec 03 — les noms `A`/`B` sont les libellés métier 
 **Tableau « population par activité d'enseignement »** (colonnes 12-19), en-têtes UI :
 `N° | Catégorie | Activité d'enseignement (12) | Année Études (13) | Nb Elèves (14) | Pér. prévues (15) |
 Prévue (16) 2024 | Prévue (17) 2025 | Réel (18) 2024 | Réel (19) 2025` — la ventilation par **année
-civile** est explicite dans les en-têtes (cf. dotation par année civile, specs 17/19).
+civile** est explicite dans les en-têtes (la dotation se calcule par année civile).
 Exemple réel : branche 1 `CTms` Méthodes de travail, 19 élèves, **48,00** (Doc 8bis), prévue 2024
 **20,00**, réel 2024 **20,00** ; branche 2 `Auto` Autonomie **12,00** ; total UE 60 périodes sur
 2 années scolaires (16+17 < 15 conforme à la 8684).
@@ -181,8 +181,8 @@ Définitif, Expert, eXpertise, Temporaire ; à figer après un Lire SOAP de cont
 (titul. non malade) · `97` Absence non réglementairement justifiée ·
 `98`/`99` Dispo mission spéciale (pas nb global).
 
-> Les codes **14/15** (« partenaire extérieur prend en charge la rémunération » — 8684, spec 19 §5)
-> sont bien dans la liste. Recouvrement confirmé avec les « codes DI » de la circulaire 9589 (spec 08).
+> Les codes **14/15** (« partenaire extérieur prend en charge la rémunération » — circulaire 8684)
+> sont bien dans la liste. Recouvrement confirmé avec les « codes DI » de la circulaire 9589 (section 6).
 
 ## 3. Notes techniques d'automatisation (pour de futures explorations)
 

@@ -1,14 +1,12 @@
 import logging
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
-from pyetnic.services import lire_document_3
-from pyetnic.services.models import OrganisationId
+from pyetnic.eprom import OrganisationId, lire_document_3
 from pyetnic.config import Config
-from pyetnic.log_config import configure_logging
 from datetime import datetime, timedelta
 
 # Configuration du logging
-configure_logging()
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

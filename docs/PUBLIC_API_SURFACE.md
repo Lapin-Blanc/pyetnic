@@ -249,7 +249,6 @@ The following are internal implementation details. Direct imports from these mod
 - `pyetnic.soap_client` — internal SOAP client manager
 - `pyetnic.services.*` — internal service classes (`OrganisationService`, `Document1Service`, etc.)
 - `pyetnic.services.models` — if you need models, import from `pyetnic.eprom` or `pyetnic.seps`
-- `pyetnic.log_config` — internal
 - `pyetnic.cli` — internal CLI entry point
 
 If a user needs something from these modules, the correct action is to open an issue and have it properly exported through the stable namespace.
