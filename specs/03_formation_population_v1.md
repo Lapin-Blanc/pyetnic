@@ -153,6 +153,11 @@ Document1ReponseCT
             └── population  : PopDocument1AnneeEtudeLineCT     [1..*]
 ```
 
+> **Doc 1 jamais encodé** : `LireDocument1` rend déjà une ligne de population à zéro
+> (`coAnnEtude` 1, `swAppPopD1` et `swAppD1` faux) ; sa présence ne dit pas que le Doc 1 a été
+> encodé (observé en production le 2026-09-16, confirmé sur TQ le 2026-11-10). Avant
+> l'approbation du Doc A, la lecture est refusée en `20101` (testé sur TQ, 2026-11-10).
+
 ### PopDocument1AnneeEtudeLineCT (ligne de population — réponse)
 
 | Champ | Type | Obligatoire | Description |
@@ -186,11 +191,18 @@ Document1ReponseCT
 > - `nbEleveTot2a5` = `nbEleveA` + `nbEleveEhr` + `nbEleveFse` + `nbElevePi` + `nbEleveB`
 > - `nbEleveTot6et8` = `nbEleveTot2a5` + `nbElevePl`
 > - `nbEleveTotHom` + `nbEleveTotFem` = `nbEleveTot6et8` (erreur 4011)
-> - `nbEleveDem` ≤ `nbElevePl` (erreur 4004)
-> - `nbEleveExm` ≤ `nbElevePl` (erreurs 4005, 4012)
-> - `nbEleveMin` ≤ `nbElevePl` (erreur 4008)
+> - `nbEleveDem` ≤ `nbEleveTot2a5` (erreur 4004)
+> - `nbEleveExm` ≤ `nbEleveTot2a5` (erreurs 4005, 4012)
+> - `nbEleveMin` ≤ `nbEleveTot2a5` (erreur 4008)
 > - `nbEleveTotHom` ≤ `nbEleveTot6et8` (erreur 4009)
 > - `nbEleveTotFem` ≤ `nbEleveTot6et8` (erreur 4010)
+>
+> `Dem`, `Min` et `Exm` sont des sous-comptes des élèves **comptés une fois** (`nbEleveTot2a5`),
+> pas de `nbElevePl` : les libellés des erreurs 4004, 4005, 4008 et 4012 disent « comptés 1 fois »,
+> l'exemple de réponse du manuel porte `nbEleveDem` 10 pour `nbElevePl` 4, et en production ces
+> colonnes ne sont jamais remplies sur une ligne entièrement en `Pl` (0 sur 50) et le sont toujours
+> sur une ligne entièrement en `A` (17 sur 17). La borne du serveur elle-même n'a pas été testée
+> au-delà de ces données.
 
 ### Exemple de requête XML
 
@@ -355,6 +367,11 @@ de le modifier** (erreur 1545).
 L'utilisateur envoie les données d'identification ainsi que les populations **afin de vérifier
 que les données n'ont pas été modifiées entre la dernière consultation et l'approbation**.
 
+> **Observé en production** : `ApprouverDocument1` coche `swAppPopD1` (la case « Validé » de
+> l'écran) et laisse `swAppD1` à faux (2026-09-18). `swAppD1` est basculé ensuite par
+> l'administration, en même temps que `swAppD2` du Document 2, sans changer le `tsMaj` des deux
+> documents (observé une fois, 2026-09-19).
+
 ### Requête
 
 **Élément** : `ApprouverDocument1` → **Type** : `ApprouverDocument1RequeteCT` extends `FormationDocument1ApprReqCT`
@@ -439,6 +456,8 @@ ApprouverDocument1RequeteCT
 | `false` | `4012` | Nombre d'exemptés > nb d'élèves comptés 1 fois | Modifier, Approuver |
 | `false` | `1545` | Le "Doc 1" est approuvé et ne peut plus être modifié | Modifier |
 | `false` | `1530` | Mise à jour impossible; ce document est déjà approuvé par l'administration ! | Approuver |
+| `false` | `20101` | Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant | Lire, avant l'approbation du Doc A (testé sur TQ, 2026-11-10) |
+| `false` | `20104` | Les valeurs que vous tentez de valider ne sont pas celles enregistrées. Veuillez recharger les données avant la validation | Approuver (observé en production, 2026-09-18 : population absente ou différente de celle enregistrée) |
 | `false` | `99999` | Autres erreurs | toutes |
 
 > **Codes partagés avec d'autres services** : `00009`, `00025`, `00999` sont communs à tous

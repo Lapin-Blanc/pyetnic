@@ -33,6 +33,14 @@ class FormationsListeService:
         etab_id: int | None = None,
         impl_id: int | None = None,
     ) -> FormationsListeResult:
+        """List the formations the establishment may organise in a school year.
+
+        In the default permissive mode, a refused or failed call returns
+        ``FormationsListeResult(success=False, formations=[])``: iterating it
+        looks exactly like an empty catalogue. Check ``success`` (and
+        ``messages``), or call it under :func:`strict_errors` to get an
+        exception instead.
+        """
         try:
             request_data = {
                 "anneeScolaire": annee_scolaire if annee_scolaire is not None else Config.ANNEE_SCOLAIRE,
@@ -75,6 +83,15 @@ class FormationsListeService:
         etab_id: int | None = None,
         impl_id: int | None = None,
     ) -> FormationsListeResult:
+        """List the organised formations with their organisations and statuses.
+
+        The only service that returns the four document statuses of an
+        organisation. In the default permissive mode, a refused or failed call
+        returns ``FormationsListeResult(success=False, formations=[])``:
+        iterating it looks exactly like a year without any organisation. Check
+        ``success`` (and ``messages``), or call it under :func:`strict_errors`
+        to get an exception instead.
+        """
         logger.info("Appel de lister_formations")
         if annee_scolaire is None:
             annee_scolaire = Config.ANNEE_SCOLAIRE

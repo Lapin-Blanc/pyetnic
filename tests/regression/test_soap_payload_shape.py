@@ -39,7 +39,7 @@ from .fixtures.eprom_responses import (
 def _org_id() -> OrganisationId:
     return OrganisationId(
         anneeScolaire="2024-2025",
-        etabId=3052,
+        etabId=1234,
         numAdmFormation=328,
         numOrganisation=1,
     )

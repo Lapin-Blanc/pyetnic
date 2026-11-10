@@ -5,7 +5,7 @@ for each EPROM operation. They are intentionally rich (every field a parser
 reads) so that future refactorings cannot silently drop information.
 
 Reference vintage: SOAP responses observed against ws-tq.etnic.be in 2025
-(etabId=3052, implId=6050).
+(etabId=1234, implId=5678).
 """
 
 from datetime import date
@@ -45,7 +45,7 @@ CANONICAL_LISTER_FORMATIONS_RESPONSE: dict = {
                     "organisation": [
                         {
                             "numOrganisation": 1,
-                            "implId": 6050,
+                            "implId": 5678,
                             "dateDebutOrganisation": date(2024, 9, 2),
                             "dateFinOrganisation": date(2025, 6, 27),
                             "statutDocumentOrganisation": {
@@ -107,10 +107,10 @@ CANONICAL_ORGANISATION_RESPONSE: dict = {
             "organisation": {
                 "id": {
                     "anneeScolaire": "2024-2025",
-                    "etabId": 3052,
+                    "etabId": 1234,
                     "numAdmFormation": 328,
                     "numOrganisation": 1,
-                    "implId": 6050,
+                    "implId": 5678,
                 },
                 "dateDebutOrganisation": date(2024, 9, 2),
                 "dateFinOrganisation": date(2025, 6, 27),
@@ -170,7 +170,7 @@ CANONICAL_DOCUMENT1_RESPONSE: dict = {
             "document1": {
                 "id": {
                     "anneeScolaire": "2024-2025",
-                    "etabId": 3052,
+                    "etabId": 1234,
                     "numAdmFormation": 328,
                     "numOrganisation": 1,
                 },
@@ -189,7 +189,7 @@ CANONICAL_DOCUMENT1_APPROUVE_RESPONSE: dict = {
             "document1": {
                 "id": {
                     "anneeScolaire": "2024-2025",
-                    "etabId": 3052,
+                    "etabId": 1234,
                     "numAdmFormation": 328,
                     "numOrganisation": 1,
                 },
@@ -249,7 +249,7 @@ CANONICAL_DOCUMENT2_RESPONSE: dict = {
             "document2": {
                 "id": {
                     "anneeScolaire": "2024-2025",
-                    "etabId": 3052,
+                    "etabId": 1234,
                     "numAdmFormation": 328,
                     "numOrganisation": 1,
                 },
@@ -298,7 +298,7 @@ CANONICAL_DOCUMENT3_RESPONSE: dict = {
             "document3": {
                 "id": {
                     "anneeScolaire": "2024-2025",
-                    "etabId": 3052,
+                    "etabId": 1234,
                     "numAdmFormation": 328,
                     "numOrganisation": 1,
                 },

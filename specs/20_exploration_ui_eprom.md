@@ -1,7 +1,7 @@
 # Exploration de l'application EPROM Web (2.12.0) — confrontation UI ↔ specs
 
 > Session 9 (2026-06-10) — exploration **en lecture seule** de l'application de production
-> (`enseignement.cfwb.be/EPROM_WEB`, compte collectif école EICA Auvelais, année 2024-2025,
+> (`enseignement.cfwb.be/EPROM_WEB`, compte collectif d'un établissement, année 2024-2025,
 > formation témoin : 157 « ESS - Méthodes de travail », code `971111U21D2`, organisation n° 1).
 > Objectif : valider les déductions des specs 01-19 contre la réalité de l'interface.
 
@@ -68,19 +68,19 @@ Trois onglets : **POPULATIONS | Intervention Extérieure | REGROUPEMENT DES ACTI
 | UI (n° de colonne 8684) | Sémantique (8684/9593) | Champ Doc 1 |
 |---|---|---|
 | Année Études (1) | préremplie | `coAnnEtude` |
-| **Elèves A (2)** | réguliers ≥ 18 ans | — |
-| EHR (3) | inscrits via CEFA *(libellé UI « EHR »)* | — |
+| **Elèves A (2)** | réguliers ≥ 18 ans | `nbEleveA` |
+| EHR (3) | inscrits via CEFA *(libellé UI « EHR »)* | `nbEleveEhr` |
 | Elèves FSE HPI (4) / FSE PI (4') | plus demandées | `nbEleveFse`/`nbElevePi` (obsolètes) |
-| **Elèves B (5)** | réguliers < 18 ans non soumis à l'obligation scolaire t.p. | — |
-| Total de 2 à 5 (6) | comptés 1 fois (auto) | — |
+| **Elèves B (5)** | réguliers < 18 ans non soumis à l'obligation scolaire t.p. | `nbEleveB` |
+| Total de 2 à 5 (6) | comptés 1 fois (auto) | `nbEleveTot2a5` |
 | Demandeur Emploi (7) | exemptés DI FOREM/ACTIRIS/VDAB/Arbeitsamt | `nbEleveDem` |
-| **Minimexés (7')** | exemptés RIS/ERIS | — |
+| **Minimexés (7')** | exemptés RIS/ERIS | `nbEleveMin` |
 | Autres exemptés (7'') | autres motifs | `nbEleveExm` |
-| Elèves comptés plusieurs fois (8) | déjà dans un col. 6 ailleurs | — |
-| Total de 6 + 8 (9) | total inscriptions (auto) | — |
+| Elèves comptés plusieurs fois (8) | déjà dans un col. 6 ailleurs | `nbElevePl` |
+| Total de 6 + 8 (9) | total inscriptions (auto) | `nbEleveTot6et8` |
 | FSE HPI (10) / FSE PI (10') | plus demandées | obsolètes |
-| Nbre Total Homme (11) / Femme (11') | ventilation par sexe | — |
-| *(dernière colonne)* | **« Validé »** | statut de validation de la ligne |
+| Nbre Total Homme (11) / Femme (11') | ventilation par sexe | `nbEleveTotHom` / `nbEleveTotFem` |
+| *(dernière colonne)* | **« Validé »** | `swAppPopD1` : cochée par `ApprouverDocument1`, qui laisse `swAppD1` à faux (observé en production, 2026-09-18) |
 
 → Les « **colonnes A et B** » des circulaires DI = **« Elèves A » (col 2) et « Elèves B » (col 5)** :
 le forfait DI doit être cohérent avec ces comptages de réguliers. (À reporter dans le mapping des
@@ -130,11 +130,21 @@ Trois compteurs en tête (le mécanisme des plafonds `1574`/`1575`/`1576` rendu 
 **Périodes réelles organiques** (20,00) ; **Périodes prises en interventions extérieures** (0,00) ;
 **Périodes déjà attribuées** (20,00).
 
+Le compteur « Périodes déjà attribuées » ne compte pas les lignes portant un `coDispo` : il affiche
+« 40,00 » pour six lignes totalisant 72 (observé en production, 2026-09-22), comme le total
+contrôlé par `1574` (spec 05).
+
 Liste des activités : `N°Activité | Catégorie | Activité d'enseignement | Année Études |
-Périodes Doc 8 | Pér. prévues doc2 | Pér. réelles doc2` — mapping 1:1 avec `Doc3ActiviteDetailCT`
-(valeurs affichées en décimal « 48,00 » → confirme la nature `float` malgré le XSD `int`, cf.
-divergence spec 05). Détail d'une activité : `N°Attribution | Enseignant | Code dispo | Statut |
+Périodes Doc 8 | Pér. prévues doc2 | Pér. réelles doc2` - mapping 1:1 avec `Doc3ActiviteDetailCT`
+(valeurs affichées en décimal « 48,00 » : l'écran formate des entiers avec décimales ; une lecture
+de 123 organisations (765 attributions) n'a trouvé aucune décimale sur les champs `xs:int`, cf.
+spec 05). Détail d'une activité : `N°Attribution | Enseignant | Code dispo | Statut |
 Périodes attribuées | Suppr.` = `Doc3EnseignantDetailCT`.
+
+### 1.7. Donnée affichée qu'aucun service ne rend
+
+L'écran affiche pour une UE une **« Date AS définitive »** qu'aucun service web ne rend : aucun
+champ de ce nom dans les XSD (observé en production, 2026-09-19).
 
 ## 2. ⭐ Référentiels extraits de l'UI (listes déroulantes du Doc 3)
 
@@ -150,10 +160,15 @@ Périodes attribuées | Suppr.` = `Doc3EnseignantDetailCT`.
 | X | E**X**pertise pédagogique et technique |
 | T | **T**emporaire |
 
-*(Correspondance lettre↔libellé déduite des initiales — ordre UI : ACS, ACS DP, Déf. Accessoire,
-Définitif, Expert, eXpertise, Temporaire ; à figer après un Lire SOAP de contrôle.)*
+*(Correspondance lettre↔libellé déduite des initiales, ordre UI : ACS, ACS DP, Déf. Accessoire,
+Définitif, Expert, eXpertise, Temporaire. Point fermé pour `T`, `D` et `E`, confirmés comme
+Temporaire, Définitif et Expert (mesuré le 2026-09-19 sur 679 lignes de trois années) ; `A`, `C`,
+`P` et `X` non observés, leur correspondance reste déduite des initiales. Voir spec 05.)*
 
-### 2.2. `coDispo` (60 codes + vide) — libellés officiels
+### 2.2. `coDispo` (58 codes distincts + vide) - libellés officiels
+
+La liste relevée compte 58 codes distincts : `33` y apparaît deux fois, et `32` et `45` de la table
+du manuel (60 codes, spec 05) n'y figurent pas. Les libellés manquants ne sont pas relevés.
 
 `BE` Bénévolat · `02` Dispo retrait emploi intérêt service · `03` Dispo mesure disciplinaire ·
 `04`/`11` Dispo mission spéciale gvt/orga inter. · `05` Dispo maladie (même traitement) ·
@@ -202,13 +217,13 @@ Définitif, Expert, eXpertise, Temporaire ; à figer après un Lire SOAP de cont
   avant de lancer.
 - Les pages contiennent des données personnelles (matricules/noms enseignants, liste
   `lstEnseignant`) → n'extraire que des **structures** (en-têtes, options de référentiels).
-- Étabissement affiché « 3052 - 9017001 » = matricule EPS - matricule FASE ; implantation
-  « 6050 - 0 - adresse ».
+- Établissement affiché sous la forme « 1234 - 9999999 » = matricule EPS - matricule FASE ;
+  implantation « 5678 - 0 - adresse » (valeurs fictives, données ici pour la forme).
 
 ## 4. Points restants
 
-- Confirmer le mapping lettre↔libellé de `teStatut` par un appel SOAP `LireDocument3` (les lettres
-  ne sont pas visibles dans l'UI, seulement les libellés).
+- ~~Confirmer le mapping lettre↔libellé de `teStatut` par un appel SOAP `LireDocument3`~~ : fermé
+  pour `T`, `D`, `E` (2026-09-19, 679 lignes) ; `A`, `C`, `P`, `X` jamais observés (§2.1).
 - Ligne 97 « PERIODES S… » : libellé tronqué à l'écran (vraisemblablement « périodes
   supplémentaires », catégorie `PeSu`) — à confirmer.
 - Tester une organisation **avec** intervention extérieure (colonne IE = `I` dans la liste) pour

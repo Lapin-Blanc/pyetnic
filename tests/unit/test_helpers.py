@@ -137,14 +137,14 @@ class TestOrganisationRequestId:
     def test_produces_4_field_dict(self):
         org_id = OrganisationId(
             anneeScolaire="2024-2025",
-            etabId=3052,
+            etabId=1234,
             numAdmFormation=455,
             numOrganisation=1,
         )
         result = organisation_request_id(org_id)
         assert result == {
             'anneeScolaire': '2024-2025',
-            'etabId': 3052,
+            'etabId': 1234,
             'numAdmFormation': 455,
             'numOrganisation': 1,
         }
@@ -153,10 +153,10 @@ class TestOrganisationRequestId:
         """The critical business rule: implId must NOT be in the output."""
         org_id = OrganisationId(
             anneeScolaire="2024-2025",
-            etabId=3052,
+            etabId=1234,
             numAdmFormation=455,
             numOrganisation=1,
-            implId=6050,
+            implId=5678,
         )
         result = organisation_request_id(org_id)
         assert 'implId' not in result
@@ -165,10 +165,10 @@ class TestOrganisationRequestId:
         """Guard against accidental additions to the output."""
         org_id = OrganisationId(
             anneeScolaire="2024-2025",
-            etabId=3052,
+            etabId=1234,
             numAdmFormation=455,
             numOrganisation=1,
-            implId=6050,
+            implId=5678,
         )
         result = organisation_request_id(org_id)
         assert len(result) == 4

@@ -7,7 +7,7 @@
 It is used by schools and school management software to interact programmatically with the official ETNIC back-office: listing offered formations, creating/updating a given school-year "organisation" of a formation, filling in the three administrative documents (Document 1 — population, Document 2 — activity periods and external interventions, Document 3 — teacher assignments), and — through SEPS — searching for and registering students and their enrolments.
 
 - Repository: https://github.com/Lapin-Blanc/pyetnic
-- Author: Fabien Toune (fabien.toune@eica.be)
+- Author: Fabien Toune (https://github.com/Lapin-Blanc)
 - Python ≥ 3.10 (CI matrix 3.10–3.13; development on 3.12+)
 
 ## ETNIC Services Coverage
@@ -109,8 +109,9 @@ Doc A  creer_organisation                     -> "Encodé école"
 Doc 1  modifier_document_1 (population), then approuver_document_1 -> swAppPopD1 = True
        the approval must carry back the population as read (error 20104 otherwise)
 
-Doc 2  exists once the Doc 1 population is validated (lire_document_2 -> None before)
-       modifier_document_2: the school's work ends here, status "Encodé école"
+Doc 2  exists once the Doc 1 population is validated (error 20103 before that)
+       modifier_document_2: the school's work ends here; its first write sets
+       the status to "Encodé école" (tested on TQ, 2026-11-10)
        the administration approves Doc 1 and Doc 2 together (swAppD1 + swAppD2);
        later writes are refused (error 1530)
 
@@ -121,7 +122,7 @@ Doc 3  reachable once Doc A and Doc 2 are approved (error 20102 otherwise)
 Notes:
 
 - There is no `ApprouverOrganisation` operation on the school side — approval is the inspection's responsibility.
-- In the test environment (tq), created organisations stay in "Encodé école" until manual inspection action, so end-to-end Doc flows cannot be exercised there without out-of-band state changes.
+- In the test environment (tq), created organisations stay in "Encodé école" until manual inspection action, so their documents cannot be reached. Organisations of past school years whose Doc A is already approved in the test data can be used instead: on them, Doc 1 encoding and validation and Doc 2 writes work (tested on TQ, 2026-11-10).
 
 ### SEPS: enrolling a student
 
@@ -153,7 +154,8 @@ All services build the request id with `organisation_request_id()` (`services/_h
 
 ### Document accessibility is workflow-gated
 
-- Doc 1/2/3 inaccessible while organisation is "Encodé école".
+- Doc 1/2/3 inaccessible while organisation is "Encodé école" (Doc 1: error 20101).
+- Doc 2 inaccessible (error 20103) until the Doc 1 population is validated (`swAppPopD1`).
 - Doc 3 inaccessible (error 20102) unless Doc A (the organisation) and Doc 2 are approved.
 - `_parse_*_response` methods must guard against `response=None` in the serialized SOAP body and return `None` when the document cannot be read.
 
@@ -183,7 +185,7 @@ High-level entity map — refer to `pyetnic/services/models.py` for the authorit
 OrganisationApercu     ← returned by lister_formations() (OrganisationApercuCT)
     id, dateDebut, dateFin
     statutDocumentOrganisation        (StatutDocument | None)
-    statutDocumentPopulationPeriodes  (StatutDocument | None) — Doc 1
+    statutDocumentPopulationPeriodes  (StatutDocument | None) - Doc 1 and Doc 2 together
     statutDocumentDroitsInscription   (StatutDocument | None)
     statutDocumentAttributions        (StatutDocument | None) — Doc 3
 
@@ -208,9 +210,12 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 
 | Code | Meaning |
 |---|---|
-| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. |
+| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. Lines carrying a `coDispo` do not count toward the total (observed in production, 2026-09). The `$1` of the message announced 72,00 for 80 periods sent without `coDispo` (observed once, 2026-09-22, unexplained). |
+| 20101 | `LireDocument1` before the Doc A is approved. Server text: « Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant » (tested on TQ, 2026-11-10). Not mapped in `exceptions.py`: `None` in permissive mode, a plain `EtnicBusinessError` under `strict_errors()`. |
 | 20102 | Document 3 inaccessible until Doc A (the organisation) and Doc 2 are approved. Server text: « Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3" ». |
+| 20103 | `LireDocument2` before the Doc 1 population is validated. Server text: « Le "Doc 1" doit être approuvé pour pouvoir accéder au document suivant »; the school's validation (`swAppPopD1`) is enough, `swAppD1` may still be false (tested on TQ, 2026-11-10). Not mapped in `exceptions.py`: `None` in permissive mode, a plain `EtnicBusinessError` under `strict_errors()`. |
 | 20104 | Doc 1 approval refused: the population sent differs from the stored one, or none was sent. Send back the lines just read. |
+| 20108 | Doc 3: « Le numéro de matricule d'enseignement n°$1 est incorrect ». Also returned for a well-formed staff number when the teacher is not (yet) in the EPROM teacher referential, which is fed outside these services; the same payload passes once the referential is updated (observed in production: refused 2026-09-21, accepted 2026-09-22). A write refused with 20108 leaves nothing behind (observed twice on blank documents). |
 | 30401 | NISS mutation — an old NISS has been replaced by a new one. Raised as `NissMutationError(ancien_niss, nouveau_niss)` from SEPS `rechercher_etudiants`. |
 | SECU-0104 | SEPS call in dev (`tq`) with a prod certificate — the prod X509 is not registered in the TQ environment. SEPS is prod-only. |
 
@@ -246,7 +251,8 @@ Config.PASSWORD = "my_pass"
   environment: it runs in production only (see `SECU-0104`).
 - Organisations created there stay "Encodé école": documents 1, 2 and 3 cannot be reached
   on a fresh organisation. Past school years with approved organisations are the only way to
-  exercise the document readers.
+  exercise the documents: on 2025-2026 organisations whose Doc A is approved, Doc 1 encoding
+  and validation and Doc 2 writes work (tested 2026-11-10). A Doc 1 validation cannot be undone.
 - To settle an undocumented wire value, probe empirically: create an organisation on TQ,
   read it back, then delete it. Error `30004` and the letter codes of the external
   intervention types were settled this way.
