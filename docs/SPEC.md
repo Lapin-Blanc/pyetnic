@@ -122,7 +122,7 @@ Doc 3  reachable once Doc A and Doc 2 are approved (error 20102 otherwise)
 Notes:
 
 - There is no `ApprouverOrganisation` operation on the school side — approval is the inspection's responsibility.
-- In the test environment (tq), created organisations stay in "Encodé école" until manual inspection action, so end-to-end Doc flows cannot be exercised there without out-of-band state changes.
+- In the test environment (tq), created organisations stay in "Encodé école" until manual inspection action, so their documents cannot be reached. Organisations of past school years whose Doc A is already approved in the test data can be used instead: on them, Doc 1 encoding and validation and Doc 2 writes work (tested on TQ, 2026-11-10).
 
 ### SEPS: enrolling a student
 
@@ -251,7 +251,8 @@ Config.PASSWORD = "my_pass"
   environment: it runs in production only (see `SECU-0104`).
 - Organisations created there stay "Encodé école": documents 1, 2 and 3 cannot be reached
   on a fresh organisation. Past school years with approved organisations are the only way to
-  exercise the document readers.
+  exercise the documents: on 2025-2026 organisations whose Doc A is approved, Doc 1 encoding
+  and validation and Doc 2 writes work (tested 2026-11-10). A Doc 1 validation cannot be undone.
 - To settle an undocumented wire value, probe empirically: create an organisation on TQ,
   read it back, then delete it. Error `30004` and the letter codes of the external
   intervention types were settled this way.
