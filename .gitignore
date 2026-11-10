@@ -137,3 +137,7 @@ dmypy.json
 /*.xlsx
 /liste_*
 /scratch_*
+
+# The SEPS user manual shows an unmasked NISS in one of its examples: it stays
+# on the developer's disk, out of the public repository.
+/documentation/SIEL_SEPS_*.pdf
