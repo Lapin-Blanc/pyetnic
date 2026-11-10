@@ -1,7 +1,7 @@
 # Exploration de l'application EPROM Web (2.12.0) — confrontation UI ↔ specs
 
 > Session 9 (2026-06-10) — exploration **en lecture seule** de l'application de production
-> (`enseignement.cfwb.be/EPROM_WEB`, compte collectif école EICA Auvelais, année 2024-2025,
+> (`enseignement.cfwb.be/EPROM_WEB`, compte collectif d'un établissement, année 2024-2025,
 > formation témoin : 157 « ESS - Méthodes de travail », code `971111U21D2`, organisation n° 1).
 > Objectif : valider les déductions des specs 01-19 contre la réalité de l'interface.
 
@@ -217,8 +217,8 @@ du manuel (60 codes, spec 05) n'y figurent pas. Les libellés manquants ne sont 
   avant de lancer.
 - Les pages contiennent des données personnelles (matricules/noms enseignants, liste
   `lstEnseignant`) → n'extraire que des **structures** (en-têtes, options de référentiels).
-- Étabissement affiché « 3052 - 9017001 » = matricule EPS - matricule FASE ; implantation
-  « 6050 - 0 - adresse ».
+- Établissement affiché sous la forme « 1234 - 9999999 » = matricule EPS - matricule FASE ;
+  implantation « 5678 - 0 - adresse » (valeurs fictives, données ici pour la forme).
 
 ## 4. Points restants
 

@@ -143,7 +143,7 @@ from pyetnic.eprom import modifier_organisation, supprimer_organisation
 
 org_id = OrganisationId(
     anneeScolaire="2024-2025",
-    etabId=3052,
+    etabId=1234,
     numAdmFormation=455,
     numOrganisation=1,
 )
@@ -154,8 +154,8 @@ org = lire_organisation(org_id)
 # Créer (numOrganisation attribué par le serveur)
 org = creer_organisation(
     annee_scolaire="2025-2026",
-    etab_id=3052,
-    impl_id=6050,
+    etab_id=1234,
+    impl_id=5678,
     num_adm_formation=455,
     date_debut=date(2025, 9, 15),
     date_fin=date(2026, 6, 26),
@@ -306,8 +306,8 @@ for i in inscriptions:
 # Enregistrement d'une nouvelle inscription
 data = InscriptionInputDataSave(
     cfNum="12345678-01",
-    idEtab=3052,
-    idImplantation=6050,
+    idEtab=1234,
+    idImplantation=5678,
     codePostalLieuCours="4000",
     inscription=InscriptionInputSave(
         dateInscription="2024-09-15",
@@ -353,7 +353,7 @@ from pyetnic.eprom import OrganisationId
 
 org_id = OrganisationId(
     anneeScolaire="2024-2025",  # ex. "2024-2025"
-    etabId=3052,                # identifiant établissement
+    etabId=1234,                # identifiant établissement
     numAdmFormation=455,        # numéro administratif de la formation
     numOrganisation=1,          # numéro d'organisation (attribué par le serveur à la création)
     # implId : présent dans les réponses serveur, NE PAS inclure dans les requêtes

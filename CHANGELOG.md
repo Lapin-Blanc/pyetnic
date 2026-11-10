@@ -9,6 +9,30 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation of server behaviour observed in production** (docs only, no code
+  change): Doc 3 ceiling, `coDispo` wire format, skeleton documents, error 20108,
+  organisation creation and deletion, errors 20010 and 20030, document statuses,
+  Doc 1 and Doc 2 field mappings. Each statement says how often it was observed.
+- **`lister_formations` and `lister_formations_organisables` have docstrings**
+  warning that a permissive-mode failure looks like an empty result.
+- **Examples and tests use fictitious establishment and implantation numbers**
+  (`1234` / `5678`), and the package metadata no longer carries an email address.
+
+### Fixed
+
+- **README: the Doc 1 approval example** now reads the population back and sends
+  it with `approuver_document_1`; the bare call always failed with error 20104.
+- **README: the Doc 3 example** no longer sends `coNumAttribution`, which targets
+  nothing.
+- **Docs: wrong statements corrected.** The 1574 ceiling ignores lines carrying a
+  `coDispo`; `coDispo` codes travel on two digits (`05`, not `5`);
+  `statutDocumentPopulationPeriodes` covers Doc 1 and Doc 2; the Doc 1 bounds of
+  `Dem` / `Min` / `Exm` are the pupils counted once, not `nbElevePl`; An1 / An2 are
+  civil years; `modifier_document_2` no longer claims that omitted lines are left
+  untouched (unverified).
+
 ## [0.1.0b2] - 2026-11-10
 
 ### Added

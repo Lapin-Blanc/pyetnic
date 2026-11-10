@@ -62,7 +62,7 @@ def _mock_doc2_response(num_adm: int = 328, num_org: int = 1, activites: list | 
                 "document2": {
                     "id": {
                         "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": Config.ETAB_ID or 3052,
+                        "etabId": Config.ETAB_ID or 1234,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },
@@ -93,7 +93,7 @@ def service():
 def test_lire_document2_mock(service, monkeypatch):
     """Vérifie le parsing de la réponse LireDocument2."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -116,7 +116,7 @@ def test_lire_document2_mock(service, monkeypatch):
 def test_lire_document2_mock_reponse_vide(service, monkeypatch):
     """Vérifie que lire_document_2 retourne None si la réponse est vide."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -130,7 +130,7 @@ def test_lire_document2_mock_reponse_vide(service, monkeypatch):
 def test_lire_document2_mock_sans_activites(service, monkeypatch):
     """Vérifie le parsing quand activiteEnseignementDetail est absent."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     response = {
@@ -138,7 +138,7 @@ def test_lire_document2_mock_sans_activites(service, monkeypatch):
             "success": True,
             "response": {
                 "document2": {
-                    "id": {"anneeScolaire": "2023-2024", "etabId": 3052,
+                    "id": {"anneeScolaire": "2023-2024", "etabId": 1234,
                            "numAdmFormation": 328, "numOrganisation": 1},
                     "activiteEnseignementDetail": None,
                     "interventionExterieureListe": None,
@@ -160,7 +160,7 @@ def test_lire_document2_mock_sans_activites(service, monkeypatch):
 def test_modifier_document2_mock(service, monkeypatch):
     """Vérifie que modifier_document_2 retourne le document mis à jour."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     activites_modifiees = [

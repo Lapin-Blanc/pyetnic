@@ -25,7 +25,7 @@ from pyetnic.eprom import (
 def _org_id() -> OrganisationId:
     return OrganisationId(
         anneeScolaire="2024-2025",
-        etabId=3052,
+        etabId=1234,
         numAdmFormation=455,
         numOrganisation=1,
     )
@@ -196,7 +196,7 @@ def test_lister_formations_single_formation_single_org(mock_soap_call):
                     # Single organisation as dict
                     'organisation': {
                         'numOrganisation': 1,
-                        'implId': 6050,
+                        'implId': 5678,
                         'dateDebutOrganisation': date(2024, 9, 2),
                         'dateFinOrganisation': date(2025, 6, 27),
                         'statutDocumentOrganisation': None,

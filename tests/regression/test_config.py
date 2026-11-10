@@ -24,19 +24,19 @@ def clean_config(monkeypatch):
 
 def test_etab_id_returns_int_from_env(monkeypatch):
     """Config.ETAB_ID must return an int when set via env var."""
-    monkeypatch.setenv("DEFAULT_ETABID", "3052")
+    monkeypatch.setenv("DEFAULT_ETABID", "1234")
     Config._reset()
     result = Config.ETAB_ID
-    assert result == 3052
+    assert result == 1234
     assert isinstance(result, int)
 
 
 def test_impl_id_returns_int_from_env(monkeypatch):
     """Config.IMPL_ID must return an int when set via env var."""
-    monkeypatch.setenv("DEFAULT_IMPLID", "6050")
+    monkeypatch.setenv("DEFAULT_IMPLID", "5678")
     Config._reset()
     result = Config.IMPL_ID
-    assert result == 6050
+    assert result == 5678
     assert isinstance(result, int)
 
 

@@ -7,7 +7,7 @@
 It is used by schools and school management software to interact programmatically with the official ETNIC back-office: listing offered formations, creating/updating a given school-year "organisation" of a formation, filling in the three administrative documents (Document 1 — population, Document 2 — activity periods and external interventions, Document 3 — teacher assignments), and — through SEPS — searching for and registering students and their enrolments.
 
 - Repository: https://github.com/Lapin-Blanc/pyetnic
-- Author: Fabien Toune (fabien.toune@eica.be)
+- Author: Fabien Toune (https://github.com/Lapin-Blanc)
 - Python ≥ 3.10 (CI matrix 3.10–3.13; development on 3.12+)
 
 ## ETNIC Services Coverage
