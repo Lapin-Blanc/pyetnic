@@ -130,10 +130,15 @@ Trois compteurs en tête (le mécanisme des plafonds `1574`/`1575`/`1576` rendu 
 **Périodes réelles organiques** (20,00) ; **Périodes prises en interventions extérieures** (0,00) ;
 **Périodes déjà attribuées** (20,00).
 
+Le compteur « Périodes déjà attribuées » ne compte pas les lignes portant un `coDispo` : il affiche
+« 40,00 » pour six lignes totalisant 72 (observé en production, 2026-09-22), comme le total
+contrôlé par `1574` (spec 05).
+
 Liste des activités : `N°Activité | Catégorie | Activité d'enseignement | Année Études |
-Périodes Doc 8 | Pér. prévues doc2 | Pér. réelles doc2` — mapping 1:1 avec `Doc3ActiviteDetailCT`
-(valeurs affichées en décimal « 48,00 » → confirme la nature `float` malgré le XSD `int`, cf.
-divergence spec 05). Détail d'une activité : `N°Attribution | Enseignant | Code dispo | Statut |
+Périodes Doc 8 | Pér. prévues doc2 | Pér. réelles doc2` - mapping 1:1 avec `Doc3ActiviteDetailCT`
+(valeurs affichées en décimal « 48,00 » : l'écran formate des entiers avec décimales ; une lecture
+de 123 organisations (765 attributions) n'a trouvé aucune décimale sur les champs `xs:int`, cf.
+spec 05). Détail d'une activité : `N°Attribution | Enseignant | Code dispo | Statut |
 Périodes attribuées | Suppr.` = `Doc3EnseignantDetailCT`.
 
 ## 2. ⭐ Référentiels extraits de l'UI (listes déroulantes du Doc 3)
@@ -150,10 +155,15 @@ Périodes attribuées | Suppr.` = `Doc3EnseignantDetailCT`.
 | X | E**X**pertise pédagogique et technique |
 | T | **T**emporaire |
 
-*(Correspondance lettre↔libellé déduite des initiales — ordre UI : ACS, ACS DP, Déf. Accessoire,
-Définitif, Expert, eXpertise, Temporaire ; à figer après un Lire SOAP de contrôle.)*
+*(Correspondance lettre↔libellé déduite des initiales, ordre UI : ACS, ACS DP, Déf. Accessoire,
+Définitif, Expert, eXpertise, Temporaire. Point fermé pour `T`, `D` et `E`, confirmés comme
+Temporaire, Définitif et Expert (mesuré le 2026-09-19 sur 679 lignes de trois années) ; `A`, `C`,
+`P` et `X` non observés, leur correspondance reste déduite des initiales. Voir spec 05.)*
 
-### 2.2. `coDispo` (60 codes + vide) — libellés officiels
+### 2.2. `coDispo` (58 codes distincts + vide) - libellés officiels
+
+La liste relevée compte 58 codes distincts : `33` y apparaît deux fois, et `32` et `45` de la table
+du manuel (60 codes, spec 05) n'y figurent pas. Les libellés manquants ne sont pas relevés.
 
 `BE` Bénévolat · `02` Dispo retrait emploi intérêt service · `03` Dispo mesure disciplinaire ·
 `04`/`11` Dispo mission spéciale gvt/orga inter. · `05` Dispo maladie (même traitement) ·
@@ -207,8 +217,8 @@ Définitif, Expert, eXpertise, Temporaire ; à figer après un Lire SOAP de cont
 
 ## 4. Points restants
 
-- Confirmer le mapping lettre↔libellé de `teStatut` par un appel SOAP `LireDocument3` (les lettres
-  ne sont pas visibles dans l'UI, seulement les libellés).
+- ~~Confirmer le mapping lettre↔libellé de `teStatut` par un appel SOAP `LireDocument3`~~ : fermé
+  pour `T`, `D`, `E` (2026-09-19, 679 lignes) ; `A`, `C`, `P`, `X` jamais observés (§2.1).
 - Ligne 97 « PERIODES S… » : libellé tronqué à l'écran (vraisemblablement « périodes
   supplémentaires », catégorie `PeSu`) — à confirmer.
 - Tester une organisation **avec** intervention extérieure (colonne IE = `I` dans la liste) pour

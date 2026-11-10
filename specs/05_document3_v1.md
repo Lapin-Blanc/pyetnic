@@ -88,6 +88,10 @@ Document 3 (1 organisation de formation)
 > `nbPeriodesPrevuesDoc2` et `nbPeriodesReellesDoc2` (Document 2) sont rapatriées depuis d'autres
 > documents et servent de plafond de contrôle pour les attributions (voir erreurs `1538`, `1574`-`1576`).
 
+> **Branches rendues** (observé en production, septembre 2026) : le Doc 3 rend toutes les branches
+> du Doc 2, y compris celles à 0 période et les lignes 91 à 99. Les lignes 95 (`ExPT`) et 96
+> (`SEtu`) acceptent des attributions.
+
 ---
 
 ## Bloc Retour — AbstractExternalResponseType (Common_v1.xsd)
@@ -155,6 +159,12 @@ FormationDocument3CT
     └── activite : Doc3ActiviteDetailCT [0..*]
 ```
 
+> **Doc 3 jamais encodé** (observé en production, 2025-2026) : un Doc 3 accessible mais jamais
+> écrit se lit comme un squelette : une ligne par branche, `coNumAttribution` 1, matricule et
+> statut vides, 0 période attribuée. `statutDocumentAttributions` (spec 01) reste absent jusqu'à
+> la première écriture, puis passe à « Encodé école ». L'existence du document ne dit donc pas
+> qu'il a été encodé.
+
 ### Doc3ActiviteDetailCT (activité d'enseignement — réponse)
 
 | Champ | Type (XSD) | Card. (XSD) | PDF | Description |
@@ -178,14 +188,18 @@ FormationDocument3CT
 > **aucune décimale** dans le flux ; le « 24.0 » ne vient que de l'exemple du manuel. zeep valide
 > contre le XSD embarqué (`xs:int`) : une décimale lèverait `ValueError` dans `call_service`, avant toute
 > dataclass. Reste ouvert le seul écart d'annotation des modèles (`float` côté pyetnic, `int` côté XSD).
+>
+> Exemple (observé une fois, 2024-2025) : une branche cofinancée déposée à 4,5 périodes sur ses
+> lignes sans `coDispo`, pour un réel de 4, a été acceptée ; `nbPeriodesReellesDoc2` étant entier,
+> une part organique de 4,5 s'y lit 4. Aucune règle n'en est tirée.
 
 ### Doc3EnseignantDetailCT (attribution d'enseignant — réponse, 11 champs)
 
 | Champ | Type (XSD) | Card. | Description |
 |---|---|---|---|
 | `coNumAttribution` | int | [0..1] | Numéro de l'attribution d'enseignant |
-| `noMatEns` | string | [0..1] | Matricule de l'enseignant |
-| `teNomEns` | string | [0..1] | Nom de l'enseignant |
+| `noMatEns` | string | [0..1] | Matricule de l'enseignant : le matricule enseignant FWB (celui du listing de paie), distinct du NISS (observé sur 679 lignes appariées) |
+| `teNomEns` | string | [0..1] | Nom de l'enseignant ; pas toujours complet : un nom composé a été vu tronqué à son premier élément (observé une fois, 2026-09) |
 | `tePrenomEns` | string | [0..1] | Prénom de l'enseignant |
 | `teAbrEns` | string | [0..1] | Code abréviation de l'enseignant |
 | `teEnseignant` | string | [0..1] | Concaténation nom + prénom + matricule |
@@ -346,16 +360,19 @@ FormationDocument3ModifReqCT
 
 | Champ | Type (XSD) | Card. (XSD) | Présent PDF ? | Description |
 |---|---|---|---|---|
-| `coNumAttribution` | int | [0..1] | **NON** ⚠️ | Numéro de l'attribution (cible une attribution existante) |
-| `noMatEns` | string | [0..1] | oui | Matricule de l'enseignant |
+| `coNumAttribution` | int | [0..1] | **NON** ⚠️ | Numéro de l'attribution (facultatif, ne cible rien : voir ci-dessous) |
+| `noMatEns` | string | [0..1] | oui | Matricule enseignant FWB (celui du listing de paie), distinct du NISS |
 | `coDispo` | string | [0..1] | oui | Code disponibilité (table ci-dessous) |
 | `teStatut` | string | [0..1] | oui | Code statut (table ci-dessous) |
 | `nbPeriodesAttribuees` | float | [0..1] | oui | Nombre de périodes attribuées |
 
 > ⚠️ **Élément présent uniquement dans le XSD** : `coNumAttribution` (premier élément de
 > `Doc3EnseignantDetailSaveCT` dans le XSD) est **absent de la description PDF** (§3.1.4.2), qui ne liste
-> que 4 champs. Il permet vraisemblablement de **cibler une attribution existante** pour la modifier
-> (vs en créer une nouvelle). À exposer dans le client comme paramètre optionnel.
+> que 4 champs. Il **ne cible aucune attribution** : `ModifierDocument3` remplace la liste entière de
+> chaque branche envoyée (voir « Sémantique d'écriture »). Des lignes envoyées sans
+> `coNumAttribution` sont acceptées et numérotées par le serveur (observé en production, plusieurs
+> dizaines d'écritures, 2026-09). Une première ligne envoyée avec le numéro du squelette a gardé le
+> n° 1 (observé une fois, 2026-09). Exposé dans le client comme paramètre optionnel.
 >
 > **Observé en production** : le numéro est un **compteur attribué par le serveur**, pas une position.
 > Les numéros libérés ne sont pas repris (une branche réécrite peut porter les n° 1 et 5) : un trou
@@ -368,17 +385,19 @@ FormationDocument3ModifReqCT
 ### Table des codes de disponibilité (`coDispo`)
 
 Valeurs possibles à la date du 01-05-2023 (« validé hors contrat XML » — contrôle métier, pas dans le XSD).
-La 1ʳᵉ colonne est la **valeur à transmettre** ; le libellé reprend généralement le code en préfixe.
+La 1ʳᵉ colonne est le code tel qu'il circule, **sur deux chiffres** : en production, `05`, `15` et
+`28` ont été relus, `05` et `15` écrits puis relus (2026-09-22/23). `5` sans zéro n'a jamais été
+essayé. Le libellé reprend généralement le code en préfixe.
 
 | Code | Libellé |
 |---|---|
 | `BE` | BE Bénévolat |
-| `2` | 02 Dispo retrait emploi interet service |
-| `3` | 03 Dispo mesure disciplinaire |
-| `4` | 04 Dispo mission spéciale:gvt,orga inter |
-| `5` | 05 Dispo pour maladie (même traitement) |
-| `7` | 07 Dispo convenances personnelles |
-| `9` | 09 Absence longue durée rais.familiales |
+| `02` | 02 Dispo retrait emploi interet service |
+| `03` | 03 Dispo mesure disciplinaire |
+| `04` | 04 Dispo mission spéciale:gvt,orga inter |
+| `05` | 05 Dispo pour maladie (même traitement) |
+| `07` | 07 Dispo convenances personnelles |
+| `09` | 09 Absence longue durée rais.familiales |
 | `11` | 11 Dispo mission spéciale:gvt,orga inter |
 | `12` | 12 Congé pr mission:cabinet du Roi |
 | `13` | 13 Congé pr mission:groupe politique |
@@ -433,8 +452,13 @@ La 1ʳᵉ colonne est la **valeur à transmettre** ; le libellé reprend génér
 | `98` | 98 Dispo mission spéciale(pas nb glob) |
 | `99` | 99 Dispo mission spéciale(pas nb glob) |
 
+> La table du manuel compte 60 codes. La liste déroulante de l'écran du Doc 3 en compte 58
+> distincts : `32` et `45` n'y figurent pas, et `33` y apparaît deux fois (spec 20, §2.2). Écart
+> non expliqué.
+
 > Un `coDispo` **vide** (chaîne vide) correspond à un enseignant sans disponibilité particulière
-> (situation « normale », voir l'exemple de réponse).
+> (situation « normale », voir l'exemple de réponse). Un élément `coDispo` **omis** est accepté et
+> se relit vide, c'est-à-dire sans code (observé en production, 2026-09).
 
 ### Table des codes de statut (`teStatut`)
 
@@ -449,6 +473,12 @@ Valeurs possibles à la date du 01-05-2023 (« validé hors contrat XML ») :
 | `E` | Expert |
 | `X` | Expertise pédagogique et technique |
 | `T` | Temporaire |
+
+> **Observé en production** : `T`, `D` et `E` sont confirmés comme Temporaire, Définitif et Expert
+> (mesuré le 2026-09-19 sur 679 lignes de trois années). `A`, `C`, `P` et `X` non observés : `X`
+> sur 0 des 679 lignes, et aucun des quatre parmi les 765 attributions d'un relevé de 2024-2025.
+> C'est une observation, pas une règle. Le statut appartient à la ligne, pas à la personne : une même
+> personne a été vue en `T`, `D` et `E` sur trois organisations de la même UE, la même année.
 
 ### Réponse
 
@@ -503,10 +533,10 @@ document 3 complet après modification.
 | `false` | `00999` | Erreur sql : | commun (technique) |
 | `false` | `1113` | Année scolaire invalide | validation entrée |
 | `false` | `1114` | Numéro d'établissement incorrect | validation entrée |
-| `false` | `1538` | Périodes Doc3 $1 > périodes Doc2 + IE par branche $2 | cohérence métier |
+| `false` | `1538` | Périodes Doc3 $1 > périodes Doc2 + IE par branche $2 | cohérence métier (non observé en production) |
 | `false` | `1574` | Total attributions $1 > total périodes organisées dans formation $2 | cohérence métier |
-| `false` | `1575` | Périodes CG attribuées $1 > réel CG + IE CG $2 | cohérence métier |
-| `false` | `1576` | Périodes CP attribuées $1 > réel CP + IE CP $2 | cohérence métier |
+| `false` | `1575` | Périodes CG attribuées $1 > réel CG + IE CG $2 | cohérence métier (non observé en production) |
+| `false` | `1576` | Périodes CP attribuées $1 > réel CP + IE CP $2 | cohérence métier (non observé en production) |
 | `false` | `20102` | Les « Doc A » et « Doc 2 » doivent être approuvés pour pouvoir accéder au « Doc 3 » | **workflow inter-documents** |
 | `false` | `20108` | Le numéro de matricule d'enseignement n°$1 est incorrect | validation attribution |
 | `false` | `20109` | Le code dispo d'enseignement n°$1 est incorrect | validation attribution |
@@ -554,12 +584,16 @@ population du Doc 1 validée, et l'administration approuve Doc 1 et Doc 2 ensemb
 
 Les attributions ne peuvent dépasser les périodes réellement organisées (issues du Doc 2, IE comprises) :
 
-- `1574` — la **somme des périodes attribuées** (tous enseignants) ne peut excéder le **total des
-  périodes organisées** dans la formation.
-- `1538` — par branche, les **périodes Doc 3** ne peuvent excéder **périodes Doc 2 + IE** (intervention
-  extérieure) de la branche.
-- `1575` — les périodes **CG** (Cours Généraux) attribuées ≤ réel CG + IE CG.
-- `1576` — les périodes **CP** (Cas Particuliers) attribuées ≤ réel CP + IE CP.
+- `1574` - la **somme des périodes attribuées sur les lignes sans `coDispo`** ne peut excéder le
+  **total des périodes organisées** dans la formation. Une ligne portant un `coDispo` n'entre pas
+  dans ce total (observé en production, 2026-09) : 116 périodes envoyées pour un Doc 2 de 96, dont
+  20 sur une ligne codée, ont été acceptées et relues ; les Doc 3 de 2024-2025 tombent sur leur
+  Doc 2 à la période près une fois les lignes codées retirées ; l'écran EPROM affiche « Périodes
+  déjà attribuées 40,00 » pour six lignes totalisant 72.
+- `1538` - par branche, les **périodes Doc 3** ne peuvent excéder **périodes Doc 2 + IE** (intervention
+  extérieure) de la branche (non observé en production).
+- `1575` - les périodes **CG** (Cours Généraux) attribuées ≤ réel CG + IE CG (non observé en production).
+- `1576` - les périodes **CP** (Cas Particuliers) attribuées ≤ réel CP + IE CP (non observé en production).
 
 > `CG`/`CP` renvoient à la classification des périodes (cf. `coCodePar` du Document 2 : `CG`, `CP`, `SU`).
 > Le Doc 3 **consomme** donc les périodes définies au Doc 2 ; les périodes d'intervention extérieure (IE)
@@ -569,6 +603,9 @@ Les attributions ne peuvent dépasser les périodes réellement organisées (iss
 20 périodes prévues et 60 réelles, 60 périodes attribuées passent sans `1574`. Dès que le réel est
 rempli, c'est lui qu'il faut comparer, pas le prévu.
 
+Le `$1` du message `1574` n'est pas toujours la somme envoyée : il a annoncé « 72,00 » pour 80
+périodes envoyées sans `coDispo` (observé une fois, 2026-09-22, inexpliqué).
+
 ### ⚠️ Sémantique d'écriture : `ModifierDocument3` remplace la liste de chaque branche envoyée
 
 **Pour chaque branche présente dans la requête, la liste d'enseignants envoyée remplace celle du
@@ -577,13 +614,24 @@ attributions de la branche**. Observé en production : l'envoi de la ligne d'un 
 celle du titulaire sur la même branche.
 
 - Toujours envoyer la **liste complète** de chaque branche touchée (ce qui rend une réécriture
-  idempotente : une branche renvoyée à l'identique garde son contenu, seul `tsMaj` bouge).
+  idempotente : une branche renvoyée à l'identique garde son contenu et sa numérotation, seul
+  `tsMaj` bouge ; observé le 2026-09-23 sur trois UE).
 - Les branches absentes de la requête ne sont pas touchées.
+- Une branche peut porter plusieurs lignes au même `noMatEns` (`teStatut` différents, `coDispo`
+  différents, voire triplets identiques) : le serveur les garde séparées, sans les fusionner ni les
+  refuser. Une relecture ne peut donc pas apparier sur le seul matricule (observé en production,
+  2026-09-22/23).
 - Après écriture, **relire le document entier**, pas seulement les lignes envoyées : une relecture
   limitée à ce qu'on a envoyé ne voit pas ce qu'on a effacé.
 
 ### Validations d'attribution
-- `20108` — matricule enseignant inexistant/incorrect.
+- `20108` - matricule enseignant inexistant/incorrect. Renvoyé aussi pour un matricule bien formé
+  quand l'enseignant n'est pas (encore) au référentiel enseignants d'EPROM ; transmettre son
+  document de paie ne l'y inscrit pas, et le même payload passe une fois le référentiel à jour
+  (observé en production : refusé le 2026-09-21, accepté le 2026-09-22). Ce référentiel est
+  alimenté hors de ces services. Une écriture refusée en `20108` ne laisse rien : l'organisation
+  reste vierge et le même payload peut être rejoué (observé deux fois sur des documents vierges,
+  2026-09-21/22 ; non vérifié pour `1574` ni sur un document déjà rempli).
 - `20109` — `coDispo` hors liste autorisée.
 - `20110` — `teStatut` hors liste autorisée.
 - `00011` — édition concurrente (le document a été modifié entre la lecture et l'écriture).
@@ -682,7 +730,7 @@ class EnseignantSave:
     co_dispo: str | None = None            # code disponibilité (table coDispo)
     te_statut: str | None = None           # code statut (C/P/A/D/E/X/T)
     nb_periodes_attribuees: float | None = None
-    co_num_attribution: int | None = None  # présent au XSD, absent du PDF → cible une attribution existante
+    co_num_attribution: int | None = None  # présent au XSD, absent du PDF ; ne cible rien (voir plus haut)
 
 
 @dataclass
@@ -730,8 +778,9 @@ class ActiviteResponse:
    statuts) que l'organisation (« Doc A ») et les Périodes (Doc 2) sont approuvées, sinon erreur `20102`.
 4. **Erreurs `1538`/`1574`/`1575`/`1576`** : exposer les paramètres `$1`/`$2` du message pour aider
    l'utilisateur à corriger (valeur attribuée vs plafond).
-5. **`coNumAttribution`** : exposer en optionnel pour permettre la modification ciblée d'une attribution
-   existante plutôt que la recréation.
+5. **`coNumAttribution`** : exposer en optionnel. Il ne permet pas de modifier une attribution
+   ciblée : le serveur remplace la liste de chaque branche envoyée et numérote lui-même les lignes
+   envoyées sans numéro.
 6. Tester le **mock server stateful** sur la contrainte `20102` (Doc 3 inaccessible tant que Doc A + Doc 2
    non approuvés) — cas d'intégration prioritaire.
 

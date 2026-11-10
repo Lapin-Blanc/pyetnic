@@ -208,9 +208,10 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 
 | Code | Meaning |
 |---|---|
-| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. |
+| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. Lines carrying a `coDispo` do not count toward the total (observed in production, 2026-09). The `$1` of the message announced 72,00 for 80 periods sent without `coDispo` (observed once, 2026-09-22, unexplained). |
 | 20102 | Document 3 inaccessible until Doc A (the organisation) and Doc 2 are approved. Server text: « Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3" ». |
 | 20104 | Doc 1 approval refused: the population sent differs from the stored one, or none was sent. Send back the lines just read. |
+| 20108 | Doc 3: « Le numéro de matricule d'enseignement n°$1 est incorrect ». Also returned for a well-formed staff number when the teacher is not (yet) in the EPROM teacher referential, which is fed outside these services; the same payload passes once the referential is updated (observed in production: refused 2026-09-21, accepted 2026-09-22). A write refused with 20108 leaves nothing behind (observed twice on blank documents). |
 | 30401 | NISS mutation — an old NISS has been replaced by a new one. Raised as `NissMutationError(ancien_niss, nouveau_niss)` from SEPS `rechercher_etudiants`. |
 | SECU-0104 | SEPS call in dev (`tq`) with a prod certificate — the prod X509 is not registered in the TQ environment. SEPS is prod-only. |
 

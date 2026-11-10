@@ -214,13 +214,14 @@ from pyetnic.eprom import (
 doc3 = lire_document_3(org_id)
 # doc3 est None tant que le Doc A (l'organisation) et le Doc 2 ne sont pas approuvés
 
+# La liste envoyée REMPLACE celle de la branche : envoyer toutes ses lignes.
+# coNumAttribution est facultatif et ne cible rien : le serveur numérote les lignes.
 liste_save = Doc3ActiviteListeSave(activite=[
     Doc3ActiviteDetailSave(
         coNumBranche=1,
         noAnneeEtude="1",
         enseignantListe=Doc3EnseignantListSave(enseignant=[
             Doc3EnseignantDetailSave(
-                coNumAttribution=1,
                 noMatEns="10101012345",
                 teStatut="T",
                 nbPeriodesAttribuees=52.0,
