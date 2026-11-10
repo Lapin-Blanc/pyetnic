@@ -184,8 +184,19 @@ liste_save = Doc1PopulationListSave(population=[
 ])
 doc1 = modifier_document_1(org_id, population_liste=liste_save)
 
-# Approuver
-doc1 = approuver_document_1(org_id)
+# Valider la population (case « Validé ») : le serveur compare la population envoyée
+# à celle qu'il a enregistrée, et refuse sans elle (erreur 20104). Relire, puis renvoyer.
+doc1 = lire_document_1(org_id)
+population = Doc1PopulationListSave(population=[
+    Doc1PopulationLineSave(
+        coAnnEtude=p.coAnnEtude, nbEleveA=p.nbEleveA, nbEleveEhr=p.nbEleveEhr,
+        nbEleveB=p.nbEleveB, nbEleveDem=p.nbEleveDem, nbEleveMin=p.nbEleveMin,
+        nbEleveExm=p.nbEleveExm, nbElevePl=p.nbElevePl,
+        nbEleveTotHom=p.nbEleveTotHom, nbEleveTotFem=p.nbEleveTotFem,
+    )
+    for p in doc1.populationListe.population
+])
+doc1 = approuver_document_1(org_id, population_liste=population)
 ```
 
 ### Document 2 — Périodes d'activités
@@ -358,7 +369,7 @@ org_id = OrganisationId(
 | Champ | Description |
 |---|---|
 | `statutDocumentOrganisation` | Statut de l'organisation elle-même |
-| `statutDocumentPopulationPeriodes` | Statut du Document 1 |
+| `statutDocumentPopulationPeriodes` | Statut commun du Document 1 et du Document 2 |
 | `statutDocumentDroitsInscription` | Statut du Document droits d'inscription |
 | `statutDocumentAttributions` | Statut du Document 3 |
 

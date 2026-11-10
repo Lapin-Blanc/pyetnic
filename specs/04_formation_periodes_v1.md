@@ -122,6 +122,12 @@ FormationDocument2CT
 
 > **Différence avec Document 1** : un seul switch d'approbation (`swAppD2`) au lieu de deux
 > (`swAppPopD1` + `swAppD1`). Pas d'opération ApprouverDocument2 dans ce service.
+>
+> L'administration bascule `swAppD1` et `swAppD2` ensemble, sans changer le `tsMaj` des deux
+> documents (observé une fois, 2026-09-19).
+
+> **Totaux** : les `nbTot*` comptent aussi les lignes administratives 91 à 99, pas seulement les
+> branches de cours (observé en production sur une organisation).
 
 ### Doc2ActiviteEnseignementLineCT (ligne d'activité d'enseignement — réponse)
 
@@ -132,15 +138,19 @@ FormationDocument2CT
 | `teNomBranche` | string | oui | Nom de la branche |
 | `coAnnEtude` | string | oui | Code de l'année d'étude |
 | `nbEleveC1` | int | oui | Nombre d'élèves |
-| `nbPeriodeBranche` | float | oui | Périodes prévues pour cette branche |
-| `nbPeriodePrevueAn1` | float | oui | Périodes prévues la 1ère année |
-| `nbPeriodePrevueAn2` | float | oui | Périodes prévues la 2ème année |
-| `nbPeriodeReelleAn1` | float | oui | Périodes réelles la 1ère année |
-| `nbPeriodeReelleAn2` | float | oui | Périodes réelles la 2ème année |
+| `nbPeriodeBranche` | float | oui | Périodes prévues pour cette branche (volume complet : pour une UE sur deux années scolaires, différent de An1 + An2, cf. spec 20 §1.4) |
+| `nbPeriodePrevueAn1` | float | oui | Périodes prévues la 1ʳᵉ année civile de l'année scolaire (septembre-décembre) |
+| `nbPeriodePrevueAn2` | float | oui | Périodes prévues la 2ᵉ année civile de l'année scolaire (janvier-août) |
+| `nbPeriodeReelleAn1` | float | oui | Périodes réelles la 1ʳᵉ année civile (septembre-décembre) |
+| `nbPeriodeReelleAn2` | float | oui | Périodes réelles la 2ᵉ année civile (janvier-août) |
 | `coAdmReg` | int | oui | Numéro administratif Rgp (regroupement activités) |
 | `coOrgReg` | int | oui | Numéro d'organisation Rgp |
 | `coBraReg` | int | oui | Numéro d'activité d'enseignement Rgp |
 | `coEtuReg` | string | oui | Année d'études Rgp |
+
+> **An1 / An2 = les deux années civiles** de l'année scolaire, pour les activités comme pour les
+> interventions extérieures : l'écran nomme les colonnes par l'année civile (« Prévue (16) 2024 »,
+> « Réel (19) 2025 » pour 2024-2025, spec 20 §1.4).
 
 ### Table des catégories (`coCategorie`)
 
@@ -198,8 +208,8 @@ Valeurs possibles à la date du 30-09-2024 :
 |---|---|---|---|
 | `coCodePar` | string | oui | Code du type de périodes en intervention extérieure |
 | `teLibPeriode` | string | oui | Label du type de périodes |
-| `nbPerAn1` | float | oui | Nombre de périodes pour l'année 1 |
-| `nbPerAn2` | float | oui | Nombre de périodes pour l'année 2 |
+| `nbPerAn1` | float | oui | Nombre de périodes pour la 1ʳᵉ année civile (septembre-décembre) |
+| `nbPerAn2` | float | oui | Nombre de périodes pour la 2ᵉ année civile (janvier-août) |
 
 ### Table des types de périodes d'intervention (`coCodePar`)
 

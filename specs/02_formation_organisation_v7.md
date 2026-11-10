@@ -146,6 +146,15 @@ ResponseType (abstract, extends ResponseAttributesType)
 > par le système (incrémenté automatiquement). Ce numéro est nécessaire pour les opérations
 > Lire, Modifier, Supprimer.
 
+> **Observé en production** :
+> - Les champs facultatifs omis reviennent avec les valeurs par défaut du serveur : booléens à
+>   `False`, `numOrganisation2AnneesScolaires` à `0`, `typeInterventionExterieure` à `None`
+>   (observé une fois, 2026-06-11).
+> - Une création refusée est atomique : rien ne reste en base (observé une fois, 2026-06-11).
+> - `CreerOrganisation` ne vérifie pas que la formation est encore organisable quand son dossier a
+>   été remplacé par un nouveau : l'enregistrement est accepté, le refus ne vient qu'à
+>   l'approbation (observé une fois, octobre 2026).
+
 ### Exemple de requête XML
 
 ```xml
@@ -363,6 +372,12 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 > **Note** : la réponse Supprimer ne contient **pas de bloc `response`** — uniquement
 > le bloc retour (success + messages). C'est la seule opération sans données de retour.
 
+> **Observé en production** (2026-09-30, six suppressions, année relue après chacune) :
+> `SupprimerOrganisation` accepte une organisation « Encodé école » sans document ; il ne laisse ni
+> statut ni trace : l'organisation disparaît de `ListerFormations`, et les autres organisations de
+> l'année ne bougent pas. Une organisation approuvée ou portant des documents n'a pas été essayée
+> (le manuel annonce `30003`).
+
 ### Exemple de requête XML
 
 ```xml
@@ -411,6 +426,11 @@ Structure complète du type retourné dans les réponses Créer, Lire et Modifie
 > **Champs supprimés vs ajoutés** : `eLearning` et `partiellementDistance` ont été remplacés par
 > `enseignementHybride` à la rentrée 2022-2023. Les anciens champs restent dans le type de retour
 > pour compatibilité descendante mais ne sont plus éditables via Créer/Modifier.
+
+> **Pas de dates de dixièmes** : aucun service ne porte les dates des dixièmes d'une organisation.
+> Les seules dates des XSD EPROM sont `dateDebutOrganisation`, `dateFinOrganisation`,
+> `dateStatut`, `dateFemeture` (sic) et `tsMaj`, et l'écran n'affiche aucune date de dixième (écran
+> relu le 2026-11-05).
 
 ---
 
@@ -479,7 +499,7 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 | `false` | `20027` | Switch Partiellement à distance incorrect (O/N) | Créer, Modifier |
 | `false` | `20028` | Numéro d'organisation année précédente incorrect (UE sur 2 années scolaires) | Créer, Modifier |
 | `false` | `20029` | La date de début d'organisation ne peut être supérieure ou égale à la date de fermeture de la formation | Créer, Modifier |
-| `false` | `20030` | La date de début d'organisation ne peut excéder un délai de 4 mois maximum | Créer, Modifier |
+| `false` | `20030` | La date de début d'organisation ne peut excéder un délai de 4 mois maximum (compté depuis la date de déclaration ; une date passée est acceptée, voir règle 5) | Créer, Modifier |
 | `false` | `20031` | Switch Enseignement hybride incorrect (O/N) | Créer, Modifier |
 | `false` | `20034` | Le type d'intervention x n'est plus disponible à l'encodage | Créer, Modifier |
 | `false` | `20037` | Switch réorientation 7TQ 7P incorrect (O/N) | Créer, Modifier |
@@ -507,11 +527,14 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
    n'incluent pas `implId` dans leur bloc `id` de requête. Seul Créer le requiert.
 
 2. **numOrganisation généré automatiquement** : lors de la création, le système attribue un
-   numéro d'organisation incrémental. Ce numéro est retourné dans la réponse et doit être
-   utilisé pour toutes les opérations suivantes.
+   numéro d'organisation incrémental, **dans l'ordre de déclaration**. Ce numéro est retourné
+   dans la réponse et doit être utilisé pour toutes les opérations suivantes.
 
 3. **nombreSemaineFormation calculé** : ce champ est calculé automatiquement par le système
    à partir des dates de début et fin. Il apparaît uniquement dans les réponses (pas en entrée).
+   Ce n'est pas un simple nombre de semaines : 40 a été rendu pour le 09/03/2026 → 29/01/2027
+   (46 semaines) comme pour le 08/01/2026 → 07/01/2027 (52 semaines) (deux observations en
+   production, règle inconnue).
 
 4. **Champs supprimés** : `eLearning` et `partiellementDistance` ont été supprimés depuis la
    rentrée 2022-2023 et remplacés par `enseignementHybride`. Ils restent dans
@@ -519,11 +542,17 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 
 5. **Contraintes temporelles sur les dates** :
    - Date début < date fin (code 20006)
-   - Date début ≥ date plancher de l'année scolaire (code 20010)
+   - Date début ≥ une date plancher (code 20010) : plancher non identifié. Le serveur a accepté
+     une date de début antérieure à l'année scolaire de l'enregistrement quand
+     `numOrganisation2AnneesScolaires` est renseigné (observé en production, 2026-06-11 et
+     2026-09-13 ; voir la note sous Opération 1) ; jamais testé sans ce lien.
    - Date fin ≤ date plafond de l'année scolaire (code 20011)
    - Écart max 1 an entre début et fin (code 20012)
    - Date début < date fermeture de la formation (code 20029)
-   - Date début ne peut excéder un délai de 4 mois max (code 20030)
+   - Date début ne peut excéder un délai de 4 mois max (code 20030), compté depuis la **date de
+     déclaration** : début à déclaration + 3 mois 4 jours accepté, + 4 mois 22 jours refusé, début
+     passé (3 mois avant) accepté (observé en production, 2026-06-11, trois points ; borne exacte
+     déduite, non mesurée).
 
 6. **Contrainte statut documents** (code 30003) : certaines opérations (Modifier, Supprimer)
    ne sont pas autorisées si le statut des documents associés ne le permet pas

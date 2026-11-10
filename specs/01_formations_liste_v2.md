@@ -164,9 +164,21 @@ des organisations et leurs statuts de documents.
 | `dateDebutOrganisation` | date | oui | Date début |
 | `dateFinOrganisation` | date | oui | Date fin |
 | `statutDocumentOrganisation` | StatutCT | non | Statut du document Organisation |
-| `statutDocumentPopulationPeriodes` | StatutCT | non | Statut du document Population/Périodes |
+| `statutDocumentPopulationPeriodes` | StatutCT | non | Statut commun du Document 1 (Population) et du Document 2 (Périodes), voir ci-dessous |
 | `statutDocumentDroitsInscription` | StatutCT | non | Statut du document Droits d'inscription |
 | `statutDocumentAttributions` | StatutCT | non | Statut du document Attributions (Doc 3) |
+
+> **`statutDocumentPopulationPeriodes`** (observé en production) :
+> - absent (`None` dans pyetnic) tant que rien n'est encodé ; un Doc 1 encodé seul, non validé,
+>   l'a laissé absent (observé une fois, 2026-09-18) ;
+> - « Encodé école » une fois le Doc 2 écrit, tant que `swAppD2` est faux ;
+> - « Approuvé » quand `swAppD1` et `swAppD2` sont vrais.
+>
+> Ce qui déclenche exactement « Encodé école » (la validation de la population ou l'écriture du
+> Doc 2) n'est pas tranché.
+>
+> **`dateStatut`** date l'entrée dans le statut, pas la dernière modification ; c'est le `tsMaj` de
+> chaque document qui date la dernière écriture (observé une fois, 2026-09-18).
 
 ### Exemple de réponse XML (succès, simplifié)
 

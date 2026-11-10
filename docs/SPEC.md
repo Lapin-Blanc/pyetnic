@@ -183,7 +183,7 @@ High-level entity map — refer to `pyetnic/services/models.py` for the authorit
 OrganisationApercu     ← returned by lister_formations() (OrganisationApercuCT)
     id, dateDebut, dateFin
     statutDocumentOrganisation        (StatutDocument | None)
-    statutDocumentPopulationPeriodes  (StatutDocument | None) — Doc 1
+    statutDocumentPopulationPeriodes  (StatutDocument | None) - Doc 1 and Doc 2 together
     statutDocumentDroitsInscription   (StatutDocument | None)
     statutDocumentAttributions        (StatutDocument | None) — Doc 3
 

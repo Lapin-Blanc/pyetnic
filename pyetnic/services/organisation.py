@@ -121,6 +121,13 @@ class OrganisationService:
         it; it cannot be chosen. Two declarations run in parallel therefore
         cannot know which number each will get. Read the organisation back
         after creating it rather than trusting the response alone.
+
+        ``numOrganisation2AnneesScolaires`` takes the previous year's
+        ``numOrganisation`` for a unit spanning two school years: the second
+        record carries the same full dates and receives a new number. Error
+        20030 bounds the start date from the declaration date (start at
+        declaration + 3 months 4 days accepted, + 4 months 22 days refused, a
+        past start accepted; observed in production, 2026-06-11).
         """
         logger.info("Création d'une organisation pour la formation %s", num_adm_formation)
         request_data = {
@@ -181,6 +188,12 @@ class OrganisationService:
 
         Retourne True si la suppression a réussi, False sinon.
         En mode strict, lève une EtnicBusinessError sur échec.
+
+        Observed in production (2026-09-30, six deletions): an organisation
+        "Encodé école" without documents is deleted without leaving any status
+        or trace; it disappears from :func:`lister_formations` and the other
+        organisations of the year are left unchanged. Approved or documented
+        organisations were not tried.
         """
         logger.info("Suppression de l'organisation %s", organisation_id)
         result = self.client_manager.call_service(

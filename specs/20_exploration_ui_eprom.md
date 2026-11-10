@@ -68,19 +68,19 @@ Trois onglets : **POPULATIONS | Intervention Extérieure | REGROUPEMENT DES ACTI
 | UI (n° de colonne 8684) | Sémantique (8684/9593) | Champ Doc 1 |
 |---|---|---|
 | Année Études (1) | préremplie | `coAnnEtude` |
-| **Elèves A (2)** | réguliers ≥ 18 ans | — |
-| EHR (3) | inscrits via CEFA *(libellé UI « EHR »)* | — |
+| **Elèves A (2)** | réguliers ≥ 18 ans | `nbEleveA` |
+| EHR (3) | inscrits via CEFA *(libellé UI « EHR »)* | `nbEleveEhr` |
 | Elèves FSE HPI (4) / FSE PI (4') | plus demandées | `nbEleveFse`/`nbElevePi` (obsolètes) |
-| **Elèves B (5)** | réguliers < 18 ans non soumis à l'obligation scolaire t.p. | — |
-| Total de 2 à 5 (6) | comptés 1 fois (auto) | — |
+| **Elèves B (5)** | réguliers < 18 ans non soumis à l'obligation scolaire t.p. | `nbEleveB` |
+| Total de 2 à 5 (6) | comptés 1 fois (auto) | `nbEleveTot2a5` |
 | Demandeur Emploi (7) | exemptés DI FOREM/ACTIRIS/VDAB/Arbeitsamt | `nbEleveDem` |
-| **Minimexés (7')** | exemptés RIS/ERIS | — |
+| **Minimexés (7')** | exemptés RIS/ERIS | `nbEleveMin` |
 | Autres exemptés (7'') | autres motifs | `nbEleveExm` |
-| Elèves comptés plusieurs fois (8) | déjà dans un col. 6 ailleurs | — |
-| Total de 6 + 8 (9) | total inscriptions (auto) | — |
+| Elèves comptés plusieurs fois (8) | déjà dans un col. 6 ailleurs | `nbElevePl` |
+| Total de 6 + 8 (9) | total inscriptions (auto) | `nbEleveTot6et8` |
 | FSE HPI (10) / FSE PI (10') | plus demandées | obsolètes |
-| Nbre Total Homme (11) / Femme (11') | ventilation par sexe | — |
-| *(dernière colonne)* | **« Validé »** | statut de validation de la ligne |
+| Nbre Total Homme (11) / Femme (11') | ventilation par sexe | `nbEleveTotHom` / `nbEleveTotFem` |
+| *(dernière colonne)* | **« Validé »** | `swAppPopD1` : cochée par `ApprouverDocument1`, qui laisse `swAppD1` à faux (observé en production, 2026-09-18) |
 
 → Les « **colonnes A et B** » des circulaires DI = **« Elèves A » (col 2) et « Elèves B » (col 5)** :
 le forfait DI doit être cohérent avec ces comptages de réguliers. (À reporter dans le mapping des
@@ -140,6 +140,11 @@ Périodes Doc 8 | Pér. prévues doc2 | Pér. réelles doc2` - mapping 1:1 avec 
 de 123 organisations (765 attributions) n'a trouvé aucune décimale sur les champs `xs:int`, cf.
 spec 05). Détail d'une activité : `N°Attribution | Enseignant | Code dispo | Statut |
 Périodes attribuées | Suppr.` = `Doc3EnseignantDetailCT`.
+
+### 1.7. Donnée affichée qu'aucun service ne rend
+
+L'écran affiche pour une UE une **« Date AS définitive »** qu'aucun service web ne rend : aucun
+champ de ce nom dans les XSD (observé en production, 2026-09-19).
 
 ## 2. ⭐ Référentiels extraits de l'UI (listes déroulantes du Doc 3)
 

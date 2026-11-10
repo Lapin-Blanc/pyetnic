@@ -122,7 +122,9 @@ class Document2Service:
         """Read Doc 2 (teaching periods).
 
         Returns ``None`` until the Doc 1 population has been validated: the
-        Doc 2 does not exist before that.
+        Doc 2 does not exist before that. At validation it appears with the
+        skeleton of every branch of the dossier, volumes included, lines 91 to
+        99 included (observed in production, 2026-09-18).
         """
         logger.info("Lecture du document 2 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
@@ -139,10 +141,12 @@ class Document2Service:
     ) -> Optional[FormationDocument2]:
         """Write Doc 2 (teaching periods).
 
-        Only the fields provided are sent; fields and activity lines left out
-        are not modified. There is no school-side approval of Doc 2: the
-        administration sets ``swAppD2``, after which writes are refused
-        (error 1530).
+        Only the fields provided are sent. Fields and activity lines left out
+        are believed to be left unmodified, but this is not verified: the only
+        production case did not discriminate (the omitted lines were at 0
+        before and after). A test on TQ is planned. There is no school-side
+        approval of Doc 2: the administration sets ``swAppD2``, after which
+        writes are refused (error 1530).
         """
         logger.info("Modification du document 2 pour l'organisation : %s", organisation_id)
         request_data: dict = {'id': organisation_request_id(organisation_id)}
