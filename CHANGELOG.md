@@ -15,6 +15,10 @@ that supports `bN` pre-releases).
   change): Doc 3 ceiling, `coDispo` wire format, skeleton documents, error 20108,
   organisation creation and deletion, errors 20010 and 20030, document statuses,
   Doc 1 and Doc 2 field mappings. Each statement says how often it was observed.
+- **Open points settled by tests on the ETNIC test environment (TQ)**: Doc 2 updates
+  line by line, its first write sets "Encodé école", errors 20101 and 20103 before
+  a document is reachable, organisation numbering (highest + 1),
+  `nombreSemaineFormation` capped at 40, the 20011 bound.
 - **`lister_formations` and `lister_formations_organisables` have docstrings**
   warning that a permissive-mode failure looks like an empty result.
 - **Examples and tests use fictitious establishment and implantation numbers**
@@ -30,8 +34,7 @@ that supports `bN` pre-releases).
   `coDispo`; `coDispo` codes travel on two digits (`05`, not `5`);
   `statutDocumentPopulationPeriodes` covers Doc 1 and Doc 2; the Doc 1 bounds of
   `Dem` / `Min` / `Exm` are the pupils counted once, not `nbElevePl`; An1 / An2 are
-  civil years; `modifier_document_2` no longer claims that omitted lines are left
-  untouched (unverified).
+  civil years.
 
 ## [0.1.0b2] - 2026-11-10
 

@@ -159,7 +159,7 @@ des organisations et leurs statuts de documents.
 
 | Champ | Type | Obligatoire | Description |
 |---|---|---|---|
-| `implId` | ImplIdST | non | Renvoyé si la recherche portait sur une implantation |
+| `implId` | ImplIdST | non | Le manuel le dit renvoyé si la recherche portait sur une implantation ; en pratique `None` même quand la requête porte `implId` (testé sur TQ, 2026-11-10 ; déjà vu en production le 2026-06-11) |
 | `numOrganisation` | int | oui | Numéro de l'organisation |
 | `dateDebutOrganisation` | date | oui | Date début |
 | `dateFinOrganisation` | date | oui | Date fin |
@@ -168,14 +168,13 @@ des organisations et leurs statuts de documents.
 | `statutDocumentDroitsInscription` | StatutCT | non | Statut du document Droits d'inscription |
 | `statutDocumentAttributions` | StatutCT | non | Statut du document Attributions (Doc 3) |
 
-> **`statutDocumentPopulationPeriodes`** (observé en production) :
-> - absent (`None` dans pyetnic) tant que rien n'est encodé ; un Doc 1 encodé seul, non validé,
->   l'a laissé absent (observé une fois, 2026-09-18) ;
-> - « Encodé école » une fois le Doc 2 écrit, tant que `swAppD2` est faux ;
+> **`statutDocumentPopulationPeriodes`** (observé en production, puis testé sur TQ le 2026-11-10) :
+> - absent (`None` dans pyetnic) tant que le Doc 2 n'a pas été écrit : un Doc 1 encodé seul, non
+>   validé, le laisse absent (observé en production le 2026-09-18, testé sur TQ), et la population
+>   validée (`swAppPopD1` vrai, `swAppD1` faux) aussi (testé sur TQ, 2026-11-10) ;
+> - « Encodé école » dès la **première écriture du Doc 2** (`ModifierDocument2`), avec `dateStatut`
+>   au jour de cette écriture, tant que `swAppD2` est faux (testé sur TQ, 2026-11-10) ;
 > - « Approuvé » quand `swAppD1` et `swAppD2` sont vrais.
->
-> Ce qui déclenche exactement « Encodé école » (la validation de la population ou l'écriture du
-> Doc 2) n'est pas tranché.
 >
 > **`dateStatut`** date l'entrée dans le statut, pas la dernière modification ; c'est le `tsMaj` de
 > chaque document qui date la dernière écriture (observé une fois, 2026-09-18).

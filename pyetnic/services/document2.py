@@ -122,9 +122,15 @@ class Document2Service:
         """Read Doc 2 (teaching periods).
 
         Returns ``None`` until the Doc 1 population has been validated: the
-        Doc 2 does not exist before that. At validation it appears with the
-        skeleton of every branch of the dossier, volumes included, lines 91 to
-        99 included (observed in production, 2026-09-18).
+        Doc 2 does not exist before that, and the server refuses with error
+        20103 (tested on TQ, 2026-11-10). The code is not mapped to a specific
+        exception: a plain ``EtnicBusinessError`` under :func:`strict_errors`.
+
+        At validation it appears as a skeleton: every branch of the dossier
+        with its volume (``nbPeriodeBranche``), lines 91 to 99 included, every
+        figure at 0 (observed in production, 2026-09-18, tested on TQ,
+        2026-11-10). ``nbEleveC1`` is 0 too: the Doc 1 head count is not
+        carried over (tested on TQ, 2026-11-10).
         """
         logger.info("Lecture du document 2 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
@@ -141,10 +147,13 @@ class Document2Service:
     ) -> Optional[FormationDocument2]:
         """Write Doc 2 (teaching periods).
 
-        Only the fields provided are sent. Fields and activity lines left out
-        are believed to be left unmodified, but this is not verified: the only
-        production case did not discriminate (the omitted lines were at 0
-        before and after). A test on TQ is planned. There is no school-side
+        Only the fields provided are sent. The server updates the activity
+        lines sent, line by line; lines left out are not modified (tested on
+        TQ, 2026-11-10: two branches written at 10 and 20, then only the first
+        sent at 11, the second stayed at 20). This is unlike Doc 3, where
+        :func:`modifier_document_3` replaces the teacher list of each branch
+        sent. The first write sets ``statutDocumentPopulationPeriodes`` to
+        "Encodé école" (tested on TQ, 2026-11-10). There is no school-side
         approval of Doc 2: the administration sets ``swAppD2``, after which
         writes are refused (error 1530).
         """

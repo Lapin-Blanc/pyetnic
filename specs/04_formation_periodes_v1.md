@@ -129,6 +129,13 @@ FormationDocument2CT
 > **Totaux** : les `nbTot*` comptent aussi les lignes administratives 91 à 99, pas seulement les
 > branches de cours (observé en production sur une organisation).
 
+> **Avant la validation de la population**, `LireDocument2` est refusé en `20103` (testé sur TQ,
+> 2026-11-10). **À la validation**, le Doc 2 apparaît en squelette : toutes les branches du
+> dossier avec leur volume (`nbPeriodeBranche`), les lignes 91 à 99 (`SEtu`, `ExPT`, `PeSu`,
+> `PSup`, `CEtu`), tous les chiffres à 0 (observé en production le 2026-09-18, testé sur TQ le
+> 2026-11-10). `nbEleveC1` y est aussi à 0 : l'effectif du Doc 1 n'est pas reporté (10 élèves au
+> Doc 1, 0 au Doc 2 ; testé sur TQ, 2026-11-10).
+
 ### Doc2ActiviteEnseignementLineCT (ligne d'activité d'enseignement — réponse)
 
 | Champ | Type | Obligatoire | Description |
@@ -434,6 +441,17 @@ Valeurs possibles à la date du 01-07-2025 (sélection des actifs, relation avec
 
 La réponse contient le document 2 complet après modification.
 
+### Sémantique d'écriture : mise à jour ligne par ligne
+
+`ModifierDocument2` met à jour les lignes envoyées, ligne par ligne ; les lignes absentes de la
+requête ne sont pas modifiées (testé sur TQ, 2026-11-10 : deux branches écrites à 10 et 20
+périodes réelles An1, puis la première seule renvoyée à 11 ; la seconde est restée à 20). C'est
+l'inverse du Document 3, dont `ModifierDocument3` remplace la liste d'enseignants de chaque
+branche envoyée (spec 05).
+
+La première écriture du Doc 2 fait passer `statutDocumentPopulationPeriodes` à « Encodé école »,
+avec `dateStatut` au jour de l'écriture (spec 01 ; testé sur TQ, 2026-11-10).
+
 ### Exemple de requête XML
 
 ```xml
@@ -498,6 +516,7 @@ La réponse contient le document 2 complet après modification.
 | `false` | `00999` | Erreur sql | toutes |
 | `false` | `1114` | Numéro d'établissement incorrect | toutes |
 | `false` | `1113` | Paramètre anneeScolaire incorrect (xxxx-xxxx) | toutes |
+| `false` | `20103` | Le "Doc 1" doit être approuvé pour pouvoir accéder au document suivant | Lire, avant la validation de la population ; la validation par l'école (`swAppPopD1`) suffit, `swAppD1` peut rester faux (testé sur TQ, 2026-11-10) |
 | `false` | `1527` | Données regroupement invalides. (Adm + Org.) | Modifier |
 | `false` | `1528` | Données regroupement invalides. (Adm + Org.+ Branch. + An.étude) | Modifier |
 | `false` | `1530` | Mise à jour impossible; ce document est déjà approuvé par l'administration ! | Modifier |
@@ -521,7 +540,7 @@ La réponse contient le document 2 complet après modification.
 > **Codes partagés avec Document 1** : `00009`, `00011`, `00025`, `00999`, `1114`, `1113`,
 > `1530`, `2106`, `99999`.
 > **Codes spécifiques à Document 2** : `1527`, `1528`, `1545` (ici limité aux interventions),
-> `1598`, `1599`, `1600`, `1604`, `2118`, `20015`-`20036`, `30016`, `30017`.
+> `1598`, `1599`, `1600`, `1604`, `2118`, `20015`-`20036`, `20103`, `30016`, `30017`.
 
 ---
 

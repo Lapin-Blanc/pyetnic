@@ -395,6 +395,8 @@
 | `1545` | `false` | Doc 1 approuvé / max 5 interventions ext. (Doc 2) | Document 1 (Modifier), Document 2 (Modifier) |
 | `2106` | `false` | Code Année d'études de la population scolaire incorrect | Document 1, Document 2 |
 | `4004`-`4012` | `false` | Contrôles cohérence population (totaux, ventilations) | Document 1 |
+| `20101` | `false` | « Doc A » doit être approuvé pour accéder au document suivant (workflow ; testé sur TQ, 2026-11-10) | Document 1 (Lire) |
+| `20103` | `false` | « Doc 1 » doit être approuvé pour accéder au document suivant : population non validée (`swAppPopD1`) (workflow ; testé sur TQ, 2026-11-10) | Document 2 (Lire) |
 | `20104` | `false` | Valeurs à valider différentes de celles enregistrées (recharger avant la validation) ; population absente ou différente (observé en production, 2026-09-18) | Document 1 (Approuver) |
 | `1527`-`1528` | `false` | Données regroupement invalides | Document 2 |
 | `1598`-`1604` | `false` | Erreurs type/sous-type intervention extérieure | Document 2 |

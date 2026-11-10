@@ -377,6 +377,10 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 > statut ni trace : l'organisation disparaît de `ListerFormations`, et les autres organisations de
 > l'année ne bougent pas. Une organisation approuvée ou portant des documents n'a pas été essayée
 > (le manuel annonce `30003`).
+>
+> **Numéro libéré** (testé sur TQ, 2026-11-10) : la création suivante reçoit le plus grand
+> `numOrganisation` existant + 1. Un numéro supprimé au milieu de la série n'est donc jamais
+> réattribué ; le dernier numéro, une fois supprimé, l'est de nouveau (règle 2).
 
 ### Exemple de requête XML
 
@@ -487,7 +491,7 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 | `false` | `20006` | La date de début d'organisation doit être inférieure à la date de fin d'organisation | Créer, Modifier |
 | `false` | `20007` | Switch périodes supplémentaires incorrect (O/N) | Créer, Modifier |
 | `false` | `20010` | La date de début d'organisation ne peut être inférieure au xx/xx/xxxx | Créer, Modifier |
-| `false` | `20011` | La date de fin d'organisation ne peut être supérieure au xx/xx/xxxx | Créer, Modifier |
+| `false` | `20011` | La date de fin d'organisation ne peut être supérieure au xx/xx/xxxx (`xx/xx/xxxx` = 31 août de l'année de fin de l'année scolaire, testé sur TQ, 2026-11-10 ; exception non éclaircie pour une UE sur deux années, voir règle 5) | Créer, Modifier |
 | `false` | `20012` | La date de fin d'organisation ne peut être supérieure d'un 1 an à la date de début d'organisation | Créer, Modifier |
 | `false` | `20013` | Le nombre de semaine de la formation doit être compris entre 1 et 52 | Créer, Modifier |
 | `false` | `20016` | Le type d'intervention x n'existe pas | Créer, Modifier |
@@ -528,13 +532,18 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 
 2. **numOrganisation généré automatiquement** : lors de la création, le système attribue un
    numéro d'organisation incrémental, **dans l'ordre de déclaration**. Ce numéro est retourné
-   dans la réponse et doit être utilisé pour toutes les opérations suivantes.
+   dans la réponse et doit être utilisé pour toutes les opérations suivantes. Le numéro attribué
+   est le plus grand `numOrganisation` existant + 1 (testé sur TQ, 2026-11-10) : avec 1 et 2
+   créés puis 1 supprimé, la création suivante reçoit 3, et le trou n'est jamais comblé ; 3
+   supprimé, la création suivante reçoit de nouveau 3 : supprimer le dernier numéro le libère.
 
 3. **nombreSemaineFormation calculé** : ce champ est calculé automatiquement par le système
    à partir des dates de début et fin. Il apparaît uniquement dans les réponses (pas en entrée).
-   Ce n'est pas un simple nombre de semaines : 40 a été rendu pour le 09/03/2026 → 29/01/2027
-   (46 semaines) comme pour le 08/01/2026 → 07/01/2027 (52 semaines) (deux observations en
-   production, règle inconnue).
+   Ce n'est pas un simple nombre de semaines : la valeur est **plafonnée à 40**, observé trois
+   fois : 40 rendu pour le 09/03/2026 → 29/01/2027 (46 semaines) et pour le 08/01/2026 →
+   07/01/2027 (52 semaines) en production, et pour le 01/09/2026 → 31/08/2027 (52 semaines
+   calendaires), à la création comme à la relecture `LireOrganisation` (testé sur TQ,
+   2026-11-10). L'origine du plafond n'est pas connue.
 
 4. **Champs supprimés** : `eLearning` et `partiellementDistance` ont été supprimés depuis la
    rentrée 2022-2023 et remplacés par `enseignementHybride`. Ils restent dans
@@ -546,13 +555,18 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
      une date de début antérieure à l'année scolaire de l'enregistrement quand
      `numOrganisation2AnneesScolaires` est renseigné (observé en production, 2026-06-11 et
      2026-09-13 ; voir la note sous Opération 1) ; jamais testé sans ce lien.
-   - Date fin ≤ date plafond de l'année scolaire (code 20011)
+   - Date fin ≤ date plafond de l'année scolaire (code 20011) : le plafond est le 31 août de
+     l'année de fin de l'année scolaire (testé sur TQ, 2026-11-10 : un enregistrement 2026-2027
+     finissant le 15/11/2027 est refusé, « ne peut être supérieure au 31/08/2027 »). Contre-exemple
+     en production : l'enregistrement 2024-2025 d'une UE sur deux années scolaires finit le
+     30/01/2026 (note sous Opération 1) ; comment ce cas passe `20011` n'est pas éclairci.
    - Écart max 1 an entre début et fin (code 20012)
    - Date début < date fermeture de la formation (code 20029)
    - Date début ne peut excéder un délai de 4 mois max (code 20030), compté depuis la **date de
      déclaration** : début à déclaration + 3 mois 4 jours accepté, + 4 mois 22 jours refusé, début
      passé (3 mois avant) accepté (observé en production, 2026-06-11, trois points ; borne exacte
-     déduite, non mesurée).
+     déduite, non mesurée). Début passé de nouveau accepté : 01/09/2026 déclaré le 10/11/2026
+     (testé sur TQ, 2026-11-10).
 
 6. **Contrainte statut documents** (code 30003) : certaines opérations (Modifier, Supprimer)
    ne sont pas autorisées si le statut des documents associés ne le permet pas

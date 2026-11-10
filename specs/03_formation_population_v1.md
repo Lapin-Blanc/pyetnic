@@ -153,6 +153,11 @@ Document1ReponseCT
             └── population  : PopDocument1AnneeEtudeLineCT     [1..*]
 ```
 
+> **Doc 1 jamais encodé** : `LireDocument1` rend déjà une ligne de population à zéro
+> (`coAnnEtude` 1, `swAppPopD1` et `swAppD1` faux) ; sa présence ne dit pas que le Doc 1 a été
+> encodé (observé en production le 2026-09-16, confirmé sur TQ le 2026-11-10). Avant
+> l'approbation du Doc A, la lecture est refusée en `20101` (testé sur TQ, 2026-11-10).
+
 ### PopDocument1AnneeEtudeLineCT (ligne de population — réponse)
 
 | Champ | Type | Obligatoire | Description |
@@ -451,6 +456,7 @@ ApprouverDocument1RequeteCT
 | `false` | `4012` | Nombre d'exemptés > nb d'élèves comptés 1 fois | Modifier, Approuver |
 | `false` | `1545` | Le "Doc 1" est approuvé et ne peut plus être modifié | Modifier |
 | `false` | `1530` | Mise à jour impossible; ce document est déjà approuvé par l'administration ! | Approuver |
+| `false` | `20101` | Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant | Lire, avant l'approbation du Doc A (testé sur TQ, 2026-11-10) |
 | `false` | `20104` | Les valeurs que vous tentez de valider ne sont pas celles enregistrées. Veuillez recharger les données avant la validation | Approuver (observé en production, 2026-09-18 : population absente ou différente de celle enregistrée) |
 | `false` | `99999` | Autres erreurs | toutes |
 

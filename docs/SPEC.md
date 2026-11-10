@@ -109,8 +109,9 @@ Doc A  creer_organisation                     -> "Encodé école"
 Doc 1  modifier_document_1 (population), then approuver_document_1 -> swAppPopD1 = True
        the approval must carry back the population as read (error 20104 otherwise)
 
-Doc 2  exists once the Doc 1 population is validated (lire_document_2 -> None before)
-       modifier_document_2: the school's work ends here, status "Encodé école"
+Doc 2  exists once the Doc 1 population is validated (error 20103 before that)
+       modifier_document_2: the school's work ends here; its first write sets
+       the status to "Encodé école" (tested on TQ, 2026-11-10)
        the administration approves Doc 1 and Doc 2 together (swAppD1 + swAppD2);
        later writes are refused (error 1530)
 
@@ -153,7 +154,8 @@ All services build the request id with `organisation_request_id()` (`services/_h
 
 ### Document accessibility is workflow-gated
 
-- Doc 1/2/3 inaccessible while organisation is "Encodé école".
+- Doc 1/2/3 inaccessible while organisation is "Encodé école" (Doc 1: error 20101).
+- Doc 2 inaccessible (error 20103) until the Doc 1 population is validated (`swAppPopD1`).
 - Doc 3 inaccessible (error 20102) unless Doc A (the organisation) and Doc 2 are approved.
 - `_parse_*_response` methods must guard against `response=None` in the serialized SOAP body and return `None` when the document cannot be read.
 
@@ -209,7 +211,9 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 | Code | Meaning |
 |---|---|
 | 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. Lines carrying a `coDispo` do not count toward the total (observed in production, 2026-09). The `$1` of the message announced 72,00 for 80 periods sent without `coDispo` (observed once, 2026-09-22, unexplained). |
+| 20101 | `LireDocument1` before the Doc A is approved. Server text: « Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant » (tested on TQ, 2026-11-10). Not mapped in `exceptions.py`: `None` in permissive mode, a plain `EtnicBusinessError` under `strict_errors()`. |
 | 20102 | Document 3 inaccessible until Doc A (the organisation) and Doc 2 are approved. Server text: « Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3" ». |
+| 20103 | `LireDocument2` before the Doc 1 population is validated. Server text: « Le "Doc 1" doit être approuvé pour pouvoir accéder au document suivant »; the school's validation (`swAppPopD1`) is enough, `swAppD1` may still be false (tested on TQ, 2026-11-10). Not mapped in `exceptions.py`: `None` in permissive mode, a plain `EtnicBusinessError` under `strict_errors()`. |
 | 20104 | Doc 1 approval refused: the population sent differs from the stored one, or none was sent. Send back the lines just read. |
 | 20108 | Doc 3: « Le numéro de matricule d'enseignement n°$1 est incorrect ». Also returned for a well-formed staff number when the teacher is not (yet) in the EPROM teacher referential, which is fed outside these services; the same payload passes once the referential is updated (observed in production: refused 2026-09-21, accepted 2026-09-22). A write refused with 20108 leaves nothing behind (observed twice on blank documents). |
 | 30401 | NISS mutation — an old NISS has been replaced by a new one. Raised as `NissMutationError(ancien_niss, nouveau_niss)` from SEPS `rechercher_etudiants`. |

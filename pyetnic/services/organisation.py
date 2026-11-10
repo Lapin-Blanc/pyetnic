@@ -120,7 +120,9 @@ class OrganisationService:
         The server assigns ``numOrganisation`` in declaration order and returns
         it; it cannot be chosen. Two declarations run in parallel therefore
         cannot know which number each will get. Read the organisation back
-        after creating it rather than trusting the response alone.
+        after creating it rather than trusting the response alone. The number
+        given is the highest existing ``numOrganisation`` + 1: a gap left by a
+        deletion is not filled (tested on TQ, 2026-11-10).
 
         ``numOrganisation2AnneesScolaires`` takes the previous year's
         ``numOrganisation`` for a unit spanning two school years: the second
@@ -194,6 +196,10 @@ class OrganisationService:
         or trace; it disappears from :func:`lister_formations` and the other
         organisations of the year are left unchanged. Approved or documented
         organisations were not tried.
+
+        The next creation receives the highest existing ``numOrganisation`` + 1:
+        a number deleted in the middle of the series is not given again, while
+        the last number, once deleted, is (tested on TQ, 2026-11-10).
         """
         logger.info("Suppression de l'organisation %s", organisation_id)
         result = self.client_manager.call_service(
