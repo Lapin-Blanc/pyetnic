@@ -76,7 +76,7 @@ class OrganisationService:
 
         # No explicit message: let signal_business_error surface the real ETNIC
         # code + description from `result` instead of masking it.
-        return signal_business_error(result)
+        return signal_business_error(result, service=self.client_manager.service_name)
 
     # ------------------------------------------------------------------
     # Opérations WSDL
@@ -225,5 +225,5 @@ class OrganisationService:
         )
         success = bool(result and result.get('body', {}).get('success', False))
         if not success:
-            signal_business_error(result)
+            signal_business_error(result, service=self.client_manager.service_name)
         return success

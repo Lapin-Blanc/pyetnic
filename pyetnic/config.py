@@ -203,6 +203,11 @@ class Config(metaclass=_ConfigMeta):
                 wsdl_path="EPROM_Formation_Population_1.0/EpromFormationDocument1Service_external_v1.wsdl",
                 binding_name="{http://services-web.etnic.be/eprom/formation/document1/v1}EPROMFormationDocument1ExternalV1Binding",
             ),
+            "DOCUMENT1D": ServiceConfig(
+                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formation/document1D/v1",
+                wsdl_path="EPROM_Formation_Droits_Inscription_1.0/EpromFormationDocument1DService_external_v1.wsdl",
+                binding_name="{http://services-web.etnic.be/eprom/formation/document1D/v1}EPROMFormationDocument1DExternalV1Binding",
+            ),
             "DOCUMENT2": ServiceConfig(
                 endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formation/document2/v1",
                 wsdl_path="EPROM_Formation_Periodes_1.0/EpromFormationDocument2Service_external_v1.wsdl",

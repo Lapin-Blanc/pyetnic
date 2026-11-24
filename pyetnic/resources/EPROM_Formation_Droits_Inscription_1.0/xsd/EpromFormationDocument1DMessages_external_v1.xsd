@@ -1,0 +1,35 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:doc1D="http://enseignement.cfwb.be/types/formation/document1D/v1" xmlns:org="http://enseignement.cfwb.be/types/organisation/v1" xmlns:tns="http://services-web.etnic.be/eprom/formation/document1D/messages/v1" xmlns:common="http://etnic.be/types/technical/common/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formation/document1D/messages/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/formation/document1D/v1" schemaLocation="FormationDocument1D_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/organisation/v1" schemaLocation="Organisation_v1.xsd"></xs:import>
+<xs:import namespace="http://etnic.be/types/technical/common/v1" schemaLocation="Common_v1.xsd"></xs:import>
+<xs:element name="LireDocument1D" type="tns:LireDocument1DRequeteCT"></xs:element>
+<xs:element name="LireDocument1DReponse" type="tns:Document1DReponseCT"></xs:element>
+<xs:element name="ModifierDocument1D" type="tns:ModifierDocument1DRequeteCT"></xs:element>
+<xs:element name="ModifierDocument1DReponse" type="tns:Document1DReponseCT"></xs:element>
+<xs:element name="ApprouverDocument1D" type="tns:ApprouverDocument1DRequeteCT"></xs:element>
+<xs:element name="ApprouverDocument1DReponse" type="tns:Document1DReponseCT"></xs:element>
+<xs:complexType name="LireDocument1DRequeteCT">
+<xs:complexContent>
+<xs:extension base="doc1D:FormationDocument1DLireReqCT"></xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="ModifierDocument1DRequeteCT">
+<xs:complexContent>
+<xs:extension base="doc1D:FormationDocument1DModifReqCT"></xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="ApprouverDocument1DRequeteCT">
+<xs:complexContent>
+<xs:extension base="doc1D:FormationDocument1DApprReqCT"></xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:complexType name="Document1DReponseCT">
+<xs:complexContent>
+<xs:extension base="common:AbstractExternalResponseType">
+<xs:sequence>
+<xs:element minOccurs="0" name="response" type="doc1D:Document1DReponseMetierCT"></xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+</xs:schema>

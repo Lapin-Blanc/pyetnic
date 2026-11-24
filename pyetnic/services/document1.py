@@ -36,7 +36,7 @@ class Document1Service:
             and 'document1' in result['body']['response']
         ):
             # Let signal_business_error surface the real ETNIC code + description.
-            return signal_business_error(result)
+            return signal_business_error(result, service=self.client_manager.service_name)
 
         doc_data = result['body']['response']['document1']
         if logger.isEnabledFor(logging.DEBUG):
@@ -90,9 +90,7 @@ class Document1Service:
         the Doc 1 was encoded.
 
         Before the Doc A is approved the server refuses with error 20101
-        (tested on TQ, 2026-11-10). The code is not mapped to a specific
-        exception: ``None`` by default, a plain ``EtnicBusinessError`` under
-        :func:`strict_errors`.
+        (tested on TQ, 2026-11-10): ``EtnicDocumentNotAccessibleError``.
         """
         logger.info("Lecture du document 1 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(

@@ -399,7 +399,8 @@
 | `4004`-`4012` | `false` | Contrôles cohérence population (totaux, ventilations) | Document 1 |
 | `20101` | `false` | « Doc A » doit être approuvé pour accéder au document suivant (workflow ; testé sur TQ, 2026-11-10) | Document 1 (Lire) |
 | `20103` | `false` | « Doc 1 » doit être approuvé pour accéder au document suivant : population non validée (`swAppPopD1`) (workflow ; testé sur TQ, 2026-11-10) | Document 2 (Lire) |
-| `20104` | `false` | Valeurs à valider différentes de celles enregistrées (recharger avant la validation) ; population absente ou différente (observé en production, 2026-09-18) | Document 1 (Approuver) |
+| `20104` | `false` | Valeurs à valider différentes de celles enregistrées (recharger avant la validation) ; population absente ou différente (observé en production, 2026-09-18) ; `nbEleves5ieme` différent au Doc 1D (testé sur TQ, 2026-11-24) | Document 1 (Approuver), Document 1D (Approuver) |
+| `20112` | `false` | Mise à jour du champ "mtDroitsInscription" impossible : population au 5/10 non approuvée (testé sur TQ, 2026-11-24 ; le manuel annonce `1546`) | Document 1D (Modifier) |
 | `1527`-`1528` | `false` | Données regroupement invalides | Document 2 |
 | `1598`-`1604` | `false` | Erreurs type/sous-type intervention extérieure | Document 2 |
 | `2118` | `false` | Numéro activité d'enseignement incorrect | Document 2 |

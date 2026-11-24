@@ -1,8 +1,8 @@
-# EPROM — Formation Droits d'Inscription (Document 1D) v1.0
+# EPROM - Formation Droits d'Inscription (Document 1D) v1.0
 
 > Spécification technique et fonctionnelle complète
-> Sources : WSDL `EpromFormationDocument1DService_external_v1.wsdl` + PDF Manuel d'utilisation rev1.1 (01-05-2023, édité 10-05-2023, 23 pages)
-> Date d'analyse : 2026-06-02 (session 5)
+> Sources : contrat de l'archive « EPROM_Formation_Droits_Inscription_1.0 » du catalogue SOA (le WSDL servi par la production lui est identique ; la passerelle ne sert pas les XSD, importés en relatif), embarqué dans `pyetnic/resources/EPROM_Formation_Droits_Inscription_1.0/` (relevé du 2026-11-24) + PDF Manuel d'utilisation rev1.1 (01-05-2023, édité 10-05-2023, 23 pages, `ETNIC_Services_Web_EPROM_Formation_Droits_Inscription_1.0.0_Manuel_d_utilisation_rev1.1.pdf`) + essais sur TQ et lectures en production du 2026-11-24 (#33).
+> Date d'analyse : 2026-06-02 (session 5) ; implémentation et essais le 2026-11-24
 
 ---
 
@@ -45,8 +45,11 @@
 
 | Env | Source | URL |
 |---|---|---|
-| TQ | WSDL + PDF | `https://ws-tq.etnic.be/eprom/formation/document1D/v1` |
-| PROD | PDF | `https://ws.etnic.be/eprom/formation/document1D/v1` |
+| TQ | WSDL + PDF + catalogue | `https://ws-tq.etnic.be/eprom/formation/document1D/v1` |
+| PROD | PDF + catalogue | `https://ws.etnic.be/eprom/formation/document1D/v1` |
+
+> pyetnic appelle ces deux adresses (lectures vérifiées sur TQ et en production, écritures sur TQ,
+> 2026-11-24).
 
 > Le WSDL externe ne déclare que l'adresse TQ (`<soap:address location="https://ws-tq.etnic.be/eprom/formation/document1D/v1"/>`) ;
 > l'URL PROD provient du PDF (§2.2.1).
@@ -280,7 +283,7 @@ Autrement dit, le cycle de vie d'une ligne est en **deux phases**, pivotant sur 
 
 | Phase | `swAppPopD1D` | `nbEleves5ieme` | `mtDroitsInscription` |
 |---|---|---|---|
-| Avant approbation population | `0` | **modifiable** | **figé** (erreur `1546` si tenté) |
+| Avant approbation population | `0` | **modifiable** | **figé** (erreur `20112` sur TQ, `1546` au manuel) |
 | Après approbation population | `1` | **figé** | **modifiable** |
 | Après approbation administration (`swAppD1D=1`) | `1` | figé | figé (erreur `1530` si tenté) |
 
@@ -362,7 +365,7 @@ après modification.
 
 L'utilisateur renvoie, par année d'études, le `nbEleves5ieme` **afin de vérifier que les données n'ont pas
 été modifiées entre la dernière consultation et l'approbation** (contrôle de concurrence optimiste → erreur
-`00011` si écart).
+`00011` selon le manuel ; **`20104`** observé sur TQ le 2026-11-24).
 
 ### Requête
 
@@ -438,7 +441,10 @@ Table complète (PDF §4, page 23) :
 | `false` | `1113` | Année Scolaire invalide | validation entrée |
 | `false` | `2106` | Année d'étude invalide. | validation entrée |
 | `false` | `1545` | Document déjà approuvé ! | workflow approbation |
-| `false` | `1546` | Document non encore approuvé ! | workflow approbation |
+| `false` | `1546` | Document non encore approuvé ! | workflow approbation (jamais vu : TQ répond `20112`) |
+| `false` | `20112` | Mise à jour du champ "mtDroitsInscription" impossible. Vous n'avez pas approuvé la population au 5/10. | Modifier (absent du manuel ; testé sur TQ, 2026-11-24) |
+| `false` | `20104` | Les valeurs que vous tentez de valider ne sont pas celles enregistrées. Veuillez recharger les données avant la validation | Approuver (absent du manuel ; testé sur TQ, 2026-11-24) |
+| `false` | `20101` | Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant | Lire (absent du manuel ; observé en production, 2026-11-24) |
 | `false` | `1530` | Mise à jour impossible; ce document est déjà approuvé par l'administration ! | workflow approbation |
 | `false` | `99999` | (Autres Erreurs) | fourre-tout |
 
@@ -453,6 +459,9 @@ Le PDF ne précise pas l'opération déclenchant chaque code ; mapping le plus c
 - `1530` « … déjà approuvé par l'administration ! » → toute `ModifierDocument1D` après `swAppD1D=1`
   (verrou final administration).
 - `00011` → écart entre le `nbEleves5ieme` envoyé en approbation et la valeur serveur (concurrence).
+
+> **Démenti par TQ (2026-11-24)** : le montant écrit avant l'approbation est refusé en `20112`, l'écart à
+> l'approbation en `20104` ; `1545` se confirme (population après approbation, seconde approbation).
 
 ### ⚠️ Réutilisation de codes entre services (attention typage d'exceptions)
 
@@ -485,10 +494,10 @@ Les codes numériques **ne sont pas universels** : un même code a un libellé d
    modifiable        ──────────────────────────►  swAppPopD1D=1  ──────────────►  swAppD1D=1
    swAppPopD1D=0                                   nbEleves5ieme FIGÉ              tout FIGÉ
    mtDroits FIGÉ                                   mtDroits modifiable            (erreur 1530)
-   (erreur 1546)
+   (erreur 20112)
 ```
 
-- **Phase 1** : l'école encode/corrige `nbEleves5ieme` (population au 5/10ᵉ). Les montants sont refusés (`1546`).
+- **Phase 1** : l'école encode/corrige `nbEleves5ieme` (population au 5/10ᵉ). Les montants sont refusés (`20112` sur TQ, `1546` au manuel).
 - **Bascule** : `ApprouverDocument1D` (école/PO) → `swAppPopD1D=1`. La population est figée.
 - **Phase 2** : l'école saisit `mtDroitsInscription`. La population n'est plus modifiable.
 - **Verrou** : l'administration approuve (`swAppD1D=1`, **non exposé par ce service** — géré côté admin
@@ -516,10 +525,35 @@ Les codes numériques **ne sont pas universels** : un même code a un libellé d
 > **Doc 1** (Population), **Doc 1D** (Droits d'Inscription), **Doc 2** (Périodes), **Doc 3** (Attributions),
 > **Doc 8bis** (référencé par le Doc 3).
 
-> **Dépendance amont éventuelle du Doc 1D** : le manuel ne déclare **aucune** erreur de type `20102`
-> (« document X doit être approuvé pour accéder »). Le Doc 1D semble donc **gérable indépendamment** des
-> autres documents - sa logique d'approbation est purement interne (population → montants). Reste à confirmer
-> (le `nbEleves5ieme` « au 5/10ᵉ » suppose toutefois qu'une organisation existe et est en cours).
+> **Dépendance amont du Doc 1D** : le manuel ne déclare aucune erreur de type `20102`, mais la production
+> refuse la lecture en `20101` tant que le Doc A n'est pas approuvé (17 organisations sur 45 en 2026-2027,
+> 2026-11-24). Le Doc 1D dépend donc du Doc A, comme le Doc 1 ; il ne dépend pas du Doc 1 ni du Doc 2.
+
+### Observé sur TQ et en production (2026-11-24)
+
+> **Cycle complet testé sur TQ** (une organisation 2025-2026 dont le Doc 1D n'avait pas de statut) :
+>
+> | Étape | Réponse du serveur |
+> |---|---|
+> | Lecture avant toute écriture | une ligne squelette (`coAnnEtude` `1`, tout à 0, deux indicateurs faux) ; pas de `statutDocumentDroitsInscription` |
+> | Modifier avec une liste vide | accepté ; `tsMaj` est mis à jour |
+> | Modifier `nbEleves5ieme` | accepté ; le statut passe à « Encodé école » |
+> | Modifier `mtDroitsInscription` avant l'approbation | refus **`20112`** « Mise à jour du champ "mtDroitsInscription" impossible. Vous n'avez pas approuvé la population au 5/10. » (le manuel annonce `1546`, jamais vu) |
+> | Approuver avec un `nbEleves5ieme` différent | refus **`20104`** « Les valeurs que vous tentez de valider ne sont pas celles enregistrées. Veuillez recharger les données avant la validation » (pas `00011`) |
+> | Approuver avec la population relue | accepté ; `swAppPopD1D` vrai, `swAppD1D` faux ; le statut reste « Encodé école » |
+> | Modifier `nbEleves5ieme` après l'approbation | refus `1545` « Document déjà approuvé ! » |
+> | Modifier `mtDroitsInscription` après l'approbation | accepté |
+> | Approuver une seconde fois | refus `1545` |
+> | Modifier une année d'études inconnue (`9`) | refus `2106` « Année d'étude invalide. » |
+>
+> **En production (lecture seule)** : 2026-2027, 45 organisations : 28 Doc 1D lisibles (ligne
+> squelette, aucun statut), 17 refusés en **`20101`** (« Le "Doc A" doit être approuvé pour pouvoir
+> accéder au document suivant »), comme le Doc 1 : le Doc 1D **dépend du Doc A**, contrairement à ce
+> que le manuel laissait penser. 2025-2026 : 101 organisations, toutes « Approuvé », les deux
+> indicateurs vrais. 2024-2025 : 123 « Approuvé », dont une avec `swAppD1D` vrai et `swAppPopD1D` faux
+> (observé une fois) : l'administration peut approuver sans l'approbation de l'école. Toutes ces
+> lignes portent une seule année d'études (`1`) et des valeurs à 0 ; aucune n'a été vue avec plusieurs
+> années ni avec un montant non nul en production.
 
 ### Notion « population au 5/10ᵉ »
 
@@ -597,83 +631,29 @@ d'étude en début/cours d'organisation. Doc 1 et Doc 1D portent donc des compta
 
 ## Mapping pyetnic
 
-### Classe proposée : `FormationDocument1DService` (alias métier : Droits d'Inscription)
+| Élément du contrat | pyetnic (`pyetnic.eprom`) |
+|---|---|
+| `LireDocument1D` | `lire_document_1d(organisation_id)` |
+| `ModifierDocument1D` | `modifier_document_1d(organisation_id, droit_inscription_liste)` |
+| `ApprouverDocument1D` | `approuver_document_1d(organisation_id, droit_inscription_liste)` |
+| `FormationDocument1DCT` | `FormationDocument1D` (`id`, `droitInscriptionListe`) |
+| `Doc1DDroitInscriptionLstCT` / `LineCT` | `Doc1DDroitInscriptionList` / `Doc1DDroitInscriptionLine` (8 champs) |
+| `Doc1DDroitInscriptionSaveLstCT` / `SaveLineCT` | `Doc1DDroitInscriptionListSave` / `Doc1DDroitInscriptionLineSave` (`coAnnEtude` + `nbEleves5ieme` ou `mtDroitsInscription`) |
+| `Doc1DDroitInscriptionApprLstCT` / `ApprLineCT` | `Doc1DDroitInscriptionListAppr` / `Doc1DDroitInscriptionLineAppr` ; `Doc1DDroitInscriptionListAppr.from_document(doc)` reprend la population lue |
+| `OrganisationReqIdCT` | `OrganisationId`, `implId` jamais envoyé |
 
-```python
-class FormationDocument1DService:
-    """Service EPROM Formation Document 1D (Droits d'Inscription) v1.0 — SOAP 1.1 uniquement.
-
-    Gère, par année d'études : la population scolaire au 5/10e de la formation (nbEleves5ieme)
-    et les montants des droits d'inscription (mtDroitsInscription).
-    """
-
-    WSDL = "EpromFormationDocument1DService_external_v1.wsdl"
-    ENDPOINT_TQ = "https://ws-tq.etnic.be/eprom/formation/document1D/v1"
-    ENDPOINT_PROD = "https://ws.etnic.be/eprom/formation/document1D/v1"
-
-    def lire(self, annee_scolaire: str, etab_id: int,
-             num_adm_formation: int, num_organisation: int) -> Document1DResponse:
-        """LireDocument1D — lecture des droits d'inscription / population au 5/10e."""
-
-    def modifier(self, annee_scolaire: str, etab_id: int,
-                 num_adm_formation: int, num_organisation: int,
-                 lignes: list[DroitInscriptionSave]) -> Document1DResponse:
-        """ModifierDocument1D — MAJ population (avant appro.) et/ou montants (après appro.)."""
-
-    def approuver(self, annee_scolaire: str, etab_id: int,
-                  num_adm_formation: int, num_organisation: int,
-                  lignes: list[DroitInscriptionAppr]) -> Document1DResponse:
-        """ApprouverDocument1D — approbation ecole/PO de la population au 5/10e.
-
-        nbEleves5ieme doit etre fourni (controle de concurrence cote serveur -> 00011).
-        """
-```
-
-### Dataclasses proposées
-
-```python
-@dataclass
-class DroitInscriptionSave:
-    """Ligne de droit d'inscription (type Save / requete Modifier)."""
-    co_ann_etude: str                       # obligatoire (XSD: string, pas int)
-    nb_eleves_5ieme: int | None = None       # modifiable AVANT approbation population
-    mt_droits_inscription: float | None = None  # modifiable APRES approbation population
-
-
-@dataclass
-class DroitInscriptionAppr:
-    """Ligne a approuver (type Appr / requete Approuver)."""
-    co_ann_etude: str                       # obligatoire
-    nb_eleves_5ieme: int                    # obligatoire (XSD+UML), verif anti-concurrence
-
-
-@dataclass
-class DroitInscriptionResponse:
-    """Ligne de droit d'inscription (reponse, 8 champs)."""
-    co_ann_etude: str | None
-    nb_eleves_5ieme: int | None
-    mt_droits_inscription: float | None
-    mt_droits_inscription_occupationnel: float | None  # "n'est plus utilise"
-    sw_app_pop_d1d: bool | None             # approuve ecole/PO
-    sw_app_d1d: bool | None                 # approuve administration
-    ts_maj: str | None                      # timestamp (string, pas bool)
-    te_user_maj: str | None                 # userid (string, pas bool)
-```
-
-### Recommandations d'implémentation
-1. **Forcer SOAP 1.1** dans le transport zeep (ce service ne supporte pas SOAP 1.2, comme le Doc 3).
-2. **`coAnnEtude` = `str`** dans toute l'API publique (le contrat XSD est `string` malgré le « int » du PDF).
-3. **Refléter la règle des deux phases** côté client : exposer des helpers ou une validation préalable —
-   refuser `mt_droits_inscription` si `sw_app_pop_d1d` est faux (sinon `1546`) ; refuser `nb_eleves_5ieme`
-   après approbation population. Cela évite des allers-retours serveur inutiles.
-4. **`approuver()` exige `nb_eleves_5ieme`** : le récupérer du dernier `lire()` et le repasser tel quel
-   (sinon risque de `00011` si la valeur serveur a changé).
-5. **Exceptions typées indexées par (service, code)** : `1545`/`1114`/`2106` ont un sens différent ici
-   qu'au Doc 1/Doc 2. Ne pas mutualiser un registre de codes global naïf.
-6. **`mt_droits_inscription_occupationnel`** : exposer en lecture seule, marquer *deprecated* (« n'est plus
-   utilisé »).
-7. **Mock server stateful (à faire)** : modéliser les deux switches `swAppPopD1D`/`swAppD1D` et les trois
-   transitions (encodage → appro. pop. → appro. admin) pour tester `1546`, `1545`, `1530` et `00011`.
+- **Types** : `coAnnEtude` est un `str` (le contrat), `tsMaj`/`teUserMaj` des `str`.
+  `mtDroitsInscriptionOccupationnel` est lu, « n'est plus utilisé ».
+- **Liste obligatoire** à Modifier et Approuver : le contrat exige l'élément `droitInscriptionListe`
+  (vide accepté à Modifier).
+- **Erreurs** (`pyetnic.exceptions`) : `20101` et `20112` (et `1546`, numéro du manuel) ->
+  `EtnicDocumentNotAccessibleError` ; `20104` -> `EtnicConcurrencyError` ; `1545` et `1530` ->
+  `EtnicAlreadyApprovedError` ; `2106`, `1113`, `1114` -> `EtnicValidationError`. Le routage tient
+  compte du service : `1545` est une erreur de validation au Document 2 (« 5ième intervention
+  extérieure »), une approbation déjà faite ici.
+- **Pas de validation côté client des deux phases** : le serveur décide et son refus arrive typé
+  (voir « Scope Boundary » dans `docs/ARCHITECTURE.md`).
+- Symboles classés « construction » dans `docs/PUBLIC_API_SURFACE.md`.
 
 ---
 
@@ -690,7 +670,7 @@ class DroitInscriptionResponse:
 - **Deux switches d'approbation** `swAppPopD1D` (école/PO) + `swAppD1D` (administration) — parallèle exact
   au Doc 1 (`swAppPopD1`/`swAppD1`).
 - **Règle métier des deux phases** : `nbEleves5ieme` modifiable *jusqu'à* l'approbation population ;
-  `mtDroitsInscription` modifiable *après* (erreurs `1546`/`1545`/`1530`).
+  `mtDroitsInscription` modifiable *après* (erreurs `20112`/`1545`/`1530` ; `1546` au manuel).
 - **`statutDocumentDroitsInscription`** (Formations Liste) = statut **de ce Doc 1D**, distinct de
   `statutDocumentPopulationPeriodes` (Doc 1 + Doc 2). Quatre statuts au total dans `OrganisationApercuCT`.
 - **« Doc A » non mentionné** ici ; c'est l'organisation (voir spec 05). Pas d'erreur `20102`

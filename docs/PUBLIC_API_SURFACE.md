@@ -74,6 +74,15 @@ A symbol is **construction** otherwise. Construction symbols are still exported 
 | `Doc3ActiviteListeSave` | Constructed by callers |
 | `FormationDocument3` | Returned by `lire_document_3`, `modifier_document_3` |
 
+### Construction - Document 1D (droits d'inscription, #33)
+
+| Symbol | Notes |
+|---|---|
+| `lire_document_1d`, `modifier_document_1d`, `approuver_document_1d` | Functions, new in 0.3.0 |
+| `FormationDocument1D`, `Doc1DDroitInscriptionLine`, `Doc1DDroitInscriptionList` | Read models |
+| `Doc1DDroitInscriptionLineSave`, `Doc1DDroitInscriptionListSave` | Write models (`modifier_document_1d`) |
+| `Doc1DDroitInscriptionLineAppr`, `Doc1DDroitInscriptionListAppr` | Approval models; `Doc1DDroitInscriptionListAppr.from_document` |
+
 ### Stable — Constants
 
 | Symbol | Notes |

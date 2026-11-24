@@ -199,6 +199,11 @@ def test_strict_mode_raises_not_found_on_00009(mock_soap_call):
         # Discrete codes
         ("00009", EtnicNotFoundError),
         ("20102", EtnicDocumentNotAccessibleError),
+        ("20101", EtnicDocumentNotAccessibleError),  # Doc A not approved (Documents 1, 1D)
+        ("20103", EtnicDocumentNotAccessibleError),  # Doc 1 population not validated (Document 2)
+        ("20112", EtnicDocumentNotAccessibleError),  # Doc 1D fee before the population is approved
+        ("1546", EtnicDocumentNotAccessibleError),  # the same, as the Doc 1D manual numbers it
+        ("20104", EtnicConcurrencyError),  # approval with values that differ from the stored ones
         ("30003", EtnicDocumentNotAccessibleError),
         ("30006", EtnicDocumentNotAccessibleError),
         ("1530", EtnicAlreadyApprovedError),
@@ -237,6 +242,28 @@ def test_strict_mode_raises_not_found_on_00009(mock_soap_call):
 )
 def test_map_etnic_error_code_to_class(code, expected):
     assert map_etnic_error_code_to_class(code) is expected
+
+
+@pytest.mark.parametrize("service, expected", [
+    (None, EtnicAlreadyApprovedError),
+    ("DOCUMENT1", EtnicAlreadyApprovedError),  # "Le Doc 1 est approuvé"
+    ("DOCUMENT1D", EtnicAlreadyApprovedError),  # "Document déjà approuvé !"
+    ("DOCUMENT2", EtnicValidationError),  # "créer une 5ième intervention extérieure"
+])
+def test_code_1545_depends_on_the_service(service, expected):
+    assert map_etnic_error_code_to_class("1545", service) is expected
+
+
+def test_document2_refusal_1545_is_a_validation_error(mock_soap_call):
+    """The Document 2 service passes its name, so 1545 reads as a validation error there."""
+    mock_soap_call.return_value = {
+        "header": {"requestId": "r"},
+        "body": {"success": False, "response": None, "messages": {"error": [
+            {"code": "1545", "description": "Vous ne pouvez pas créer une 5ième intervention extérieure"}]}},
+    }
+    org_id = OrganisationId(anneeScolaire="2025-2026", etabId=1234, numAdmFormation=1, numOrganisation=1)
+    with strict_errors(), pytest.raises(EtnicValidationError):
+        lire_document_2(org_id)
 
 
 def test_map_handles_non_numeric_code():

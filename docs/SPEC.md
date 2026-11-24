@@ -15,8 +15,9 @@ It is used by schools and school management software to interact programmaticall
 | Config key | ETNIC service | WSDL version | Auth |
 |---|---|---|---|
 | `LISTE_FORMATIONS` | EPROMFormationsListe | v2 | UsernameToken |
-| `ORGANISATION` | EPROMFormationOrganisation | v7 | UsernameToken |
+| `ORGANISATION` | EPROMFormationOrganisation | v8 | UsernameToken |
 | `DOCUMENT1` | EPROMFormationDocument1 | v1 | UsernameToken |
+| `DOCUMENT1D` | EPROMFormationDocument1D (droits d'inscription) | v1 | UsernameToken |
 | `DOCUMENT2` | EPROMFormationDocument2 | v1 | UsernameToken |
 | `DOCUMENT3` | EPROMFormationDocument3 | v1 | UsernameToken |
 | `SEPS_RECHERCHE_ETUDIANTS` | SEPSRechercheEtudiants | v1 | X509 PFX |
@@ -31,19 +32,24 @@ It is used by schools and school management software to interact programmaticall
 - `ListerFormationsOrganisables` → `lister_formations_organisables()`
 - `ListerFormations` → `lister_formations()`
 
-**Organisation (v7)**
+**Organisation (v8)**
 - `LireOrganisation` → `lire_organisation(org_id)`
 - `CreerOrganisation` → `creer_organisation(...)`
 - `ModifierOrganisation` → `modifier_organisation(org)`
 - `SupprimerOrganisation` → `supprimer_organisation(org_id)`
 
 > No `ApprouverOrganisation` operation in this WSDL — approval is done by the inspection side.
-> v7 added `reorientation7TP` (optional bool) to Creer/Modifier/Lire.
+> v7 added `reorientation7TP` (optional bool) to Creer/Modifier/Lire; v8 adds `BESAeSI`.
 
 **Document1 (v1)**
 - `LireDocument1` → `lire_document_1(org_id)`
 - `ModifierDocument1` → `modifier_document_1(org_id, population_liste?)`
 - `ApprouverDocument1` → `approuver_document_1(org_id, population_liste?)`
+
+**Document1D (v1), droits d'inscription**
+- `LireDocument1D` → `lire_document_1d(org_id)`
+- `ModifierDocument1D` → `modifier_document_1d(org_id, droit_inscription_liste)`
+- `ApprouverDocument1D` → `approuver_document_1d(org_id, droit_inscription_liste)`
 
 **Document2 (v1)**
 - `LireDocument2` → `lire_document_2(org_id)`
@@ -145,6 +151,12 @@ Doc A  creer_organisation                     -> "Encodé école"
 
 Doc 1  modifier_document_1 (population), then approuver_document_1 -> swAppPopD1 = True
        the approval must carry back the population as read (error 20104 otherwise)
+
+Doc 1D readable once Doc A is approved (error 20101 before that, production 2026-11-24)
+       modifier_document_1d (nbEleves5ieme), then approuver_document_1d with the
+       population as read -> swAppPopD1D = True (error 20104 if it differs);
+       then the fees (mtDroitsInscription, error 20112 before the approval);
+       the administration approves (swAppD1D), later writes are refused (1530)
 
 Doc 2  exists once the Doc 1 population is validated (error 20103 before that)
        modifier_document_2: the school's work ends here; its first write sets
@@ -248,10 +260,12 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 | Code | Meaning |
 |---|---|
 | 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. Lines carrying a `coDispo` do not count toward the total (observed in production, 2026-09). The `$1` of the message announced 72,00 for 80 periods sent without `coDispo` (observed once, 2026-09-22, unexplained). |
-| 20101 | `LireDocument1` before the Doc A is approved. Server text: « Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant » (tested on TQ, 2026-11-10). Not mapped in `exceptions.py`: `None` in permissive mode, a plain `EtnicBusinessError` under `strict_errors()`. |
+| 20101 | `LireDocument1` and `LireDocument1D` before the Doc A is approved. Server text: « Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant » (tested on TQ, 2026-11-10; Doc 1D observed in production, 2026-11-24). `EtnicDocumentNotAccessibleError`. |
 | 20102 | Document 3 inaccessible until Doc A (the organisation) and Doc 2 are approved. Server text: « Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3" ». |
-| 20103 | `LireDocument2` before the Doc 1 population is validated. Server text: « Le "Doc 1" doit être approuvé pour pouvoir accéder au document suivant »; the school's validation (`swAppPopD1`) is enough, `swAppD1` may still be false (tested on TQ, 2026-11-10). Not mapped in `exceptions.py`: `None` in permissive mode, a plain `EtnicBusinessError` under `strict_errors()`. |
-| 20104 | Doc 1 approval refused: the population sent differs from the stored one, or none was sent. Send back the lines just read. |
+| 20103 | `LireDocument2` before the Doc 1 population is validated. Server text: « Le "Doc 1" doit être approuvé pour pouvoir accéder au document suivant »; the school's validation (`swAppPopD1`) is enough, `swAppD1` may still be false (tested on TQ, 2026-11-10). `EtnicDocumentNotAccessibleError`. |
+| 20104 | Doc 1 or Doc 1D approval refused: the values sent differ from the stored ones, or none were sent. Send back the lines just read. `EtnicConcurrencyError`. |
+| 20112 | Doc 1D: fee (`mtDroitsInscription`) written before the population is approved (tested on TQ, 2026-11-24; the manual numbers it 1546). `EtnicDocumentNotAccessibleError`. |
+| 1545 | « Document déjà approuvé » for Documents 1 and 1D (`EtnicAlreadyApprovedError`), but « Vous ne pouvez pas créer une 5ième intervention extérieure » for Document 2 (`EtnicValidationError`): the routing takes the service into account. |
 | 20108 | Doc 3: « Le numéro de matricule d'enseignement n°$1 est incorrect ». Also returned for a well-formed staff number when the teacher is not (yet) in the EPROM teacher referential, which is fed outside these services; the same payload passes once the referential is updated (observed in production: refused 2026-09-21, accepted 2026-09-22). A write refused with 20108 leaves nothing behind (observed twice on blank documents). |
 | 30100, 30101 | SEPS: no such UE (`SepsUeInconnueError`). 30101 came as a warning 18 minutes after the organisation was declared in EPROM (production, 2026-11-10): SEPS receives organisations with a delay. Inscriptions on organisations whose Doc A was not yet approved were accepted (production, 2026-09-30, approval 2026-10-23). |
 | 30011, 30120 | SEPS: no student for this CF / no person for this NISS at the national register (`SepsEtudiantInconnuError`). |

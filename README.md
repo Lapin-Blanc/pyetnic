@@ -16,6 +16,7 @@ relèvent des applications qui l'utilisent.
 | `pyetnic.eprom` | **Formations** | Lister les formations organisables (catalogue), lister les formations organisées |
 | `pyetnic.eprom` | **Organisation** | Créer, lire, modifier, supprimer une organisation de formation |
 | `pyetnic.eprom` | **Document 1** | Lire, modifier, approuver le document de population (inscriptions) |
+| `pyetnic.eprom` | **Document 1D** | Lire, modifier, approuver les droits d'inscription (population au 5/10 et montants) |
 | `pyetnic.eprom` | **Document 2** | Lire, modifier le document des périodes d'activités d'enseignement |
 | `pyetnic.eprom` | **Document 3** | Lire, modifier le document des attributions d'enseignants |
 | `pyetnic.seps` | **Recherche étudiants** | Lire un étudiant par numéro CF, rechercher par NISS ou nom *(prod uniquement)* |
@@ -206,6 +207,34 @@ population = Doc1PopulationListSave(population=[
 doc1 = approuver_document_1(org_id, population_liste=population)
 ```
 
+### Document 1D - Droits d'inscription
+
+Par année d'études : la population au 5/10 (`nbEleves5ieme`), puis le montant des droits
+(`mtDroitsInscription`). La population s'encode jusqu'à son approbation par l'école, le montant
+seulement après (erreur 20112 avant) ; l'approbation de l'administration fige tout.
+
+```python
+from pyetnic.eprom import lire_document_1d, modifier_document_1d, approuver_document_1d
+from pyetnic.eprom import (
+    Doc1DDroitInscriptionListSave, Doc1DDroitInscriptionLineSave, Doc1DDroitInscriptionListAppr,
+)
+
+doc1d = lire_document_1d(org_id)   # refusé (20101) tant que le Doc A n'est pas approuvé
+
+# 1. La population au 5/10
+modifier_document_1d(org_id, Doc1DDroitInscriptionListSave([
+    Doc1DDroitInscriptionLineSave(coAnnEtude="1", nbEleves5ieme=14),
+]))
+
+# 2. L'approuver : renvoyer la population telle que relue (erreur 20104 sinon)
+approuver_document_1d(org_id, Doc1DDroitInscriptionListAppr.from_document(lire_document_1d(org_id)))
+
+# 3. Le montant des droits
+modifier_document_1d(org_id, Doc1DDroitInscriptionListSave([
+    Doc1DDroitInscriptionLineSave(coAnnEtude="1", mtDroitsInscription=12.5),
+]))
+```
+
 ### Document 2 — Périodes d'activités
 
 ```python
@@ -351,6 +380,7 @@ Les documents suivent un workflow séquentiel imposé par ETNIC :
 Doc A : créer l'organisation      →  statut "Encodé école"
         ↓  l'administration approuve  →  "Approuvé"
 Doc 1 : encoder la population, puis la valider (approuver_document_1)
+Doc 1D : population au 5/10, l'approuver (approuver_document_1d), puis les montants
         ↓
 Doc 2 : n'existe qu'une fois la population validée ; l'école l'encode
         ↓  l'administration approuve Doc 1 et Doc 2 ensemble
@@ -358,7 +388,7 @@ Doc A ET Doc 2 approuvés  →  Doc 3 accessible (l'école encode, rien à appro
 ```
 
 **Règles de blocage :**
-- Doc 1 : inaccessible si l'organisation est "Encodé école"
+- Doc 1 et Doc 1D : inaccessibles tant que l'organisation (Doc A) n'est pas approuvée (erreur 20101)
 - Doc 3 : nécessite que le Doc A (l'organisation) **et** le Doc 2 soient approuvés (erreur ETNIC 20102)
 - L'approbation de l'organisation est effectuée par l'inspection, pas par l'école
 
@@ -498,21 +528,26 @@ pyetnic/
 │   ├── formations_liste.py
 │   ├── organisation.py
 │   ├── document1.py
+│   ├── document1d.py
 │   ├── document2.py
 │   ├── document3.py
 │   ├── seps.py
+│   ├── seps_errors.py
 │   ├── enregistrer_etudiant.py
-│   └── inscriptions.py
+│   ├── inscriptions.py
+│   └── notifications.py
 └── resources/
     ├── EPROM_Formations_Liste_2.0/
     ├── EPROM_Formation_Organisation_8.0/
     ├── EPROM_Formation_Population_1.0/
+    ├── EPROM_Formation_Droits_Inscription_1.0/
     ├── EPROM_Formation_Periodes_1.0/
     ├── EPROM_Document_3_1.0/
     ├── SEPS_Recherche_Etudiants_2.1/
     ├── SEPS_Enregistrer_Etudiant_2.1/
     ├── SEPS_Enregistrer_Inscription_2.1/
-    └── SEPS_Recherche_Inscriptions_2.1/
+    ├── SEPS_Recherche_Inscriptions_2.1/
+    └── SEPS_Notifications_1.0.8/
 ```
 
 ---
