@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyetnic"
-version = "0.2.0b1"
+dynamic = ["version"]
 description = "Access to ETNIC web services through Python"
 readme = "README.md"
 license = "MIT"
@@ -39,6 +39,9 @@ Changelog = "https://github.com/Lapin-Blanc/pyetnic/blob/main/CHANGELOG.md"
 
 [project.scripts]
 pyetnic = "pyetnic.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "pyetnic.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["pyetnic*"]

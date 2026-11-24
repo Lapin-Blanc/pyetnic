@@ -66,7 +66,8 @@ any write against production, and record what a production test teaches in the m
 
 ## Release
 
-1. Bump the version in **both** `pyproject.toml` and `pyetnic/__init__.py`.
+1. Bump `__version__` in `pyetnic/__init__.py`: `pyproject.toml` reads it (`dynamic`), and the
+   publish workflow checks that the tag matches it.
 2. Move the `[Unreleased]` entries of `CHANGELOG.md` under the new version.
 3. Build and `twine check`, then push an annotated tag `vX.Y.Z` (or `vX.Y.ZbN`).
 4. `.github/workflows/publish-pypi.yml` publishes through PyPI Trusted Publishing (OIDC):

@@ -1,4 +1,6 @@
 include README.md
+include CHANGELOG.md
 include LICENSE
 include pyetnic/py.typed
-recursive-include pyetnic/resources *
+recursive-include pyetnic/resources *.wsdl *.xsd
+global-exclude *.py[cod] __pycache__

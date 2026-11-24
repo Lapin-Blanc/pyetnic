@@ -76,6 +76,11 @@ that supports `bN` pre-releases).
 
 ### Changed
 
+- **The version has a single source** (#37): `pyproject.toml` reads `pyetnic.__version__`
+  (`dynamic`), and the publish workflow checks the tag against it.
+- **Packaging** (#37): `CHANGELOG.md` is in the sdist, which carries only the contract files
+  of `pyetnic/resources` (a stray local file can no longer slip in) and no bytecode; the
+  GitHub Actions run on Node 24 (`actions/checkout@v7`, `actions/setup-python@v7`).
 - **EPROM specs 01 to 06 reviewed** (#36, docs): every statement is sourced (manual and
   page, contract, dated production or TQ observation, or marked unknown); spec 02 follows
   Organisation v8 (manual rev 6.0), spec 04 the Périodes manual rev 1.4 (intervention type
