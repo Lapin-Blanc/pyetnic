@@ -97,8 +97,14 @@ It is used by schools and school management software to interact programmaticall
 > `InscriptionInputDataSave` required fields: `cfNum`, `idEtab`, `idImplantation`, `codePostalLieuCours`, `inscription`.
 > `InscriptionInputSave` required fields: `dateInscription`, `statut`.
 > The inscription input element is typed `SpecificiteDataType`, which carries `regulier1` / `regulier5`;
-> the XSD also defines a `SpecificiteDataInputType` without them, used by no element. `SepsSpecificiteSave`
-> follows `SpecificiteDataType`.
+> the catalogue XSD also defined a `SpecificiteDataInputType` without them, used by no element, which the
+> live contract no longer has. `SepsSpecificiteSave` follows `SpecificiteDataType`.
+> Fields of the live contract (#22): `regulier3` (accepted by production's `enregistrerInscription`
+> only: `rechercherInscriptions` and TQ do not know it yet, 2026-11-24), `montant` on both fees,
+> `InscriptionInputSave.fse` (server default true: FSE fields required when the UE is FSE and the
+> student regular at the 1/10; false relaxes them), the sanction's `pourcentageAttribue`,
+> `codeSectionFlag`, `codeSection`, `point` (integrated tests) and `ajournement1Session`;
+> `codeSanction` is optional. Read side: `Inscription.audit` (`SepsAudit`), `Etudiant.bisCreated`.
 
 ## Authentication
 

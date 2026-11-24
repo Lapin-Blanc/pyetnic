@@ -224,6 +224,7 @@ The following are returned by `rechercher_inscriptions`, which is itself classif
 | `SepsExempteDroitInscriptionSpec` | Construction |
 | `SepsAdmission` | Construction |
 | `SepsSanction` | Construction |
+| `SepsAudit` | Construction (#22): `Inscription.audit`, creation and modification date and user kept by the server |
 
 ---
 
