@@ -193,18 +193,10 @@ liste_save = Doc1PopulationListSave(population=[
 doc1 = modifier_document_1(org_id, population_liste=liste_save)
 
 # Valider la population (case « Validé ») : le serveur compare la population envoyée
-# à celle qu'il a enregistrée, et refuse sans elle (erreur 20104). Relire, puis renvoyer.
+# à celle qu'il a enregistrée et refuse sans elle (erreur 20104). La population est donc
+# obligatoire : relire, puis renvoyer.
 doc1 = lire_document_1(org_id)
-population = Doc1PopulationListSave(population=[
-    Doc1PopulationLineSave(
-        coAnnEtude=p.coAnnEtude, nbEleveA=p.nbEleveA, nbEleveEhr=p.nbEleveEhr,
-        nbEleveB=p.nbEleveB, nbEleveDem=p.nbEleveDem, nbEleveMin=p.nbEleveMin,
-        nbEleveExm=p.nbEleveExm, nbElevePl=p.nbElevePl,
-        nbEleveTotHom=p.nbEleveTotHom, nbEleveTotFem=p.nbEleveTotFem,
-    )
-    for p in doc1.populationListe.population
-])
-doc1 = approuver_document_1(org_id, population_liste=population)
+doc1 = approuver_document_1(org_id, Doc1PopulationListSave.from_document(doc1))
 ```
 
 ### Document 1D - Droits d'inscription
@@ -277,6 +269,12 @@ liste_save = Doc3ActiviteListeSave(activite=[
     ),
 ])
 doc3 = modifier_document_3(org_id, liste_save)
+
+# Ajouter une attribution sans effacer les autres : ajouter_attributions_document_3 relit le
+# document, renvoie les lignes existantes de chaque branche touchée (avec leur numéro) et y
+# ajoute les nouvelles. Les branches absentes de la liste ne sont pas envoyées.
+from pyetnic.eprom import ajouter_attributions_document_3
+doc3 = ajouter_attributions_document_3(org_id, liste_save)
 ```
 
 ### SEPS — Recherche et enregistrement d'étudiants

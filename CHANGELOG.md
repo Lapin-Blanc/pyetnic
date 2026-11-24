@@ -34,6 +34,12 @@ that supports `bN` pre-releases).
   refused before the population is approved (error 20112), an approval with other values
   is refused (20104), and the reading is refused before the Doc A is approved (20101,
   production).
+- **`ajouter_attributions_document_3`** (#34): adds teacher attributions without deleting
+  the others. `modifier_document_3` replaces the teacher list of every branch it sends;
+  this writer reads the document, then sends each branch given with its current lines (and
+  their `coNumAttribution`, which the server keeps) followed by the new ones. Tested on TQ.
+- **`Doc1PopulationListSave.from_document(doc)`** (#34) builds the approval of a Doc 1 from
+  a read.
 - **Error routing per service**: `map_etnic_error_code_to_class(code, service=None)`
   and `signal_business_error(..., service=None)` take the `Config.SERVICES` name of the
   service that answered, for codes whose meaning depends on it.
@@ -51,6 +57,10 @@ that supports `bN` pre-releases).
 
 ### Changed
 
+- **`approuver_document_1` requires `population_liste`** (#34, breaking): the server
+  compares it with the stored population and refused every call without it (error
+  20104). A call without it now raises `TypeError` before reaching the server. Pass
+  `Doc1PopulationListSave.from_document(lire_document_1(org_id))`.
 - **Formation Organisation v8 replaces v7** (#32): the embedded contract, endpoint and
   binding are v8's; v7 is no longer embedded. The functions keep their signatures and
   `Organisation` gains one optional field, last.

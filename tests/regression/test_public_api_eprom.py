@@ -377,11 +377,17 @@ class TestApprouverDocument1:
     def test_signature(self):
         sig = inspect.signature(approuver_document_1)
         assert list(sig.parameters) == ["organisation_id", "population_liste"]
-        assert sig.parameters["population_liste"].default is None
+        # Required since 0.3.0 (#34): the server refuses an approval without it (20104).
+        assert sig.parameters["population_liste"].default is inspect.Parameter.empty
+
+    def test_without_population_is_refused_before_any_call(self, mock_soap_call):
+        with pytest.raises(TypeError, match="20104"):
+            approuver_document_1(_org_id(), None)
+        mock_soap_call.assert_not_called()
 
     def test_happy_path(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_DOCUMENT1_APPROUVE_RESPONSE
-        doc = approuver_document_1(_org_id())
+        doc = approuver_document_1(_org_id(), Doc1PopulationListSave([Doc1PopulationLineSave(coAnnEtude=1)]))
         assert isinstance(doc, FormationDocument1)
         assert doc.populationListe.population[0].swAppD1 is True
 

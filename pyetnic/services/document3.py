@@ -5,7 +5,7 @@ from ..soap_client import SoapClientManager
 from .models import (
     FormationDocument3, OrganisationId,
     Doc3ActiviteListe, Doc3ActiviteDetail, Doc3EnseignantList, Doc3EnseignantDetail,
-    Doc3ActiviteListeSave,
+    Doc3ActiviteListeSave, Doc3ActiviteDetailSave, Doc3EnseignantDetailSave, Doc3EnseignantListSave,
 )
 import logging
 from pprint import pformat
@@ -125,7 +125,10 @@ class Document3Service:
         ``activite_liste`` is required by the XSD. ``coNumAttribution`` is a
         server-side counter; freed numbers are not reused. It does not target an
         existing attribution: lines sent without it are accepted and numbered by
-        the server. A branch may carry several lines with the same ``noMatEns``
+        the server, and a line sent back with its number keeps it (tested on
+        TQ, 2026-11-24). To add attributions, prefer
+        :func:`ajouter_attributions_document_3`, which sends the branch's
+        current lines along. A branch may carry several lines with the same ``noMatEns``
         (different ``teStatut`` or ``coDispo``, even identical triples): the
         server keeps them apart, so a read-back cannot match on the staff number
         alone (observed in production, 2026-09).
@@ -141,3 +144,51 @@ class Document3Service:
             activiteListe=to_soap_dict(activite_liste),
         )
         return self._parse_document3_response(result, organisation_id)
+
+    def ajouter_attributions_document_3(
+        self,
+        organisation_id: OrganisationId,
+        activite_liste: Doc3ActiviteListeSave,
+    ) -> Optional[FormationDocument3]:
+        """Add teacher attributions to Doc 3 without deleting the others.
+
+        :func:`modifier_document_3` replaces the teacher list of every branch
+        it sends. This writer reads the document first, then sends, for each
+        branch of ``activite_liste``, the attributions already there followed
+        by the ones given; branches left out are not sent, hence not touched.
+        The placeholder line of a branch never written (no staff number, see
+        :func:`lire_document_3`) is not sent back. A branch is matched on
+        ``coNumBranche`` and ``noAnneeEtude``; one that the document does not
+        have is refused, as the server would refuse it.
+
+        Returns what the server answers to the write, the whole document.
+        """
+        document = self.lire_document_3(organisation_id)
+        if document is None:  # permissive mode: the read was refused
+            return None
+        current = {
+            (activite.coNumBranche, activite.noAnneeEtude): activite
+            for activite in (document.activiteListe.activite if document.activiteListe else [])
+        }
+        merged = []
+        for branche in activite_liste.activite:
+            key = (branche.coNumBranche, branche.noAnneeEtude)
+            if key not in current:
+                raise ValueError(
+                    f"Doc 3 of {organisation_id} has no branch coNumBranche={key[0]}, noAnneeEtude={key[1]!r}"
+                )
+            existing = current[key].enseignantListe.enseignant if current[key].enseignantListe else []
+            kept = [
+                Doc3EnseignantDetailSave(
+                    coNumAttribution=e.coNumAttribution, noMatEns=e.noMatEns, coDispo=e.coDispo,
+                    teStatut=e.teStatut, nbPeriodesAttribuees=e.nbPeriodesAttribuees,
+                )
+                for e in existing
+                if e.noMatEns  # the placeholder of a never-written branch has none
+            ]
+            merged.append(Doc3ActiviteDetailSave(
+                coNumBranche=branche.coNumBranche,
+                noAnneeEtude=branche.noAnneeEtude,
+                enseignantListe=Doc3EnseignantListSave(kept + list(branche.enseignantListe.enseignant)),
+            ))
+        return self.modifier_document_3(organisation_id, Doc3ActiviteListeSave(merged))

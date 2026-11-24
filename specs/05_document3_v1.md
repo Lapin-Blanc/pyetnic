@@ -377,6 +377,13 @@ FormationDocument3ModifReqCT
 > **Observé en production** : le numéro est un **compteur attribué par le serveur**, pas une position.
 > Les numéros libérés ne sont pas repris (une branche réécrite peut porter les n° 1 et 5) : un trou
 > dans la numérotation ne signale pas une ligne manquante.
+>
+> **Testé sur TQ (2026-11-24)** : une branche à une attribution (n° 1) réécrite avec cette ligne,
+> renvoyée avec son `coNumAttribution`, suivie d'une nouvelle ligne sans numéro, se relit avec les n° 1
+> (inchangée) et 2 ; réécrite ensuite avec la seule ligne d'origine et son numéro, elle se relit à
+> l'identique, n° 1 compris. Renvoyer `coNumAttribution` conserve donc le numéro d'une ligne gardée.
+> C'est ce que fait `ajouter_attributions_document_3` (lire, garder les lignes de la branche avec leur
+> numéro, ajouter les nouvelles, réécrire les seules branches touchées).
 
 > **Comparaison réponse vs requête** : le type Save n'a pas les champs en lecture seule de la réponse
 > (`teNomEns`, `tePrenomEns`, `teAbrEns`, `teEnseignant`, `tsMaj`, `teUserMaj`, ni les périodes Doc2/Doc8 /
