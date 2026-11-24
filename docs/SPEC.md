@@ -127,12 +127,15 @@ Two authentication schemes coexist:
 
 ### Endpoints
 
-- Organisation (v7): `https://ws{-tq}.etnic.be/eprom/formation/organisation/v7`
-- Other EPROM (dev): `https://services-web.tq.etnic.be:11443/eprom/...`
-- Other EPROM (prod): `https://services-web.etnic.be:11443/eprom/...`
-- SEPS (prod only): `https://ws.etnic.be/seps/...` (GlobalSign, `verify=True`)
+Every service is called on the ETNIC gateway, at the address the SOA catalogue announces
+(`tools/refresh_contracts.py` reports any difference):
 
-SSL verification is disabled in `dev` for EPROM, enabled in `prod`, and always enabled for `x509_pfx` services.
+- EPROM: `https://ws{-tq}.etnic.be/eprom/...` (Organisation v8: `.../eprom/formation/organisation/v8`)
+- SEPS (prod only): `https://ws.etnic.be/seps/...`
+
+TLS certificates are verified in both environments (`Config.get_verify_ssl()` is always
+true since 0.3.0). The older EPROM hosts `services-web(.tq).etnic.be:11443`, used until
+0.2, needed verification turned off on TQ.
 
 ## Business Workflow
 
@@ -271,7 +274,7 @@ The `.env` file is loaded lazily on first `Config` attribute access. No side eff
 
 Common keys:
 
-- `ENV` — `dev` or `prod`; drives endpoint selection and SSL behaviour.
+- `ENV` - `dev` (TQ) or `prod`; drives endpoint selection.
 - `USERNAME`, `PASSWORD` — EPROM WSSE credentials.
 - `ETAB_ID` — establishment id used by integration tests; if unset, integration tests `pytest.skip()`.
 - `SEPS_PFX_PATH` — path to the X509 PFX bundle (relative to CWD, resolved via `os.path.abspath`).
@@ -291,7 +294,7 @@ Config.PASSWORD = "my_pass"
 
 ## Test Environment
 
-- EPROM server: `services-web.tq.etnic.be` (`ENV=dev`). SEPS has no usable test
+- EPROM server: `ws-tq.etnic.be` (`ENV=dev`). SEPS has no usable test
   environment: it runs in production only (TQ refuses the production certificate, `SECU-0102` / `SECU-0104`).
 - Organisations created there stay "Encodé école": documents 1, 2 and 3 cannot be reached
   on a fresh organisation. Past school years with approved organisations are the only way to

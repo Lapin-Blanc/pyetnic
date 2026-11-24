@@ -71,6 +71,7 @@ class OrganisationService:
                 numOrganisation2AnneesScolaires=org_data.get('numOrganisation2AnneesScolaires'),
                 typeInterventionExterieure=org_data.get('typeInterventionExterieure'),
                 interventionExterieure50p=org_data.get('interventionExterieure50p'),
+                BESAeSI=org_data.get('BESAeSI'),
             )
 
         # No explicit message: let signal_business_error surface the real ETNIC
@@ -114,8 +115,12 @@ class OrganisationService:
         numOrganisation2AnneesScolaires: Optional[int] = None,
         typeInterventionExterieure: Optional[str] = None,
         interventionExterieure50p: Optional[bool] = None,
+        BESAeSI: Optional[bool] = None,
     ) -> Optional[Organisation]:
         """Declare a new organisation of a formation.
+
+        ``BESAeSI`` (Organisation v8) marks a unit given only for the BES
+        "assistant en soins infirmiers", from school year 2026-2027.
 
         The server assigns ``numOrganisation`` in declaration order and returns
         it; it cannot be chosen. Two declarations run in parallel therefore
@@ -151,6 +156,7 @@ class OrganisationService:
             'numOrganisation2AnneesScolaires': numOrganisation2AnneesScolaires,
             'typeInterventionExterieure': typeInterventionExterieure,
             'interventionExterieure50p': interventionExterieure50p,
+            'BESAeSI': BESAeSI,
         }
         # Strip None-valued optional fields: zeep would otherwise emit empty
         # XML elements that ETNIC interprets as "erase this value" (D2 defect).
@@ -161,7 +167,17 @@ class OrganisationService:
         return self._parse_organisation_response(result)
 
     def modifier_organisation(self, organisation: Organisation) -> Optional[Organisation]:
-        """Modifie une organisation de formation existante."""
+        """Modify an existing organisation: the server replaces it as a whole.
+
+        Fields left at ``None`` are not sent, and the server then resets them
+        to their default (``False`` for a flag) instead of keeping the stored
+        value (tested on TQ, 2026-11-24). Send the organisation as read with
+        :func:`lire_organisation`, changes applied, for instance with
+        ``dataclasses.replace(lire_organisation(org_id), BESAeSI=True)``.
+
+        ``eLearning`` and ``partiellementDistance`` are read-only: the request
+        type has no such element.
+        """
         logger.info("Modification de l'organisation %s", organisation.id)
         request_data = {
             'id': organisation_request_id(organisation.id),
@@ -177,6 +193,7 @@ class OrganisationService:
             'numOrganisation2AnneesScolaires': organisation.numOrganisation2AnneesScolaires,
             'typeInterventionExterieure': organisation.typeInterventionExterieure,
             'interventionExterieure50p': organisation.interventionExterieure50p,
+            'BESAeSI': organisation.BESAeSI,
         }
         # Strip None-valued optional fields (D2): an empty XML element would be
         # read by ETNIC as "erase", causing partial-update corruption on modify.

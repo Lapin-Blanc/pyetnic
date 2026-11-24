@@ -111,8 +111,8 @@
 - **Utilisé par** : tous les services (via AbstractExternalResponseType)
 
 ### StatutCT
-- **Fichier XSD** : `FormationOrganisation_v2.xsd` (Formations Liste) / `FormationOrganisation_v7.xsd` (Formation Organisation)
-- **Namespace** : `http://enseignement.cfwb.be/types/formation/organisation/v2` (ou `/v7`)
+- **Fichier XSD** : `FormationOrganisation_v2.xsd` (Formations Liste) / `FormationOrganisation_v8.xsd` (Formation Organisation)
+- **Namespace** : `http://enseignement.cfwb.be/types/formation/organisation/v2` (ou `/v8`)
 - **Structure** :
   ```
   StatutCT
@@ -214,8 +214,8 @@
 - **Utilisé par** : Formations Liste
 
 ### FormationOrganisationCT
-- **Fichier XSD** : `FormationOrganisation_v7.xsd` (remplace v2)
-- **Namespace** : `http://enseignement.cfwb.be/types/formation/organisation/v7`
+- **Fichier XSD** : `FormationOrganisation_v8.xsd` (remplace v2 ; v7 jusqu'à pyetnic 0.2, v8 ajoute `BESAeSI`)
+- **Namespace** : `http://enseignement.cfwb.be/types/formation/organisation/v8`
 - **Structure** :
   ```
   FormationOrganisationCT
@@ -379,6 +379,7 @@
 | `20034` | `false` | Type d'intervention n'est plus disponible à l'encodage | Organisation |
 | `20037` | `false` | Switch réorientation 7TQ 7P incorrect (O/N) | Organisation |
 | `20038` | `false` | Switch réorientation 7TQ 7P doit être oui pour cette implantation | Organisation |
+| `20042` | `false` | Switch BES AeSI incorrect (O/N) (Organisation v8) | Organisation |
 | `30001` | `false` | Numéro d'établissement incorrect | Formations Liste, Organisation |
 | `30002` | `false` | Numéro d'implantation incorrect | Formations Liste, Organisation (Créer) |
 | `30003` | `false` | Statut des documents ne permet pas cette opération | Organisation (Modifier, Supprimer) |
@@ -388,6 +389,7 @@
 | `30007` | `false` | Paramètre anneeScolaire incorrect (format xxxx-xxxx) | Formations Liste, Organisation |
 | `30008` | `false` | enseignementHybride disponible qu'à partir 2022-2023 | Organisation |
 | `30009` | `false` | reorientation7TP disponible qu'à partir 2025-2026 | Organisation |
+| `30010` | `false` | BESAeSI disponible qu'à partir 2026-2027 (Organisation v8) | Organisation |
 | `00011` | `false` | Enregistrement modifié par un autre utilisateur | Documents 1, 2, 3 |
 | `1113` | `false` | Paramètre anneeScolaire incorrect (xxxx-xxxx) | Documents 1, 2, 3 |
 | `1114` | `false` | Numéro d'établissement incorrect | Documents 1, 2, 3 |
@@ -453,14 +455,14 @@
 > Tableau de traçabilité : quel XSD est utilisé par quel service.
 > ✓ = confirmé par analyse WSDL, ? = probable, à confirmer
 
-| Fichier XSD | Formations Liste v2 | Organisation v7 | Document 1 | Document 2 | Document 3 | Document 1D (Droits Insc.) |
+| Fichier XSD | Formations Liste v2 | Organisation v8 | Document 1 | Document 2 | Document 3 | Document 1D (Droits Insc.) |
 |---|---|---|---|---|---|---|
 | AnneeScolaire_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
 | Etablissement_v1.xsd | ✓ | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
 | Organisation_v1.xsd | — | — | ✓ (NOUVEAU) | ✓ (identique) | ✓ (identique) | ✓ (identique) |
 | Formation_v2.xsd | ✓ | — | — | — | — | — |
-| FormationOrganisation_v2.xsd | ✓ | — (remplacé par v7) | — | — | — | — |
-| FormationOrganisation_v7.xsd | — | ✓ | — | — | — | — |
+| FormationOrganisation_v2.xsd | ✓ | — (remplacé par v8) | — | — | — | — |
+| FormationOrganisation_v8.xsd | — | ✓ | — | — | — | — |
 | FormationDocument1_v1.xsd | — | — | ✓ (spécifique) | — | — | — |
 | FormationDocument2_v1.xsd | — | — | — | ✓ (spécifique) | — | — |
 | FormationDocument3_v1.xsd | — | — | — | — | ✓ (spécifique, v1.1) | — |

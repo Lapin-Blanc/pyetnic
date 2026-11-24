@@ -22,6 +22,27 @@ that supports `bN` pre-releases).
   the catalogue archive. A weekly GitHub Actions workflow runs the gateway part
   (`--no-catalogue`: the catalogue closes the connection of the GitHub runners) and opens,
   updates or closes an issue labelled `contract-watch`.
+- **Formation Organisation v8** (#32): `Organisation.BESAeSI` and the `BESAeSI` parameter
+  of `creer_organisation` (a unit given only for the BES "assistant en soins infirmiers",
+  from school year 2026-2027); `TypeInterventionExterieure.BES` (code `G`, new in v8);
+  errors 20042 and 30010 routed to `EtnicValidationError`.
+
+### Changed
+
+- **Formation Organisation v8 replaces v7** (#32): the embedded contract, endpoint and
+  binding are v8's; v7 is no longer embedded. The functions keep their signatures and
+  `Organisation` gains one optional field, last.
+- **Every EPROM service is called on the ETNIC gateway** (#32), at the address the SOA
+  catalogue announces: `ws.etnic.be` / `ws-tq.etnic.be` instead of
+  `services-web(.tq).etnic.be:11443` for Formations Liste and Documents 1 to 3. Reads
+  checked on TQ and in production on 2026-11-24.
+- **TLS certificates are verified on TQ too** (#32): `Config.get_verify_ssl()` is always
+  true; the gateway's certificates chain to a public CA in both environments.
+- **`modifier_organisation` documents what the server does with an omitted field**: it
+  resets it (a flag to `False`) instead of keeping it (tested on TQ, 2026-11-24). Send the
+  organisation as read, changes applied.
+- **Integration tests always run on TQ** (`tests/integration/conftest.py`), whatever
+  `.env` says: several of them write.
 
 ## [0.2.0b1] - 2026-11-24
 

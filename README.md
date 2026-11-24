@@ -45,7 +45,7 @@ pyetnic init-config
 Remplir les valeurs dans `.env` :
 
 ```ini
-# Environnement : dev (services-web.tq.etnic.be) ou prod (services-web.etnic.be)
+# Environnement : dev (ws-tq.etnic.be) ou prod (ws.etnic.be)
 ENV=dev
 
 # Identifiants pour le développement
@@ -161,9 +161,16 @@ org = creer_organisation(
     date_fin=date(2026, 6, 26),
 )
 
-# Modifier
+# Modifier : partir de l'organisation relue. Le serveur remplace l'organisation
+# entière et remet à faux un indicateur omis (champ laissé à None).
 org.dateFinOrganisation = date(2026, 6, 20)
 org = modifier_organisation(org)
+
+# Organisation v8 : BESAeSI (BES d'assistant en soins infirmiers), à partir de 2026-2027
+org = creer_organisation(
+    annee_scolaire="2026-2027", etab_id=1234, impl_id=5678, num_adm_formation=455,
+    date_debut=date(2026, 9, 14), date_fin=date(2027, 6, 25), BESAeSI=True,
+)
 
 # Supprimer
 ok = supprimer_organisation(org_id)
@@ -498,7 +505,7 @@ pyetnic/
 │   └── inscriptions.py
 └── resources/
     ├── EPROM_Formations_Liste_2.0/
-    ├── EPROM_Formation_Organisation_7.0/
+    ├── EPROM_Formation_Organisation_8.0/
     ├── EPROM_Formation_Population_1.0/
     ├── EPROM_Formation_Periodes_1.0/
     ├── EPROM_Document_3_1.0/
@@ -523,8 +530,10 @@ pytest tests/ -k "mock"
 Les tests d'intégration nécessitent un `.env` valide. Ils skipent automatiquement si les credentials sont absents ou si le document n'est pas accessible dans l'environnement courant.
 
 **Environnements ETNIC :**
-- `dev` → `services-web.tq.etnic.be` / `ws-tq.etnic.be` (test, SSL non vérifié)
-- `prod` → `services-web.etnic.be` / `ws.etnic.be` (production, SSL vérifié)
+- `dev` → `ws-tq.etnic.be` (TQ, environnement de test d'ETNIC)
+- `prod` → `ws.etnic.be` (production)
+
+Le certificat TLS est vérifié dans les deux environnements.
 
 ---
 

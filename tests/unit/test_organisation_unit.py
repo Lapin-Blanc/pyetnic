@@ -247,3 +247,69 @@ def test_supprimer_organisation_mock_echec(service, monkeypatch):
     )
 
     assert service.supprimer_organisation(org_id) is False
+
+
+# ---------------------------------------------------------------------------
+# Organisation v8: BESAeSI
+# ---------------------------------------------------------------------------
+
+def test_organisation_v8_endpoint_and_contract():
+    """The service calls Organisation v8 and loads its embedded contract."""
+    from pyetnic.config import Config
+
+    config = Config.SERVICES["ORGANISATION"]
+    assert config.endpoint.endswith("/eprom/formation/organisation/v8")
+    assert config.wsdl_path.startswith("EPROM_Formation_Organisation_8.0/")
+    assert "V8Binding" in config.binding_name
+
+
+def test_lire_organisation_reads_besaesi(service, monkeypatch):
+    response = _mock_org_response("2026-2027", 1234, 328, 1)
+    response["body"]["response"]["organisation"]["BESAeSI"] = True
+    monkeypatch.setattr(service.client_manager, "call_service", lambda *a, **kw: response)
+
+    org = service.lire_organisation(OrganisationId("2026-2027", 1234, 328, 1))
+
+    assert org.BESAeSI is True
+
+
+def test_lire_organisation_without_besaesi_reads_none(service, monkeypatch):
+    monkeypatch.setattr(service.client_manager, "call_service",
+                        lambda *a, **kw: _mock_org_response("2026-2027", 1234, 328, 1))
+
+    assert service.lire_organisation(OrganisationId("2026-2027", 1234, 328, 1)).BESAeSI is None
+
+
+def test_creer_organisation_sends_besaesi_only_when_given(service, monkeypatch):
+    calls = []
+
+    def fake_call(method, **kwargs):
+        calls.append(kwargs)
+        return _mock_org_response("2026-2027", 1234, 328, 1)
+
+    monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+    service.creer_organisation("2026-2027", 1234, 5678, 328, date(2026, 9, 1), date(2027, 6, 30), BESAeSI=True)
+    service.creer_organisation("2026-2027", 1234, 5678, 328, date(2026, 9, 1), date(2027, 6, 30))
+
+    assert calls[0]["BESAeSI"] is True
+    assert "BESAeSI" not in calls[1]
+
+
+def test_modifier_organisation_sends_besaesi(service, monkeypatch):
+    calls = []
+
+    def fake_call(method, **kwargs):
+        calls.append(kwargs)
+        return _mock_org_response("2026-2027", 1234, 328, 1)
+
+    monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+    org = Organisation(
+        id=OrganisationId("2026-2027", 1234, 328, 1),
+        dateDebutOrganisation=date(2026, 9, 1),
+        dateFinOrganisation=date(2027, 6, 30),
+        BESAeSI=False,
+    )
+    service.modifier_organisation(org)
+
+    assert calls[0]["BESAeSI"] is False
+    assert "eLearning" not in calls[0] and "partiellementDistance" not in calls[0]

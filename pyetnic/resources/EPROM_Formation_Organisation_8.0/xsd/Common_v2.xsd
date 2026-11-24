@@ -2,6 +2,9 @@
 <xsd:import namespace="http://etnic.be/types/technical/ResponseStatus/v3" schemaLocation="ResponseStatus_v3.xsd"></xsd:import>
 <xsd:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="requestId_v1.xsd"></xsd:import>
 <xsd:complexType abstract="true" name="ResponseType">
+<xsd:annotation>
+<xsd:documentation>The base response</xsd:documentation>
+</xsd:annotation>
 <xsd:complexContent>
 <xsd:extension base="common:ResponseAttributesType">
 <xsd:sequence>

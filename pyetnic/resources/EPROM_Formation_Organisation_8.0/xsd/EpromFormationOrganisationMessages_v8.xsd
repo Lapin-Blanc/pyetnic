@@ -1,5 +1,5 @@
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/formation/organisation/v7" xmlns:tns="http://services-web.etnic.be/eprom/formation/organisation/messages/v7" xmlns:common="http://etnic.be/types/technical/common/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formation/organisation/messages/v7" version="7.0">
-<xs:import namespace="http://enseignement.cfwb.be/types/formation/organisation/v7" schemaLocation="FormationOrganisation_v7.xsd"></xs:import>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/formation/organisation/v8" xmlns:tns="http://services-web.etnic.be/eprom/formation/organisation/messages/v8" xmlns:common="http://etnic.be/types/technical/common/v2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services-web.etnic.be/eprom/formation/organisation/messages/v8" version="8.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/formation/organisation/v8" schemaLocation="FormationOrganisation_v8.xsd"></xs:import>
 <xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
 <xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
 <xs:import namespace="http://etnic.be/types/technical/common/v2" schemaLocation="Common_v2.xsd"></xs:import>
@@ -29,6 +29,7 @@
 <xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="reorientation7TP" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="BESAeSI" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enseignementHybride" type="xs:boolean"></xs:element>
@@ -99,6 +100,7 @@
 <xs:element minOccurs="0" name="valorisationAcquis" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enPrison" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="reorientation7TP" type="xs:boolean"></xs:element>
+<xs:element minOccurs="0" name="BESAeSI" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="activiteFormation" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="conseillerPrevention" type="xs:boolean"></xs:element>
 <xs:element minOccurs="0" name="enseignementHybride" type="xs:boolean"></xs:element>

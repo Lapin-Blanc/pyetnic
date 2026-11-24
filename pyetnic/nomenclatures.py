@@ -12,7 +12,7 @@ Every Enum uses ``(str, Enum)`` so members compare equal to raw strings:
 Values for SEPS enums are pinned against the XSD enumerations in
 ``pyetnic/resources/SEPS_Enregistrer_Inscription_2.1/xsd/inscription_v1.xsd``.
 Values for ``TypeInterventionExterieure`` are the single-letter codes from
-the Organisation v7 manual (validated 2025-06-10); the XSD type is a
+the Organisation v8 manual (list dated 2026-04-27); the XSD type is a
 free-form ``xs:string`` so they are not contract-validated, but they are the
 values ETNIC actually accepts.
 
@@ -35,15 +35,17 @@ class TypeInterventionExterieure(str, Enum):
     """Types d'intervention extérieure pour une organisation.
 
     Used in ``Organisation.typeInterventionExterieure``. The XSD defines
-    the field as ``xs:string`` — ETNIC expects the single-letter codes
-    below (Organisation v7 manual, validated 2025-06-10), not the long
-    French labels. Codes ``R`` (Récupération périodes) and ``S`` (CISCO
-    Système) were removed by ETNIC and have no member here; reading a
-    legacy organisation that still carries them works (the dataclass keeps
-    the raw string, the Enum simply has no matching member).
+    the field as ``xs:string``: ETNIC expects the single-letter codes
+    below (Organisation v8 manual rev. 6.0, list dated 2026-04-27), not
+    the long French labels. ``G`` (BES) is new in v8. Codes ``R``
+    (Récupération périodes) and ``S`` (CISCO Système) are struck through in
+    the v7 and v8 manuals and have no member here; reading a legacy
+    organisation that still carries them works (the dataclass keeps the raw
+    string, the Enum simply has no matching member).
     """
 
     AGENCE_QUALITE = "Q"
+    BES = "G"
     CONVENTION = "C"
     DISCRIMINATIONS_POSITIVES = "D"
     EHR = "E"
