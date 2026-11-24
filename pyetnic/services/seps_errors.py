@@ -81,7 +81,7 @@ class TropDeResultatsError(SepsEtnicError):
     def __init__(
         self,
         code: str = "30501",
-        description: str = "Trop de résultats — affiner la recherche (prenom, date_naissance, sexe…)",
+        description: str = "Trop de résultats : affiner la recherche (prenom, date_naissance, sexe…)",
         *,
         request_id: Optional[str] = None,
     ):
@@ -107,7 +107,7 @@ class NissMutationError(SepsEtnicError):
         self.nouveau_niss = nouveau_niss
         super().__init__(
             "30401",
-            f"NISS {ancien_niss!r} remplacé par {nouveau_niss!r} — "
+            f"NISS {ancien_niss!r} remplacé par {nouveau_niss!r} : "
             "relancer la recherche avec nouveau_niss",
             request_id=request_id,
         )

@@ -99,6 +99,7 @@ class RechercheEtudiantsService:
             cfNum=et_dict.get("cfNum"),
             rnDetails=RechercheEtudiantsService._parse_etudiant_details(et_dict.get("rnDetails")),
             cfwbDetails=RechercheEtudiantsService._parse_etudiant_details(et_dict.get("cfwbDetails")),
+            bisCreated=et_dict.get("bisCreated"),
         )
 
     def _parse_lire_etudiant_response(self, result) -> Optional[Etudiant]:

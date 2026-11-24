@@ -83,6 +83,7 @@ from ..services.models import (
     SepsExempteDroitInscriptionSpec,
     SepsAdmission,
     SepsSanction,
+    SepsAudit,
     # Inscription (envoi)
     InscriptionInputDataSave,
     InscriptionInputSave,
@@ -142,6 +143,7 @@ __all__ = [
     "SepsExempteDroitInscriptionSpec",
     "SepsAdmission",
     "SepsSanction",
+    "SepsAudit",
     # Modèles inscription (envoi)
     "InscriptionInputDataSave",
     "InscriptionInputSave",

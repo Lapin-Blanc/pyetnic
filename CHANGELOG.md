@@ -11,6 +11,15 @@ that supports `bN` pre-releases).
 
 ### Added
 
+- **SEPS models follow the live production contract** (#22). Read: `Inscription.audit`
+  (`SepsAudit`: `dateCreation`, `utilisateurCreation`, `dateModification`,
+  `utilisateurModification`), `Etudiant.bisCreated`, `SepsSpecificite.regulier3`, `montant`
+  on `SepsDroitInscription` and `SepsDroitInscriptionSpecifique`, and on `SepsSanction`
+  `pourcentageAttribue`, `codeSectionFlag`, `codeSection`, `point`, `ajournement1Session`.
+  Write: `SepsSpecificiteSave.regulier3` (production `enregistrerInscription` only),
+  `InscriptionInputSave.fse`, and the same fee and sanction fields. Enums:
+  `CodeAdmission.AUCUN`, `ValorisationAcquis.C50`, `MotifExemptionSpec.C50`; every SEPS enum
+  is now checked against the embedded XSD.
 - **SEPS write results** (#21), exported from `pyetnic.seps`: `SepsMessage`,
   `SepsEcritureResult`, `EnregistrerEtudiantResult` (`cree` for 201, `fusionne` for 200,
   `bis_cree`), `ModifierEtudiantResult`, `InscriptionResult` (`plus_de_4_ue` for 30051).
@@ -27,6 +36,7 @@ that supports `bN` pre-releases).
 
 ### Changed
 
+- **`SepsSanction.codeSanction` is optional** (#22), as in the live contract.
 - **The SEPS writers return the server's code and messages** (#21, construction symbols):
   `enregistrer_etudiant` returns `EnregistrerEtudiantResult`, `modifier_etudiant`
   `ModifierEtudiantResult`, `enregistrer_inscription` and `modifier_inscription`

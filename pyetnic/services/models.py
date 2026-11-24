@@ -384,6 +384,7 @@ class Etudiant:
     cfNum: Optional[str] = None
     rnDetails: Optional[EtudiantDetails] = None
     cfwbDetails: Optional[EtudiantDetails] = None
+    bisCreated: Optional[str] = None                      # "O" | "N" : NISS bis créé (enregistrerEtudiant)
 
 # Types Save pour EnregistrerEtudiant / ModifierEtudiant
 
@@ -428,6 +429,7 @@ class SepsDroitInscription:
     """Droit d'inscription (DroitInscriptionType)."""
     indicateurDroitInscription: str                        # "O" | "N"
     exempte: Optional["SepsExempteDroitInscription"] = None
+    montant: Optional[str] = None                         # texte libre, si indicateur à "O"
 
 @dataclass
 class SepsExempteDroitInscription:
@@ -440,29 +442,40 @@ class SepsDroitInscriptionSpecifique:
     """Droit d'inscription spécifique (DroitInscriptionSpecifiqueType)."""
     indicateurDroitInscriptionSpecifique: str              # "O" | "N"
     exempte: Optional["SepsExempteDroitInscriptionSpec"] = None
+    montant: Optional[str] = None                         # texte libre, si indicateur à "O"
 
 @dataclass
 class SepsExempteDroitInscriptionSpec:
     """Exemption de droit d'inscription spécifique."""
     indicateurExempteDroitInscriptionSpec: str             # "O" | "N"
-    motifExemptionSpec: str                                # C01-C13
+    motifExemptionSpec: str                                # C01-C13, C50
 
 @dataclass
 class SepsAdmission:
     """Données d'admission (AdmissionType)."""
-    codeAdmission: str                                     # "REUSSITE"|"TITREBEL"|"TITREETR"|"AUTRE"
+    codeAdmission: str                                     # "REUSSITE"|"TITREBEL"|"TITREETR"|"AUTRE"|"AUCUN"
     typeEnseignement: Optional[str] = None
     titreDelivre: Optional[str] = None
     equivalence: Optional[str] = None                     # C01-C04
-    valorisationAcquis: Optional[str] = None              # C01-C04, C10-C40
+    valorisationAcquis: Optional[str] = None              # C01-C04, C10-C40, C50
 
 @dataclass
 class SepsSanction:
-    """Sanction de formation (SanctionType)."""
-    codeSanction: str                                      # "RE"|"AB"|"EH"
+    """Sanction de formation (SanctionType).
+
+    ``codeSectionFlag``, ``codeSection`` (11 caractères) et ``point`` ne sont
+    pris en compte que pour une épreuve intégrée ; ``pourcentageAttribue``
+    seulement si ``codeSanction`` vaut ``RE``.
+    """
+    codeSanction: Optional[str] = None                    # "RE"|"AB"|"EH" (facultatif dans le contrat en direct)
     valorisationAcquisSanction: Optional[str] = None      # C00-C05
     motifAbandon: Optional[str] = None                    # TPS|PRO|FAM|SAN|ATT|MEM|FMJ|NUM|AUT|INC
     statutFinFormation: Optional[str] = None              # C01-C06
+    pourcentageAttribue: Optional[str] = None
+    codeSectionFlag: Optional[bool] = None
+    codeSection: Optional[str] = None
+    point: Optional[str] = None
+    ajournement1Session: Optional[str] = None             # "O" | "N"
 
 @dataclass
 class SepsSpecificite:
@@ -478,6 +491,7 @@ class SepsSpecificite:
     difficulteAutre: Optional[str] = None                 # "O" | "N" | "X"
     admission: Optional[SepsAdmission] = None
     sanction: Optional[SepsSanction] = None
+    regulier3: Optional[str] = None                       # "O" | "N", régulier au 3/10
 
 @dataclass
 class SepsUE:
@@ -512,6 +526,20 @@ class Inscription:
     statut: Optional[str] = None                          # "DE" | "AN"
     ue: Optional[SepsUE] = None
     specificite: Optional[SepsSpecificite] = None
+    audit: Optional["SepsAudit"] = None
+
+
+@dataclass
+class SepsAudit:
+    """Traçabilité d'une inscription tenue par le serveur SEPS (AuditType).
+
+    Les dates viennent telles que le serveur les écrit (chaîne ISO, heure
+    locale). Absent du contrat du catalogue, présent dans le contrat en direct.
+    """
+    dateCreation: Optional[str] = None
+    utilisateurCreation: Optional[str] = None
+    dateModification: Optional[str] = None
+    utilisateurModification: Optional[str] = None
 
 # ---------------------------------------------------------------------------
 # Modèles Inscription (envoi)
@@ -527,10 +555,14 @@ class SepsUESave:
 class SepsSpecificiteSave:
     """Spécificités d'inscription à envoyer (SpecificiteDataType).
 
-    L'élément d'entrée ``inscription/specificite`` est typé ``SpecificiteDataType``
-    (inscription_v1.xsd l.18), et non ``SpecificiteDataInputType`` — ce dernier
-    est un type XSD mort, jamais référencé. Le contrat d'entrée porte donc bien
-    ``regulier1`` / ``regulier5`` (IndicateurType, "O"/"N").
+    L'élément d'entrée ``inscription/specificite`` est typé ``SpecificiteDataType``,
+    qui porte ``regulier1`` / ``regulier5`` (IndicateurType, "O"/"N"). Le contrat
+    du catalogue déclarait aussi un ``SpecificiteDataInputType`` sans eux, jamais
+    référencé ; le contrat en direct ne l'a plus.
+
+    ``regulier3`` (régulier au 3/10) n'est accepté que par ``enregistrerInscription``
+    en production : le service de recherche et l'environnement TQ ne le
+    connaissent pas encore (observé le 2026-11-24).
     """
     regulier1: Optional[str] = None                       # "O" | "N"
     regulier5: Optional[str] = None                       # "O" | "N"
@@ -543,6 +575,7 @@ class SepsSpecificiteSave:
     difficulteAutre: Optional[str] = None                 # "O" | "N" | "X"
     admission: Optional[SepsAdmission] = None
     sanction: Optional[SepsSanction] = None
+    regulier3: Optional[str] = None                       # "O" | "N", enregistrerInscription seulement
 
 @dataclass
 class InscriptionInputSave:
@@ -552,6 +585,9 @@ class InscriptionInputSave:
     anneeScolaire: Optional[int] = None
     ue: Optional[SepsUESave] = None
     specificite: Optional[SepsSpecificiteSave] = None
+    # Champs FSE exigés si l'UE est FSE et l'inscription régulière au 1/10
+    # (défaut serveur : True). False les rend facultatifs.
+    fse: Optional[bool] = None
 
 @dataclass
 class InscriptionInputDataSave:
