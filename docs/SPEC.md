@@ -23,6 +23,7 @@ It is used by schools and school management software to interact programmaticall
 | `SEPS_ENREGISTRER_ETUDIANT` | SEPSEnregistrerEtudiant | v1 | X509 PFX |
 | `SEPS_ENREGISTRER_INSCRIPTION` | SEPSEnregistrerInscription | v1 | X509 PFX |
 | `SEPS_RECHERCHE_INSCRIPTIONS` | SEPSRechercheInscriptions | v1 | X509 PFX |
+| `SEPS_NOTIFICATIONS` | SEPSNotifications | v1 (catalogue 1.0.8) | X509 PFX |
 
 ### EPROM operations
 
@@ -84,6 +85,17 @@ It is used by schools and school management software to interact programmaticall
 
 **RechercheInscriptions (v1)**
 - `rechercherInscriptions` → `rechercher_inscriptions(annee_scolaire?, etab_id?, date_requete?, cf_num?, no_administratif?, no_organisation?)`
+
+**Notifications (v1)**
+- `lireNotifications` -> `lire_notifications(etab_id, date_debut)` -> `List[SepsNotification]`
+
+> Identity changes of the establishment's students since `date_debut` (inclusive): code 02 sex,
+> 04 name, 05 address, 06 nationality, 07 NISS, 08 status (`CodeNotification`). 30105 (none found)
+> gives `[]`. Authentication is X509 like the other SEPS services: the catalogue announces a
+> UsernameToken profile, but production refuses the EPROM credentials (SECU-1101) and accepts the
+> certificate (2026-11-24). Code 08, added by manual 2.3, comes without `description`: the contract
+> has none for it (2026-11-24). A `date_debut` in the future answers `success=true` with 30050 and
+> 30105: `[]`, the two codes logged (2026-11-24).
 
 **EnregistrerInscription (v1)**
 - `enregistrerInscription` → `enregistrer_inscription(inscription_input_data?)`

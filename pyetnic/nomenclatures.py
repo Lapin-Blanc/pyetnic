@@ -375,3 +375,19 @@ class CodeNiveau(str, Enum):
 # ---------------------------------------------------------------------------
 
 TYPES_INTERVENTION_EXTERIEURE: list = [member.value for member in TypeInterventionExterieure]
+
+
+class CodeNotification(str, Enum):
+    """Type de changement notifié par ``lire_notifications`` (NotificationCodeType).
+
+    Le contrat ne déclare que le motif ``[0-9]{2}`` ; les codes viennent du manuel
+    « Notifications 2.3 » (juin 2026), qui ajoute 08. Used in
+    ``SepsNotification.code``.
+    """
+
+    SEXE = "02"
+    NOM_PRENOM = "04"
+    ADRESSE = "05"
+    NATIONALITE = "06"
+    NISS = "07"
+    STATUT = "08"
