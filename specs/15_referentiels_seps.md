@@ -1,43 +1,49 @@
-# Référentiels SEPS — Codes pays, nationalités & communes (INS)
+# Référentiels SEPS - Codes pays, nationalités et communes (INS)
 
-> Documentation + extraction exploitable des référentiels alimentant les champs « code » de la signalétique SEPS.
-> Sources : `Codes_Pays.xls` (260 pays) + `INS_communesNais200723.xlsx` (communes/districts INS) + manuel SEPS §3.1.2/§3.1.8.2.
-> Date d'analyse : 2026-06-09 (session 7)
+> Documentation et extraction exploitable des référentiels qui alimentent les champs « code » de la signalétique SEPS.
+> Sources : `Codes_Pays.xls` (260 pays) et `INS_communesNais200723.xlsx` (communes/districts INS), fichiers de référence du catalogue SOA ; manuel « Enregistrer Étudiants » **2.3** (rev 10.0, 10/06/2026), §3.1.2, §3.1.8.2, §3.1.8.4 et §3.3.1.2 ; contrat de production `etudiantDetails_v1.xsd` (relevé du 2026-11-24).
+> Première analyse : 2026-06-09 (session 7). Mise à jour : 2026-11-24 (#24) : références au manuel 2.3, assouplissement d'`AdresseType`, état réel de pyetnic.
 
 ---
 
 ## Pourquoi ce référentiel
 
-Dans les XSD SEPS, les champs `codePays`, `codeNationalite` et `localite.code` sont déclarés en **`xs:string` libre** (aucune énumération). Leur **sémantique** (codes **INS/ONSS**) n'est donnée que par le manuel et par ces deux fichiers de référence du catalogue SOA. Pour pyetnic, il faut donc un référentiel **embarqué** permettant de **valider** et **résoudre** ces codes.
+Dans les XSD SEPS, les champs `codePays`, `codeNationalite` et `localite.code` sont déclarés en **`xs:string` libre** (aucune énumération, aucun pattern). Leur **sens** (codes **INS/ONSS**) n'est donné que par le manuel et par ces deux fichiers de référence du catalogue SOA.
 
-Champs concernés (specs 09-12) :
+Champs concernés (specs 09 et 10) :
 
-| Champ XSD | Type déclaré | Référentiel | Format réel |
+| Champ XSD | Card. (contrat de production) | Référentiel | Format réel (manuel 2.3) |
 |---|---|---|---|
-| `naissance.codePays` | string | **pays** (`CO_ONSS_ID`) | INS pays, **5 chiffres** zero-paddés (ex. `00150`) |
-| `adresse.codePays` | string | **pays** (`CO_ONSS_ID`) | idem |
-| `codeNationalite` | string | **pays** (`CO_NATIO_ID`) | INS nationalité, **5 chiffres** (ex. `00150`) |
-| `naissance.localite.code` | string | **communes** (`code INS`) | INS commune, **5 chiffres** (ex. `25072`) ; obligatoire si **belge** |
-| `adresse.localite.code` | string | **communes** | idem |
+| `naissance.codePays` | obligatoire | **pays** (`CO_ONSS_ID`) | INS pays, **5 chiffres** (`[0-9]{5}`, ex. `00150`) |
+| `adresse.codePays` | **0..1** (obligatoire au catalogue 2.1 et au manuel) | **pays** (`CO_ONSS_ID`) | idem |
+| `codeNationalite` | 0..1 | **pays** (`CO_NATIO_ID`) | INS nationalité, **5 chiffres** (ex. `00150`) |
+| `naissance.localite.code` | 0..1 | **communes** (`code INS`) | INS commune, **5 chiffres** (`[0-9]{5}`, ex. `25072`) ; obligatoire si **belge** |
+| `adresse.localite.code` | 0..1 | **communes** | idem |
 
-> Règle manuel : la **localité** porte un `code` INS **uniquement si la commune/district est belge** ; sinon seul `description` (libellé ville) est renseigné. Le **`codePays`** est un code INS **pays** (≠ code commune).
+> Règles du manuel 2.3 :
+> - §3.1.2 : la **localité** porte un `code` INS **obligatoire si la commune ou le district est belge** ; sinon seul `description` (libellé de la ville) est renseigné. Pour un enregistrement sans NISS (§3.3.1.2.1) : code de la localité de naissance si le pays est la Belgique, sinon sa description ; description de la localité d'adresse si le pays n'est pas la Belgique.
+> - §3.1.8.2 : pour une naissance à l'étranger, le RN ne renvoie que le **nom** de la ville, sans code.
+> - Le **`codePays`** est un code INS **pays** (pas un code de commune).
+> - Erreur associée : `30076` « Code de la localité est invalide ou est absent et la localité est en Belgique ou si la localité n'est pas en Belgique et la description de la localité est vide » (spec 10).
+>
+> **`codeNationalite` : `00150`, pas `BE`.** L'exemple DETAILS du manuel 2.3 (§3.3.1.2.2.2) envoie encore `BE` ; toutes les réponses portent le code INS. Envoyer le code INS à 5 chiffres.
 
 ---
 
 ## Référentiel PAYS / NATIONALITÉS
 
-**Source** : `Codes_Pays.xls`, feuille `pays` — **260 entrées**. Colonnes d'origine : `CO_ONSS_ID`, `CO_ISO`, `CO_ISO_3`, `TE_NOM_PAYS` (maj.), `TE_NOM_PAYS_MIN`, `TE_NOM_PAYS_LONG`, `CO_NATIO_ID`, `DT_DATE_DEBUT`, `DT_DATE_FIN`.
+**Source** : `Codes_Pays.xls`, feuille `pays`, **260 entrées**. Colonnes d'origine : `CO_ONSS_ID`, `CO_ISO`, `CO_ISO_3`, `TE_NOM_PAYS` (majuscules), `TE_NOM_PAYS_MIN`, `TE_NOM_PAYS_LONG`, `CO_NATIO_ID`, `DT_DATE_DEBUT`, `DT_DATE_FIN`.
 
 ### Règle de codage
-- **`codePays`** (naissance, adresse) = **`CO_ONSS_ID`** zero-paddé à 5 chiffres. Ex. Belgique `150` → **`00150`**, France `111` → `00111`, Congo (RDC) `306` → `00306`.
-- **`codeNationalite`** = **`CO_NATIO_ID`** zero-paddé à 5 chiffres.
-- `CO_ONSS_ID` ∈ [101 ; 999]. **Codes spéciaux** : `900` Apatride, `901` Pas encore définitivement établi, `999` Indéterminé.
-- ⚠️ **`CO_NATIO_ID` ≠ `CO_ONSS_ID` pour 43 entrées** : certains territoires renvoient à la nationalité du pays « parent ». Ex. Gibraltar (180) → natio 112 (Royaume-Uni) ; Macao/Hong Kong (231/234) → 218 (Chine) ; Mayotte/Réunion (350/387) → 111 (France). **⇒ ne pas déduire la nationalité du code pays : utiliser la colonne `code_nationalite`.**
-- ⚠️ **Namibie** : ISO2 = `NA` (préservé à l'extraction ; piège classique « NA → valeur manquante »).
+- **`codePays`** (naissance, adresse) = **`CO_ONSS_ID`** complété à 5 chiffres. Ex. Belgique `150` -> **`00150`**, France `111` -> `00111`, Congo (RDC) `306` -> `00306`.
+- **`codeNationalite`** = **`CO_NATIO_ID`** complété à 5 chiffres.
+- `CO_ONSS_ID` est compris entre 101 et 999. **Codes spéciaux** : `900` Apatride, `901` Pas encore définitivement établi, `999` Indéterminé.
+- **`CO_NATIO_ID` diffère de `CO_ONSS_ID` pour 43 entrées** : certains territoires renvoient à la nationalité du pays « parent ». Ex. Gibraltar (180) -> nationalité 112 (Royaume-Uni) ; Macao/Hong Kong (231/234) -> 218 (Chine) ; Mayotte/Réunion (350/387) -> 111 (France). **Ne pas déduire la nationalité du code pays** : utiliser la colonne `code_nationalite`.
+- **Namibie** : ISO2 = `NA` (préservé à l'extraction ; piège classique « NA -> valeur manquante »).
 
 ### Extraction produite
-- **`referentiels/codes_pays.csv`** — colonnes : `code_pays` (5 ch.), `co_onss_id`, `iso2`, `iso3`, `nom_pays`, `nom_pays_long`, `code_nationalite` (5 ch.), `co_natio_id`, `date_debut`, `date_fin`.
-- **`referentiels/codes_pays.json`** — même contenu (tableau d'objets).
+- **`referentiels/codes_pays.csv`** : colonnes `code_pays` (5 ch.), `co_onss_id`, `iso2`, `iso3`, `nom_pays`, `nom_pays_long`, `code_nationalite` (5 ch.), `co_natio_id`, `date_debut`, `date_fin`.
+- **`referentiels/codes_pays.json`** : même contenu (tableau d'objets).
 
 Extrait :
 
@@ -53,18 +59,18 @@ Extrait :
 
 ## Référentiel COMMUNES / DISTRICTS (INS)
 
-**Source** : `INS_communesNais200723.xlsx`, feuille `Feuil1` — **3 277 lignes**, **2 789 codes INS uniques**. Colonnes : `code INS`, `Date de début`, `Date de fin`, `Nom officiel (RN)`, `Nom unique (ETNIC)`.
+**Source** : `INS_communesNais200723.xlsx`, feuille `Feuil1`, **3 277 lignes**, **2 789 codes INS uniques**. Colonnes : `code INS`, `Date de début`, `Date de fin`, `Nom officiel (RN)`, `Nom unique (ETNIC)`.
 
 ### Caractéristiques
 - **`code INS`** : toujours **5 chiffres** (plage 11001-93090). C'est ce qui alimente `localite.code`.
-- **Historique** : plusieurs lignes par code (avant/après les **fusions de communes**, ex. 2014, 1977). Une ligne sans `Date de fin` = **entrée active** (**601 lignes actives**).
-- **`Nom officiel (RN)`** : libellé en MAJUSCULES tel que renvoyé par le Registre National.
-- **`Nom unique (ETNIC)`** : libellé désambiguïsé (ex. plusieurs « Berchem » → `Berchem (ANTWERPEN)`, `Berchem (OOST-VLAANDEREN)`…).
+- **Historique** : plusieurs lignes par code (avant et après les **fusions de communes**, ex. 1977, 2014). Une ligne sans `Date de fin` = **entrée active** (**601 lignes actives**).
+- **`Nom officiel (RN)`** : libellé en majuscules tel que renvoyé par le Registre national.
+- **`Nom unique (ETNIC)`** : libellé désambiguïsé (ex. plusieurs « Berchem » -> `Berchem (ANTWERPEN)`, `Berchem (OOST-VLAANDEREN)`…).
 
 ### Extraction produite
-- **`referentiels/codes_communes_ins.csv`** — historique complet (3 277 lignes) : `code_ins`, `date_debut`, `date_fin`, `nom_officiel_rn`, `nom_unique_etnic`, `actif` (`O`/`N`).
-- **`referentiels/codes_communes_ins.json`** — même contenu (tableau d'objets).
-- **`referentiels/codes_communes_ins_actives.csv`** — **601** communes/districts **actifs** (sous-ensemble pratique pour validation/saisie courante) : `code_ins`, `nom_officiel_rn`, `nom_unique_etnic`, `date_debut`.
+- **`referentiels/codes_communes_ins.csv`** : historique complet (3 277 lignes) : `code_ins`, `date_debut`, `date_fin`, `nom_officiel_rn`, `nom_unique_etnic`, `actif` (`O`/`N`).
+- **`referentiels/codes_communes_ins.json`** : même contenu (tableau d'objets).
+- **`referentiels/codes_communes_ins_actives.csv`** : les **601** communes/districts **actifs** : `code_ins`, `nom_officiel_rn`, `nom_unique_etnic`, `date_debut`.
 
 Extrait :
 
@@ -76,25 +82,15 @@ Extrait :
 
 ---
 
-## Usage côté pyetnic (recommandations)
+## État dans pyetnic
 
-1. **Embarquer** les CSV/JSON dans le package (données de référence versionnées). Noter la date de l'extrait communes (**20/07/2023** d'après le nom de fichier) ; prévoir une procédure de mise à jour depuis le catalogue SOA.
-2. **Validation à l'écriture** (`enregistrerEtudiant`, `enregistrerInscription`) :
-   - `codePays` / `codeNationalite` ∈ ensemble des codes 5 chiffres connus ; padder un entier sur 5 (`f"{n:05d}"`).
-   - `localite.code` requis (et valide) **si** `codePays == "00150"` (Belgique) ; sinon fournir `localite.description`.
-3. **Résolution à la lecture** : `code_pays → nom_pays`, `code_ins → nom_unique_etnic` pour affichage.
-4. **Communes historiques** : pour une date de naissance ancienne, le code peut référencer une commune **fusionnée** ; conserver l'historique complet pour la résolution, mais proposer les **actives** à la saisie.
+pyetnic **n'embarque pas** ces référentiels et ne valide ni ne résout ces codes (état au 2026-11-24) : les champs restent des chaînes, transmises telles quelles. Les extraits de `specs/referentiels/` servent de référence aux applications clientes.
 
-### Esquisse d'API (helpers — option retenue : extraction simple, helpers à implémenter dans pyetnic)
-```python
-def pad_code(n: int | str) -> str: return f"{int(n):05d}"
-
-def valider_code_pays(code: str) -> bool: ...        # ∈ codes_pays.code_pays
-def resoudre_pays(code: str) -> str | None: ...      # -> nom_pays
-def code_nationalite_du_pays(code_pays: str) -> str: # via co_natio_id (≠ co_onss_id parfois)
-def valider_localite(code_ins: str, *, belge: bool) -> bool: ...
-def resoudre_commune(code_ins: str) -> str | None: ...  # -> nom_unique_etnic
-```
+Ce qu'une application cliente doit savoir pour s'en servir :
+1. **Date de l'extrait** : le fichier des communes date du **20/07/2023** d'après son nom. Le resynchroniser depuis le catalogue SOA en cas de doute.
+2. **À l'écriture** (`enregistrerEtudiant`, `modifierEtudiant`) : `codePays` / `codeNationalite` parmi les codes à 5 chiffres connus (compléter un entier à 5 chiffres) ; `localite.code` requis et valide si `codePays == "00150"` (Belgique), sinon `localite.description`.
+3. **À la lecture** : `code_pays -> nom_pays`, `code_ins -> nom_unique_etnic` pour l'affichage.
+4. **Communes historiques** : pour une date de naissance ancienne, le code peut désigner une commune **fusionnée** depuis : garder l'historique complet pour résoudre, proposer les communes **actives** à la saisie.
 
 ---
 
@@ -102,8 +98,8 @@ def resoudre_commune(code_ins: str) -> str | None: ...  # -> nom_unique_etnic
 
 | Fichier | Lignes | Description |
 |---|---|---|
-| `referentiels/codes_pays.csv` / `.json` | 260 | Pays + nationalités (codes INS 5 ch.) |
+| `referentiels/codes_pays.csv` / `.json` | 260 | Pays et nationalités (codes INS 5 ch.) |
 | `referentiels/codes_communes_ins.csv` / `.json` | 3 277 | Communes/districts INS (historique complet) |
 | `referentiels/codes_communes_ins_actives.csv` | 601 | Communes/districts actifs |
 
-> Source de vérité : catalogue de services SOA ETNIC (« documentation sur les pays / communes / districts et codes INS »). Les extraits ci-dessus en sont une copie exploitable, à re-synchroniser périodiquement.
+> Source de vérité : catalogue de services SOA ETNIC (« documentation sur les pays / communes / districts et codes INS », citée par le manuel 2.3 §3.1.2 et §3.1.8.2). Les extraits ci-dessus en sont une copie exploitable, à resynchroniser périodiquement.

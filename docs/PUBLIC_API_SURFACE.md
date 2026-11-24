@@ -1,7 +1,7 @@
 # Public API Surface
 
 > **Status**: Authoritative reference for `BACKWARDS_COMPAT.md`
-> **Last reviewed**: Sprint 0
+> **Last reviewed**: Sprint 0; SEPS read functions revised 2026-11-24 (#24)
 
 This document enumerates every symbol exported from `pyetnic` and classifies it as either **stable** (subject to the backwards compatibility rules) or **construction** (free to evolve).
 
@@ -131,6 +131,7 @@ All SEPS inscription enums are pinned against `inscription_v1.xsd`.
 |---|---|
 | `lire_etudiant` | Used or planned for use in reading student records |
 | `rechercher_etudiants` | Used for searches |
+| `rechercher_inscriptions` | Promoted from construction (#24): used in production by a consuming application. Returns `[]` on 30102 / 30103 |
 
 ### Stable — Exceptions
 
@@ -171,6 +172,18 @@ Added by #20, not yet caught by a production caller.
 | `SepsLocalite` | Nested |
 | `SepsNaissance` | Nested |
 | `SepsDeces` | Nested |
+| `Inscription` | Returned by `rechercher_inscriptions`; promoted with it (#24) |
+| `SepsUE` | Nested in `Inscription` |
+| `SepsLieuCours` | Nested |
+| `SepsSpecificite` | Nested |
+| `SepsDroitInscription` | Nested |
+| `SepsExempteDroitInscription` | Nested |
+| `SepsDroitInscriptionSpecifique` | Nested |
+| `SepsExempteDroitInscriptionSpec` | Nested |
+| `SepsAdmission` | Nested |
+| `SepsSanction` | Nested |
+
+Adding optional fields to these read models (as the live SEPS contracts do) is a backwards-compatible change.
 
 ### Construction — Functions (write)
 
@@ -182,7 +195,6 @@ The following functions are **exported but not in production use**. They may be 
 | `modifier_etudiant` | Never used in production. |
 | `enregistrer_inscription` | Never used in production. |
 | `modifier_inscription` | Never used in production. |
-| `rechercher_inscriptions` | Never used in production. Even though it's a read operation, it's classified construction because no test harness or production caller exists. |
 
 ### Construction — Dataclasses (write)
 
@@ -207,23 +219,6 @@ The four SEPS writers return these. A refusal raises a `SepsEtnicError` instead:
 | `EnregistrerEtudiantResult` | `etudiant`, `bis_cree`, `cree` (201), `fusionne` (200) |
 | `ModifierEtudiantResult` | `etudiant` |
 | `InscriptionResult` | `inscription`, `plus_de_4_ue` (30051); returned by `enregistrer_inscription` and `modifier_inscription` |
-
-### Construction — Dataclasses (inscription read)
-
-The following are returned by `rechercher_inscriptions`, which is itself classified construction.
-
-| Symbol | Notes |
-|---|---|
-| `Inscription` | Construction |
-| `SepsUE` | Construction |
-| `SepsLieuCours` | Construction |
-| `SepsSpecificite` | Construction |
-| `SepsDroitInscription` | Construction |
-| `SepsExempteDroitInscription` | Construction |
-| `SepsDroitInscriptionSpecifique` | Construction |
-| `SepsExempteDroitInscriptionSpec` | Construction |
-| `SepsAdmission` | Construction |
-| `SepsSanction` | Construction |
 
 ---
 

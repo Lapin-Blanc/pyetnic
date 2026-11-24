@@ -2,7 +2,7 @@
 
 > Ce fichier centralise tous les types XSD réutilisés par plusieurs services ETNIC.
 > Il est enrichi à chaque session d'analyse d'un nouveau service.
-> Dernière mise à jour : 2026-06-09 (session 7 — **famille SEPS** : Étudiants, Inscriptions, Notifications + référentiels)
+> Dernière mise à jour : 2026-11-24 (#24 : section 7, **famille SEPS**, refondue sur les manuels de juin 2026, les contrats de production et les observations de production ; session 7 pour la première version)
 >
 > **Deux familles distinctes** : **EPROM** (sections 1-6, organisation des formations) et **SEPS**
 > (section 7, étudiants & inscriptions — Enseignement pour Adultes). Patterns techniques différents
@@ -474,23 +474,25 @@
 
 ---
 
-# 7. Famille SEPS (Étudiants & Inscriptions — Enseignement pour Adultes)
+# 7. Famille SEPS (Étudiants et inscriptions, Enseignement pour Adultes)
 
-> **NOUVEAU — session 7.** Famille **distincte d'EPROM**. Specs 09-13 (services) + 15 (référentiels). Les circulaires (dont la 9593) sont du réglementaire, hors de ce dépôt.
-> 5 services : Recherche Étudiants (09), Sauvegarde Étudiant (10), Enregistrer Inscription (11),
-> Recherche Inscriptions (12), Notifications (13). Contrat **external_v1** ; releases 2.1.9 (sauf Notifications 1.0.8).
+> Session 7, refondue le 2026-11-24 (#24). Famille **distincte d'EPROM**. Specs 09 à 13 (services) et 15 (référentiels). Les circulaires sont du réglementaire, hors de ce dépôt.
+> 5 services : Recherche Étudiants (09), Sauvegarde Étudiant (10), Enregistrer Inscription (11), Recherche Inscriptions (12), Notifications (13). Contrat **external v1**.
+> **Sources** : manuels de juin 2026 (Enregistrer Étudiants **2.3**, Enregistrer Inscriptions **2.4**, Recherche Inscriptions **2.4**, Notifications **2.3**) ; manuel général **2.1.9** (18/01/2023) pour Recherche Étudiants, dont le manuel 2.3 n'est pas accessible (lien du catalogue en 404) ; contrats servis par la production (relevé du 2026-11-24, embarqués dans `pyetnic/resources/SEPS_*`) ; observations de production, datées dans chaque spec.
 
 ## 7.1. Particularités techniques SEPS vs EPROM
 
 | Aspect | EPROM | SEPS |
 |---|---|---|
-| Auth | WS-Security UsernameToken | **WS-Security certificat X.509** (BinarySecurityToken + Signature) |
+| Auth | WS-Security UsernameToken | WS-Security certificat X.509 (BinarySecurityToken + signature), manuels 2.3/2.4 §2.1. Notifications : la page du catalogue annonce UsernameToken, à confirmer (spec 13) |
+| Transport | | TLS 1.2 et 1.3 (manuels 2.3/2.4 ; le 2.1.9 disait TLS 1.0) |
 | SOAP | 1.1 ou 1.2 | **1.1 uniquement** |
 | Namespace WSDL | `services-web.etnic.be/eprom/...` | `ws.etnic.be/seps/{service}/v1` |
 | Namespace types | `enseignement.cfwb.be/types/...` | `enseignement.cfwb.be/types/seps/...` |
 | Bloc retour | `AbstractExternalResponseType` (`common/v1`) | `AbstractExternalResponseType` (**`external/v1`**) |
-| Identité métier | etabId + numAdmFormation + numOrganisation | **cfNum** (+ etabId/idImplantation pour inscriptions) |
-| Host endpoint | `services-web(.tq).etnic.be` | WSDL=`ws-tq.etnic.be` ⚠️ vs PDF=`services-web(.tq).etnic.be` |
+| Identité métier | etabId + numAdmFormation + numOrganisation | **cfNum** (+ idEtab/idImplantation pour les inscriptions) |
+| Host endpoint | `services-web(.tq).etnic.be` | `ws(-tq).etnic.be` (manuels 2.3/2.4 §2.2, contrat de production) ; `services-web(.tq).etnic.be` du manuel 2.1.9 abandonné (`services-web.tq.etnic.be/seps/...` ne répond pas, 2026-11-24) |
+| Environnement de test | TQ utilisable | TQ inutilisable avec le certificat de production : SOAP Fault `SECU-0102` (observé le 2026-11-24 ; `docs/SPEC.md` consigne `SECU-0104`) |
 
 ## 7.2. Namespaces SEPS
 
@@ -499,117 +501,144 @@
 | `cfNum` | `http://enseignement.cfwb.be/types/seps/cfNum/v1` | Identifiant étudiant (cfNumType) |
 | `etu` | `http://enseignement.cfwb.be/types/seps/etudiant/v1` | EtudiantType |
 | `etd` | `http://enseignement.cfwb.be/types/seps/etudiantDetails/v1` | EtudiantDetailsType + sous-types |
-| `insc` | `http://enseignement.cfwb.be/types/seps/inscription/v1` | InscriptionType + enums |
+| `insc` | `http://enseignement.cfwb.be/types/seps/inscription/v1` | InscriptionType + énumérations |
 | `noti` | `http://enseignement.cfwb.be/types/seps/notification/v1` | NotificationType |
 | `ext` | `http://etnic.be/types/technical/external/v1` | AbstractExternalResponseType (SEPS) |
 | (msg) | `http://ws.etnic.be/seps/{service}/messages/v1` | Éléments d'opération par service |
 
-## 7.3. AbstractExternalResponseType (external_v1.xsd) — bloc retour SEPS
+## 7.3. AbstractExternalResponseType (external_v1.xsd), bloc retour SEPS
 ```
 AbstractExternalResponseType (abstract, ns external/v1)
 ├── success  : boolean       [obligatoire]  (ns ResponseStatus/v3)
-└── messages : messagesType  [0..1]         (ns ResponseStatus/v3) → error/warning/info : MessageType[]
+└── messages : messagesType  [0..1]         (ns ResponseStatus/v3) -> error/warning/info : MessageType[]
 ```
 - **Forme identique** à Common_v1 mais **namespace différent** (`external/v1` au lieu de `common/v1`).
-- `ResponseStatus_v3.xsd` et `requestId_v1.xsd` **byte-for-byte identiques à EPROM** (md5 vérifié).
-- Convention codes : succès via `messages/info` (200/201) ; absence de résultat souvent en `messages/warning` avec `success=false` (30105/30103/30115).
+- `ResponseStatus_v3.xsd` et `requestId_v1.xsd` : même contenu qu'EPROM (comparaison des déclarations le 2026-11-24 ; les fichiers de production ne sont plus identiques octet pour octet, mise en forme différente).
+- **Conventions des manuels** : succès via `messages/info` (`200`, `201`) ; absence de résultat souvent en `messages/warning` avec `success=false` (`30103`, `30105`, `30115`).
+- **Un warning peut porter un refus** : `enregistrerInscription` a répondu `success=false` avec le seul warning `30101` (observé en production, 2026-11-10).
+- **Exemples à `success=false` et `info` seul** : `modifierEtudiant` (`info 200` = succès, `info 30443` = rien à changer), manuel 2.3. Se fier au code.
+- **Message de version** : un `info` de code `2.4.6` et de description « version » peut accompagner la réponse (observé en production, 2026-11-24, `enregistrerEtudiant`).
 
 ## 7.4. Types signalétique étudiant (etudiant_v1.xsd, etudiantDetails_v1.xsd)
 ```
-cfNumType        : string, pattern [0-9]{1,10}\-[0-9]{2}        (ex. 8501889-33)
-EtudiantType     : cfNum[0..1] + rnDetails[0..1] + cfwbDetails[0..1]   (2 versions : RN/BCSS vs établissement)
+cfNumType        : string, pattern [0-9]{1,10}\-[0-9]{2}        (ex. 1234567-89, fictif)
+EtudiantType     : cfNum[0..1] + bisCreated[0..1] (string, contrat de production) + rnDetails[0..1] + cfwbDetails[0..1]
 EtudiantDetailsType :
   niss[0..1] (NISSType [0-9]{6}(-)?[0-9]{3}(-)?[0-9]{2}, contrôle mod 97)
   nom[0..1] (1..80) | prenom[0..1] (0..50) | autrePrenom[0..3] | sexe[0..1] (M/F/X)
   naissance[0..1] (date:IncompleteDateType + codePays:INS5 + localite[0..1])
   deces[0..1] (date) | adresse[0..1] | codeNationalite[0..1] (INS5)
-AdresseType   : rue + numero[0..1] + boite[0..1] + extension[0..1] + codePostal + localite[0..1] + localiteExtension[0..1] + codePays
+AdresseType   : rue[0..1]* + numero[0..1] + boite[0..1] + extension[0..1] + codePostal + localite[0..1] + localiteExtension[0..1] + codePays[0..1]*
+                * obligatoires au catalogue 2.1 et au manuel 2.3, facultatifs au contrat de production (2026-11-24)
 LocaliteType  : code[0..1] (INS 5 ch. si belge) + description[0..1]
 IncompleteDateType : pattern [1-2][0-9]{3}(\-[0-1][0-9]\-[0-3][0-9])?  (date complète OU année seule)
 ```
-⚠️ **Réponse HORS XSD** (observé en exemples) : attribut `rnValidityEndDate` + élément `codeEtatCivil` (cfwbDetails). XSD non exhaustif en sortie → parser tolérant.
-⚠️ **Naming** : texte PDF `rnDetail`/`cfwbDetail` (sing.) vs XSD+UML `rnDetails`/`cfwbDetails` (plur. — fait foi).
+- **`bisCreated`** : `O` quand l'enregistrement DETAILS a créé un NISS bis (exemple du manuel 2.3, §3.3.1.4.1).
+- **`etudiant` sans `cfNum`** : une recherche par NISS d'une personne connue du RN mais pas de SEPS rend un `etudiant` avec `rnDetails` seul (observé en production, 2026-11-24, 20 cas ; spec 09).
+- **Hors contrat** (exemples du manuel 2.1.9, non observés) : attribut `rnValidityEndDate`, élément `codeEtatCivil` (cfwbDetails). pyetnic analyse en mode non strict.
+- **Nommage** : texte des manuels `rnDetail`/`cfwbDetail` (singulier) contre XSD, diagrammes et exemples `rnDetails`/`cfwbDetails` (pluriel, fait foi).
 
 ## 7.5. Types inscription (inscription_v1.xsd)
 ```
 InscriptionInputDataType : cfNum + idEtab(int) + idImplantation(int) + codePostalLieuCours(≤7) + inscription:InscriptionInputType
-InscriptionInputType : dateInscription(DateType ≤10) + statut(DE/AN) + anneeScolaire(int)⚠ + ue(UEInputType)⚠ + specificite(SpecificiteDataType)⚠
-  ⚠ anneeScolaire/ue/specificite : minOccurs=0 au XSD mais OBLIGATOIRES (erreurs 30101/30100/30025)
+InscriptionInputType : dateInscription(DateType ≤10) + statut(DE/AN) + anneeScolaire(int)⚠ + ue(UEInputType)⚠ + specificite(SpecificiteDataType)⚠ + fse(boolean, défaut true)
+  ⚠ minOccurs=0 au contrat mais OBLIGATOIRES selon le manuel (30101 / 30100 / 30025)
 UEInputType  : noAdministratif(ShortType) + noOrganisation(ShortType)
-SpecificiteDataType : regulier1/regulier5(IndicateurType) + droitInscription + droitInscriptionSpecifique
+SpecificiteDataType : regulier1 + regulier3† + regulier5 (IndicateurType) + droitInscription + droitInscriptionSpecifique
                       + dureeInoccupation + situationMenage + enfantACharge + difficulteHandicap + difficulteAutre
-                      + admission + sanction   (tous [0..1] ; conditionnels FSE/admission/sanction)
-InscriptionType (sortie) : cfNum + anneeScolaire + idEtab + idImplantation + dateInscription + lieuCours + statut + ue:UEType + specificite
+                      + admission + sanction   (tous [0..1] ; conditionnels FSE / admission / sanction)
+DroitInscriptionType / DroitInscriptionSpecifiqueType : indicateur + montant[0..1](string) + exempte[0..1]
+SanctionType : codeSanction[0..1] + valorisationAcquisSanction + motifAbandon + statutFinFormation
+               + pourcentageAttribue(string) + codeSectionFlag(boolean) + codeSection(CodeSectionType, 11 car.) + point(string)
+               + ajournement1Session†(IndicateurType)          (tous [0..1])
+InscriptionType (sortie) : cfNum + anneeScolaire + idEtab + idImplantation + dateInscription + lieuCours + statut + ue:UEType + specificite + audit:AuditType
+AuditType : dateCreation + utilisateurCreation + dateModification + utilisateurModification   (xs:string)
 UEType (sortie) : noAdministratif + noOrganisation + label + code + codeNiveau(SI/SS/SC/SL) + nombreSemaine + dateDebut + dateFin + fse + noOrganisationPrecedent + activiteDeFormation
 LieuCoursType : codePostal[0..1] + ville[0..1]
+† seulement au contrat d'enregistrerInscription en production ; absents de rechercheInscriptions (production) et de TQ
 ```
-⚠️ **`SpecificiteDataInputType`** défini mais **JAMAIS référencé** (type mort ; l'entrée utilise SpecificiteDataType).
+- **`SpecificiteDataInputType`**, type mort du catalogue 2.1 (jamais référencé), a **disparu** du contrat de production.
+- **`UEType.code`** : année (4) + idEtab (10) + noAdministratif (5) + noOrganisation (5), soit 24 chiffres (déduit de trois exemples des manuels, non documenté).
+- **`audit`** : absent des manuels ; présent dans les réponses de production de `rechercherInscriptions`.
+- Tableau des trois états du schéma (catalogue, production `rechercheInscriptions` et TQ, production `enregistrerInscription`) : spec 11, « Versions du contrat ».
 
-### Énumérations inscription (référentiel partagé — à maintenir côté pyetnic)
+### Énumérations inscription
 | Type | Valeurs |
 |---|---|
 | CodeStatutType | `DE` (définitive), `AN` (annulée) |
 | IndicateurType | `O`, `N` |
-| IndicateurXType | `O`, `N`, `X` (n'accepte pas) |
-| MotifExemptionType (DI) | `C01`-`C07` (mineur / chômeur / handicap / RIS / personnel enseignant / autorité publique / autre) |
-| MotifExemptionSpecType (DIS, hors CEE) | `C01`-`C13` |
+| IndicateurXType | `O`, `N`, `X` (n'accepte pas de préciser) |
+| MotifExemptionType (DI) | `C01`-`C07` (mineur / chômeur / handicap / revenu d'intégration / personnel enseignant / autorité publique / autre) |
+| MotifExemptionSpecType (DIS) | `C01`-`C13`, **`C50`** (séjour limité aux études) |
 | DureeInoccupationType (FSE) | `C00` (<6m), `C06` (6-12m), `C12` (12-24m), `C24` (>24m) |
 | SituationMenageType (FSE) | `ISOL`, `SSEM`, `A1EM`, `X` |
-| CodeAdmissionType | `REUSSITE`, `TITREBEL`, `TITREETR`, `AUTRE` |
+| CodeAdmissionType | `REUSSITE`, `TITREBEL`, `TITREETR`, `AUTRE`, **`AUCUN`** (aucun titre requis) |
 | TypeEnseignementType | `PRI`, `SIPE`, `SSPE`, `SIPS`, `SSPS`, `SCPE`, `SLPE`, `SCPS`, `SLPS` |
 | TitreDelivreType | 23 valeurs (CEB, CE1D, CESI, CE2D, CQ4, CESSG/T/Q/P/A, CE6P, CQ6, CQ7, DAES, BES, BACH, MAST, CESS, CQINF, CQSUP, BACHSPE, MASTSPE, DOC) |
 | EquivalenceType (TITREETR) | `C01`-`C04` |
-| ValorisationAcquisType (AUTRE) | `C01`-`C04`, `C10`, `C20`, `C30`, `C40` |
+| ValorisationAcquisType (AUTRE) | `C01`-`C04`, `C10`, `C20`, `C30`, `C40`, **`C50`** (inconnu, années scolaires antérieures à 2023) |
 | CodeSanctionType | `RE` (réussite), `AB` (abandon), `EH` (échec) |
 | ValorisationAcquisSanctionType (RE) | `C00`-`C05` |
 | MotifAbandonType (AB) | `TPS`, `PRO`, `FAM`, `SAN`, `ATT`, `MEM`, `FMJ`, `NUM`, `AUT`, `INC` |
-| StatutFinFormationType (FSE) | `C01`-`C06` ⚠️ (PDF écrit 01-06 sans « C » ; XSD fait foi) |
+| StatutFinFormationType (FSE) | `C01`-`C06` (le manuel 2.4 écrit aussi `C01`-`C06` ; le 2.1.9 écrivait `01`-`06`) |
 | CodeNiveauType | `SI`, `SS`, `SC`, `SL` |
+| CodeSectionType | string de 11 caractères exactement |
 
 ## 7.6. NotificationType (notification_v1.xsd)
 ```
 NotificationType : id(unsignedLong) + cfNum + date + code(NotificationCodeType \d{2}) + description[0..1](NotificationDescriptionType)
 ```
-- Codes (PDF) : `02` sexe, `04` nom/prénom, `05` adresse, `06` nationalité, `07` NISS, `08` statut.
-- ⚠️ `code` = pattern libre `\d{2}` (pas d'enum) ; `NotificationDescriptionType` = **5 valeurs** (SEXE/NOM-PRENOM/ADRESSE/NATIONALITE/NISS) → **« STATUT » (08) absent de l'enum**.
+- Codes (manuel Notifications 2.3) : `02` sexe, `04` nom/prénom, `05` adresse, `06` nationalité, `07` NISS, `08` statut.
+- `code` = pattern libre `\d{2}` ; `NotificationDescriptionType` = **5 valeurs** (SEXE / NOM-PRENOM / ADRESSE / NATIONALITE / NISS) : **le code `08` n'a pas de description dans l'énumération**. Contrat de production identique au catalogue 1.0.8 (2026-11-24).
 
-## 7.7. Référentiels SEPS (codes — spec 15)
-- **codePays / codeNationalite** = code INS (`Codes_Pays.xls`), **5 chiffres** zero-paddés. `codePays`=`CO_ONSS_ID`, `codeNationalite`=`CO_NATIO_ID` (≠ pour 43 territoires). Belgique=`00150`. Codes spéciaux 900/901/999.
-- **localite.code** = code INS commune (`INS_communesNais200723.xlsx`), **5 chiffres**, obligatoire si commune belge ; historique de fusions (601 actives / 2789 codes).
-- Extraits exploitables : `specs/referentiels/codes_pays.{csv,json}`, `codes_communes_ins.{csv,json}`, `codes_communes_ins_actives.csv`.
+## 7.7. Référentiels SEPS (codes, spec 15)
+- **codePays / codeNationalite** = code INS (`Codes_Pays.xls`), **5 chiffres**. `codePays` = `CO_ONSS_ID`, `codeNationalite` = `CO_NATIO_ID` (différents pour 43 territoires). Belgique = `00150`. Codes spéciaux 900/901/999. Envoyer `00150`, pas `BE` (l'exemple DETAILS du manuel 2.3 garde `BE`).
+- **localite.code** = code INS commune (`INS_communesNais200723.xlsx`), **5 chiffres**, obligatoire si la commune est belge ; historique de fusions (601 actives, 2 789 codes).
+- Extraits exploitables : `specs/referentiels/codes_pays.{csv,json}`, `codes_communes_ins.{csv,json}`, `codes_communes_ins_actives.csv`. pyetnic ne les embarque pas.
 
-## 7.8. Codes d'erreur SEPS (⚠️ non universels, indexer par (service, code))
+## 7.8. Codes d'erreur SEPS (non universels : indexer par (service, code))
 
-| Code | Sens | Service(s) |
-|---|---|---|
-| `200`/`201` | Succès (found / created) | tous |
-| `30036`/`30037` | Combinaison de critères invalide / date invalide | Recherche Inscriptions |
-| `30039` | modeEnregistrement requis | Sauvegarde Étudiant |
-| `30041` | Validation cfNum | plusieurs |
-| `30042` | **Validation SSIN** *(Recherche Étud.)* / **pas de EtudiantDetail** *(Sauvegarde)* | ⚠️ 2 sens |
-| `30047`/`30048` | Validation cfNum / fromDate | lireEtudiant |
-| `30049`/`30050` | Validation etabId / dateDebut | Notifications, Rech. Insc. |
-| `30051` | OK mais inscrit dans >4 UEs | Enregistrer Inscription |
-| `30052` | Multi-profil : etabId requis | Recherche Inscriptions |
-| `30060`-`30078` | Validations champs signalétique | Sauvegarde Étudiant |
-| `30100`/`30101`/`30102`/`30103` | UE/inscription introuvable (variantes) | Inscriptions |
-| `30105`/`30110`/`30115` | Pas de notification / étudiant trouvé | Notif / Recherche Étud. |
-| `30010`-`30035` | Validations métier inscription (FSE, admission, sanction, DI exclusif…) | Enregistrer Inscription |
-| `30070`/`30079`/`30080` | Annulation / regulier1 / regulier5 figés (1-5/10ᵉ) | Enregistrer Inscription |
-| `30120` | Pas trouvé (fin) | Sauvegarde Étudiant |
-| `30200` | Inscription déjà existante pour l'UE | Enregistrer Inscription |
-| `30201` | Étudiant existe déjà (cfNum) | Sauvegarde Étudiant |
-| `30202`/`30203`/`30204` | Doublons (Phonex/BCED) | Sauvegarde Étudiant |
-| `30401` | Mutation de NISS détectée | Recherche / Sauvegarde Étud. |
-| `30402` | Non enregistrable (RGPD) | Sauvegarde Étudiant |
-| `30443` | Aucune modification à appliquer | Sauvegarde Étud. / Modif Insc. |
-| `30501`/`30502`/`30503`/`30504` | Trop de résultats / erreur BCED / sauvegarde | plusieurs |
-| `30550` / `50505`-`50509` | Auth interne / erreurs internes | plusieurs |
+> Les codes `300xx` d'EPROM (section 4) et de SEPS ne partagent pas leur sens : `30010` à `30017` existent dans les deux familles avec des significations différentes.
+> Colonne « pyetnic » : la classe levée par `pyetnic/services/seps_errors.py` (état au 2026-11-24). Tout `success=false` lève, que le code arrive en `error`, en `warning` ou seul en `info` ; les lectures rendent `None` / `[]` sur leurs codes « rien trouvé ».
 
-**SOAP Fault (technique, ≠ métier)** : `SECU-0102/0103/0104` (auth), `SECU-1101` (autorisation), `ROUT-1001` (technique), `VALI-0100/1100` (validation XSD requête/réponse).
+| Code | Sens | Service(s) | pyetnic |
+|---|---|---|---|
+| `200` / `201` | Succès (trouvé / modifié / créé). En mode NISS d'`enregistrerEtudiant`, `201` = création, `200` = fusion (diagramme du manuel 2.3 ; `201` observé en production pour une création, 2026-11-24) | tous | succès |
+| `30010`, `30012`-`30035` | Validations métier de l'inscription (FSE, admission, sanction, DI exclusifs, âge ≥ 15 ans…) | Enr. Insc. | `SepsValidationError` |
+| `30011` | Aucun étudiant pour ce CF | Enr. Insc. | `SepsEtudiantInconnuError` |
+| `30036` / `30037` | Combinaison de critères invalide / date de requête invalide | Rech. Insc. | `SepsValidationError` |
+| `30039` | `modeEnregistrement` requis | Sauv. Étud. | `SepsValidationError` |
+| `30040` | Validation SSIN | Sauv. Étud. | `SepsValidationError` |
+| `30041` | Validation cfNum | Sauv. Étud., Enr. Insc., Rech. Insc. | `SepsValidationError` |
+| `30042` | **Validation SSIN** (Recherche Étudiants) / **pas d'EtudiantDetail fourni** (Sauvegarde) : deux sens | Rech. Étud., Sauv. Étud. | `SepsValidationError` |
+| `30043`-`30046` | Validation nom / prénom / date de naissance / sexe | Rech. Étud. | classe de base (absents de la liste des codes de validation) |
+| `30047` / `30048` | Validation cfNum / fromDate | `lireEtudiant` | classe de base (idem) |
+| `30049` / `30050` | Validation etabId / dateDebut (`dateFrom`) | Notifications, Rech. Insc. (30049) | `SepsValidationError` |
+| `30051` | OK, création, mais inscrit dans plus de 4 UE (succès) | Enr. Insc. | succès, `InscriptionResult.plus_de_4_ue` |
+| `30052` | Compte multi-profil : etabId requis | Rech. Insc. | `SepsValidationError` |
+| `30060`-`30078` | Validations des champs de la signalétique | Sauv. Étud. | `SepsValidationError` |
+| `30070` / `30079` / `30080` | Annulation refusée (flag 1/10) / regulier1 / regulier5 verrouillés | Enr. Insc. | `SepsValidationError` |
+| `30100` / `30101` | UE incomplète / inconnue de SEPS. `30101` arrive en warning, y compris quand SEPS n'a pas encore reçu une organisation déclarée 18 minutes plus tôt dans EPROM (production, 2026-11-10) | Enr. Insc. | `SepsUeInconnueError` |
+| `30102` / `30103` | Aucune inscription. `30103` (warning) ne distingue pas une UE inconnue d'une UE vide (production, 2026-11-24) | Enr. Insc. / Rech. Insc. | `[]` en lecture ; `SepsNotFoundError` sinon |
+| `30105` | Aucune notification (warning) | Notifications | `[]` en lecture |
+| `30110` / `30115` | Aucun étudiant trouvé | Rech. Étud. | `None` / `[]` en lecture |
+| `30120` | Personne introuvable au RN (fin du traitement) | Sauv. Étud. | `SepsEtudiantInconnuError` |
+| `30200` | Inscription déjà existante pour l'UE | Enr. Insc. | `SepsInscriptionExisteError` |
+| `30201` | Étudiant déjà en SEPS (CF dans la description) | Sauv. Étud. | `SepsEtudiantExisteError` (`cf_num`) |
+| `30202` / `30203` / `30204` | Doublons : plusieurs en NISS (Phonex) / doublon DETAILS avec `doubleFlag=false` ou plusieurs CF / plusieurs à la BCED (liste de NISS). Le diagramme NISS du manuel 2.3 renvoie `30203` là où son tableau dit `30202` | Sauv. Étud. | `SepsDoublonsError` (`cf_nums`, `niss`) |
+| `30401` | Mutation de NISS détectée (nouveau NISS dans la description) | Rech. Étud., Sauv. Étud. | `NissMutationError` |
+| `30402` | Étudiant non enregistrable (RGPD), manuel 2.1.9 ; **retiré du tableau du manuel 2.3** | Sauv. Étud. | classe de base |
+| `30443` | Aucune modification à appliquer (en `error` ou en `info`) | Sauv. Étud., Enr. Insc. (modifier) | `SepsAucuneModificationError` |
+| `30501` / `30503` | Trop de résultats | Rech. Étud., Rech. Insc., Sauv. Étud. | `TropDeResultatsError` |
+| `30502` | Erreur de l'appel BCED ; **aussi** la réponse d'une recherche par nom qui ne trouve personne nulle part (production, 2026-11-24, trois requêtes) | Rech. Étud., Sauv. Étud. | classe de base |
+| `30504` | Erreur à la sauvegarde | Sauv. Étud. | classe de base |
+| `30550` | Authentification (interne) | tous | `SepsAuthError` |
+| `50505`-`50509` | Erreurs internes Phonex / BCED / création du bis | Sauv. Étud. | classe de base |
+
+**SOAP Fault (technique, distinct du métier)** : `SECU-0102/0103/0104` (authentification ; `SECU-0102` pour le certificat de production présenté à TQ, 2026-11-24), `SECU-1101` (autorisation), `ROUT-1001` (technique), `VALI-0100/1100` (validation XSD requête/réponse).
 
 ## 7.9. Traçabilité XSD par service SEPS
-> md5 vérifié : `cfNum_v1`, `external_v1`, `requestId_v1`, `ResponseStatus_v3` identiques sur les 5 services ; `etudiant_v1`/`etudiantDetails_v1` identiques (Recherche/Sauvegarde Étudiant) ; `inscription_v1` identique (Enregistrer/Recherche Inscriptions).
+> md5 vérifié le 2026-11-24 sur les contrats embarqués : `cfNum_v1`, `external_v1`, `requestId_v1`, `ResponseStatus_v3` identiques sur les quatre dossiers ; `etudiant_v1` / `etudiantDetails_v1` identiques (Recherche / Sauvegarde Étudiant). **`inscription_v1` n'est plus identique** : la version d'Enregistrer Inscription a `regulier3` et `ajournement1Session` en plus. Le contrat Notifications (catalogue 1.0.8, identique à la production) n'était pas embarqué lors de ce relevé.
 
 | XSD | Rech. Étud. (09) | Sauv. Étud. (10) | Enr. Insc. (11) | Rech. Insc. (12) | Notif. (13) |
 |---|---|---|---|---|---|
@@ -617,8 +646,21 @@ NotificationType : id(unsignedLong) + cfNum + date + code(NotificationCodeType \
 | external_v1.xsd | ✓ | ✓ | ✓ | ✓ | ✓ |
 | requestId_v1.xsd | ✓ | ✓ | ✓ | ✓ | ✓ |
 | ResponseStatus_v3.xsd | ✓ | ✓ | ✓ | ✓ | ✓ |
-| etudiant_v1.xsd | ✓ | ✓ | — | — | — |
-| etudiantDetails_v1.xsd | ✓ | ✓ | — | — | — |
-| inscription_v1.xsd | — | — | ✓ | ✓ | — |
-| notification_v1.xsd | — | — | — | — | ✓ |
+| etudiant_v1.xsd | ✓ | ✓ | - | - | - |
+| etudiantDetails_v1.xsd | ✓ | ✓ | - | - | - |
+| inscription_v1.xsd | - | - | ✓ (avec regulier3, ajournement1Session) | ✓ (sans) | - |
+| notification_v1.xsd | - | - | - | - | ✓ |
 | {Service}Messages_external_v1.xsd | ✓ (spécifique) | ✓ | ✓ | ✓ | ✓ |
+
+## 7.10. Ce qui a changé depuis le manuel 2.1.9 et le contrat du catalogue
+
+| Domaine | Changement | Source |
+|---|---|---|
+| Plateforme | TLS 1.2 et 1.3 ; endpoints `ws(-tq).etnic.be` | manuels 2.3/2.4 §2.1-2.2 |
+| Étudiant | `bisCreated` dans `EtudiantType` ; `rue` et `codePays` d'`AdresseType` facultatifs | contrat de production |
+| Étudiant | `30402` retiré du tableau d'`enregistrerEtudiant` | manuel 2.3 |
+| Étudiant | `doubleFlag` en mode NISS : diagramme et texte contradictoires | manuel 2.3 §3.3.1.1.1 (spec 10) |
+| Inscription | `fse` en entrée ; `montant` sur les deux droits ; `audit` en sortie ; `codeSanction` facultatif ; `pourcentageAttribue`, `codeSectionFlag`, `codeSection`, `point` ; `AUCUN` ; `C50` (×2) | manuels 2.4, contrat de production |
+| Inscription | `regulier3`, `ajournement1Session` (Enregistrer Inscription seulement) | manuel 2.4 rev 16.0, contrat de production |
+| Inscription | `SpecificiteDataInputType` supprimé ; `StatutFinFormation` écrit `C01`-`C06` partout | contrat de production, manuel 2.4 |
+| Notifications | contrat inchangé (1.0.8) ; code `08` toujours sans description ; authentification à confirmer | manuel 2.3, catalogue |
