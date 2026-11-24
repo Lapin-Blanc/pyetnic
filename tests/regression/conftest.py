@@ -52,7 +52,7 @@ def isolate_config():
     Config._reset()
     Config.ENV = "dev"
     Config.ANNEE_SCOLAIRE = "2024-2025"
-    Config.ETAB_ID = "3052"
-    Config.IMPL_ID = "6050"
+    Config.ETAB_ID = "1234"
+    Config.IMPL_ID = "5678"
     yield
     Config._reset()

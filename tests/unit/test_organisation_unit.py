@@ -61,12 +61,12 @@ def service():
 def test_lire_organisation_mock(service, monkeypatch):
     """Vérifie le parsing de la réponse LireOrganisation."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
         service.client_manager, "call_service",
-        lambda *a, **kw: _mock_org_response("2023-2024", 3052, 328, 1),
+        lambda *a, **kw: _mock_org_response("2023-2024", 1234, 328, 1),
     )
 
     org = service.lire_organisation(org_id)
@@ -81,7 +81,7 @@ def test_lire_organisation_mock(service, monkeypatch):
 def test_lire_organisation_mock_reponse_vide(service, monkeypatch):
     """Vérifie que lire_organisation retourne None si la réponse est vide."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -96,12 +96,12 @@ def test_creer_organisation_mock(service, monkeypatch):
     """Vérifie que creer_organisation parse correctement l'id attribué par le serveur."""
     monkeypatch.setattr(
         service.client_manager, "call_service",
-        lambda *a, **kw: _mock_org_response("2023-2024", 3052, 328, 99),
+        lambda *a, **kw: _mock_org_response("2023-2024", 1234, 328, 99),
     )
 
     org = service.creer_organisation(
         annee_scolaire="2023-2024",
-        etab_id=3052, impl_id=6050,
+        etab_id=1234, impl_id=5678,
         num_adm_formation=328,
         date_debut=date(2024, 9, 2),
         date_fin=date(2025, 6, 27),
@@ -115,7 +115,7 @@ def test_creer_organisation_mock(service, monkeypatch):
 def test_modifier_organisation_mock(service, monkeypatch):
     """Vérifie que modifier_organisation retourne l'organisation mise à jour."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     org = Organisation(
@@ -126,7 +126,7 @@ def test_modifier_organisation_mock(service, monkeypatch):
     )
     monkeypatch.setattr(
         service.client_manager, "call_service",
-        lambda *a, **kw: _mock_org_response("2023-2024", 3052, 328, 1),
+        lambda *a, **kw: _mock_org_response("2023-2024", 1234, 328, 1),
     )
 
     result = service.modifier_organisation(org)
@@ -145,13 +145,13 @@ def test_creer_organisation_strips_none_from_payload(service, monkeypatch):
     def fake_call(method_name, **kwargs):
         captured["method"] = method_name
         captured["kwargs"] = kwargs
-        return _mock_org_response("2023-2024", 3052, 328, 99)
+        return _mock_org_response("2023-2024", 1234, 328, 99)
 
     monkeypatch.setattr(service.client_manager, "call_service", fake_call)
 
     service.creer_organisation(
         annee_scolaire="2023-2024",
-        etab_id=3052, impl_id=6050,
+        etab_id=1234, impl_id=5678,
         num_adm_formation=328,
         date_debut=date(2024, 9, 2),
         date_fin=date(2025, 6, 27),
@@ -163,8 +163,8 @@ def test_creer_organisation_strips_none_from_payload(service, monkeypatch):
     # implId IS sent on create (required there, unlike Lire/Modifier)
     assert kwargs["id"] == {
         "anneeScolaire": "2023-2024",
-        "etabId": 3052,
-        "implId": 6050,
+        "etabId": 1234,
+        "implId": 5678,
         "numAdmFormation": 328,
     }
     assert kwargs["valorisationAcquis"] is True
@@ -189,13 +189,13 @@ def test_modifier_organisation_strips_none_from_payload(service, monkeypatch):
     def fake_call(method_name, **kwargs):
         captured["method"] = method_name
         captured["kwargs"] = kwargs
-        return _mock_org_response("2023-2024", 3052, 328, 1)
+        return _mock_org_response("2023-2024", 1234, 328, 1)
 
     monkeypatch.setattr(service.client_manager, "call_service", fake_call)
 
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
-        numAdmFormation=328, numOrganisation=1, implId=6050,
+        anneeScolaire="2023-2024", etabId=1234,
+        numAdmFormation=328, numOrganisation=1, implId=5678,
     )
     org = Organisation(
         id=org_id,
@@ -224,7 +224,7 @@ def test_modifier_organisation_strips_none_from_payload(service, monkeypatch):
 def test_supprimer_organisation_mock_succes(service, monkeypatch):
     """Vérifie que supprimer_organisation retourne True si success=True."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -238,7 +238,7 @@ def test_supprimer_organisation_mock_succes(service, monkeypatch):
 def test_supprimer_organisation_mock_echec(service, monkeypatch):
     """Vérifie que supprimer_organisation retourne False si success=False."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(

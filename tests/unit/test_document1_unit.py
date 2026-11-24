@@ -50,7 +50,7 @@ def _mock_doc1_response(num_adm: int = 328, num_org: int = 1, populations: list 
                 "document1": {
                     "id": {
                         "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": Config.ETAB_ID or 3052,
+                        "etabId": Config.ETAB_ID or 1234,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },
@@ -71,7 +71,7 @@ def service():
 def test_lire_document1_mock(service, monkeypatch):
     """Vérifie le parsing de la réponse LireDocument1."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -94,7 +94,7 @@ def test_lire_document1_mock(service, monkeypatch):
 def test_lire_document1_mock_reponse_vide(service, monkeypatch):
     """Vérifie que lire_document_1 retourne None si la réponse est vide."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -108,7 +108,7 @@ def test_lire_document1_mock_reponse_vide(service, monkeypatch):
 def test_lire_document1_mock_sans_populations(service, monkeypatch):
     """Vérifie le parsing quand populationListe est absent."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     response = {
@@ -116,7 +116,7 @@ def test_lire_document1_mock_sans_populations(service, monkeypatch):
             "success": True,
             "response": {
                 "document1": {
-                    "id": {"anneeScolaire": "2023-2024", "etabId": 3052,
+                    "id": {"anneeScolaire": "2023-2024", "etabId": 1234,
                            "numAdmFormation": 328, "numOrganisation": 1},
                     "populationListe": None,
                 }
@@ -133,7 +133,7 @@ def test_lire_document1_mock_sans_populations(service, monkeypatch):
 def test_modifier_document1_mock(service, monkeypatch):
     """Vérifie que modifier_document_1 retourne le document mis à jour."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -154,7 +154,7 @@ def test_modifier_document1_mock(service, monkeypatch):
 def test_approuver_document1_mock(service, monkeypatch):
     """Vérifie que approuver_document_1 retourne le document approuvé."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
