@@ -196,6 +196,18 @@ The following functions are **exported but not in production use**. They may be 
 | `SepsUESave` | Construction |
 | `SepsSpecificiteSave` | Construction |
 
+### Construction — Dataclasses (write results, #21)
+
+The four SEPS writers return these. A refusal raises a `SepsEtnicError` instead: a result is always a success.
+
+| Symbol | Notes |
+|---|---|
+| `SepsMessage` | One message of the answer: `niveau` (`error` / `warning` / `info`), `code`, `description` |
+| `SepsEcritureResult` | Base: `code`, `messages`, `avertissements`, `a_le_code()` |
+| `EnregistrerEtudiantResult` | `etudiant`, `bis_cree`, `cree` (201), `fusionne` (200) |
+| `ModifierEtudiantResult` | `etudiant` |
+| `InscriptionResult` | `inscription`, `plus_de_4_ue` (30051); returned by `enregistrer_inscription` and `modifier_inscription` |
+
 ### Construction — Dataclasses (inscription read)
 
 The following are returned by `rechercher_inscriptions`, which is itself classified construction.

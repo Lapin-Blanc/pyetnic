@@ -282,10 +282,12 @@ details = EtudiantDetailsSave(
     sexe="M",
     naissance=SepsNaissanceSave(date="1985-01-15", codePays="00150"),
 )
-etudiant = enregistrer_etudiant("DETAILS", etudiant_details=details)
+resultat = enregistrer_etudiant("DETAILS", etudiant_details=details)
+print(resultat.etudiant.cfNum, resultat.code)  # 201 : créé (resultat.cree) ; 200 : fusionné (resultat.fusionne)
 
-# Modification d'un étudiant existant
-etudiant = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave(
+# Modification d'un étudiant existant : envoyer la fiche complète telle que relue,
+# un champ facultatif absent est effacé par le serveur
+resultat = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave(
     adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="00150"),
 ))
 ```
@@ -315,10 +317,11 @@ data = InscriptionInputDataSave(
         ue=SepsUESave(noAdministratif=455, noOrganisation=1),
     ),
 )
-inscription = enregistrer_inscription(inscription_input_data=data)
+resultat = enregistrer_inscription(inscription_input_data=data)
+print(resultat.inscription.ue.label, resultat.code, resultat.plus_de_4_ue)
 
 # Modification d'une inscription existante
-inscription = modifier_inscription(inscription_input_data=data)
+resultat = modifier_inscription(inscription_input_data=data)
 ```
 
 ---

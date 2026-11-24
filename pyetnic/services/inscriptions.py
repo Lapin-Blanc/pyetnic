@@ -11,8 +11,9 @@ from .models import (
     SepsDroitInscriptionSpecifique, SepsExempteDroitInscriptionSpec,
     SepsAdmission, SepsSanction,
     InscriptionInputDataSave,
+    InscriptionResult,
 )
-from .seps_errors import check_seps_response
+from .seps_errors import check_seps_response, primary_code, seps_messages, seps_response
 
 logger = logging.getLogger(__name__)
 
@@ -148,16 +149,15 @@ class InscriptionsService:
             specificite=self._parse_specificite(data.get("specificite")),
         )
 
-    def _parse_inscription_response(self, result) -> Optional[Inscription]:
+    def _parse_inscription_response(self, result) -> InscriptionResult:
         check_seps_response(result)
-        if not (
-            result
-            and result.get("body")
-            and result["body"].get("response")
-            and result["body"]["response"].get("inscription")
-        ):
-            return None
-        return self._parse_inscription(result["body"]["response"]["inscription"])
+        messages = seps_messages(result)
+        inscription = seps_response(result, "inscription")
+        return InscriptionResult(
+            code=primary_code(messages),
+            messages=messages,
+            inscription=self._parse_inscription(inscription) if inscription else None,
+        )
 
     def _parse_recherche_response(self, result) -> List[Inscription]:
         if check_seps_response(result, not_found=_RECHERCHE_NOT_FOUND_CODES):
@@ -224,14 +224,15 @@ class InscriptionsService:
     def enregistrer_inscription(
         self,
         inscription_input_data: Optional[InscriptionInputDataSave] = None,
-    ) -> Optional[Inscription]:
+    ) -> InscriptionResult:
         """Enregistre une nouvelle inscription.
 
         Args:
             inscription_input_data: Données de l'inscription à enregistrer.
 
         Returns:
-            L'inscription créée, telle que le serveur la renvoie.
+            Le résultat : ``inscription`` telle que le serveur la renvoie,
+            ``code`` et ``messages`` (``plus_de_4_ue`` pour 30051).
 
         Raises:
             SepsEtnicError: une sous-classe choisie par le code, pour tout refus
@@ -248,7 +249,7 @@ class InscriptionsService:
     def modifier_inscription(
         self,
         inscription_input_data: Optional[InscriptionInputDataSave] = None,
-    ) -> Optional[Inscription]:
+    ) -> InscriptionResult:
         """Modify an existing inscription.
 
         An optional field left out is **erased** by the server, and a field
@@ -259,7 +260,7 @@ class InscriptionsService:
             inscription_input_data: Données de l'inscription à modifier.
 
         Returns:
-            L'inscription mise à jour, telle que le serveur la renvoie.
+            Le résultat : ``inscription`` mise à jour, ``code`` et ``messages``.
 
         Raises:
             SepsEtnicError: une sous-classe choisie par le code, pour tout refus

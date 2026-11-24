@@ -56,6 +56,12 @@ from ..nomenclatures import (
 
 # Modèles
 from ..services.models import (
+    # Résultats des écritures
+    SepsMessage,
+    SepsEcritureResult,
+    EnregistrerEtudiantResult,
+    ModifierEtudiantResult,
+    InscriptionResult,
     # Étudiant
     Etudiant,
     EtudiantDetails,
@@ -104,6 +110,12 @@ __all__ = [
     "SepsEtudiantExisteError",
     "SepsDoublonsError",
     "SepsAucuneModificationError",
+    # Résultats des écritures
+    "SepsMessage",
+    "SepsEcritureResult",
+    "EnregistrerEtudiantResult",
+    "ModifierEtudiantResult",
+    "InscriptionResult",
     # Modèles (lecture)
     "Etudiant",
     "EtudiantDetails",

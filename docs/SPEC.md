@@ -76,6 +76,11 @@ It is used by schools and school management software to interact programmaticall
 
 > `mode_enregistrement`: `"NISS"` or `"DETAILS"`.
 > Save types: `EtudiantDetailsSave`, `SepsNaissanceSave`, `SepsAdresseSave`.
+> Returns `EnregistrerEtudiantResult` / `ModifierEtudiantResult`: the student as the server sends it
+> back, `code` and `messages` (service version excluded). `cree` is code 201, a new CF number
+> (production, NISS mode, 2026-11-24: info 201 « L'étudiant est sauvé »); `fusionne` is code 200,
+> attached to an existing establishment record that keeps its CF (manual 2.3). `bis_cree` reads
+> `bisCreated` (`O` / `N`), a field of the live contract.
 
 **RechercheInscriptions (v1)**
 - `rechercherInscriptions` → `rechercher_inscriptions(annee_scolaire?, etab_id?, date_requete?, cf_num?, no_administratif?, no_organisation?)`
@@ -83,6 +88,10 @@ It is used by schools and school management software to interact programmaticall
 **EnregistrerInscription (v1)**
 - `enregistrerInscription` → `enregistrer_inscription(inscription_input_data?)`
 - `modifierInscription` → `modifier_inscription(inscription_input_data?)`
+
+> Both return `InscriptionResult`: the inscription as the server sends it back, `code` and `messages`.
+> `plus_de_4_ue` reports 30051 ("Ok création mais inscrit dans plus de 4 UEs", a success). The
+> manual's successful `enregistrerInscription` example carries no message: `code` is then `None`.
 
 > Save types: `InscriptionInputDataSave`, `InscriptionInputSave`, `SepsUESave`, `SepsSpecificiteSave`.
 > `InscriptionInputDataSave` required fields: `cfNum`, `idEtab`, `idImplantation`, `codePostalLieuCours`, `inscription`.
