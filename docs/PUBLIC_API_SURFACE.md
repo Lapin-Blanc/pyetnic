@@ -141,6 +141,26 @@ All SEPS inscription enums are pinned against `inscription_v1.xsd`.
 | `NissMutationError` | Subclass with `ancien_niss`/`nouveau_niss` attrs, may be caught and inspected |
 | `TropDeResultatsError` | Subclass, may be caught |
 
+`SepsEtnicError` derives from `EtnicBusinessError` (#20): `except EtnicBusinessError` catches SEPS
+refusals too. Every SEPS operation raises on `success=false`, whether the code comes as an error or
+as a warning.
+
+### Construction — Exceptions
+
+Added by #20, not yet caught by a production caller.
+
+| Symbol | Notes |
+|---|---|
+| `SepsValidationError` | BAD_REQUEST codes; also an `EtnicValidationError` |
+| `SepsNotFoundError` | NOT_FOUND codes on writes; also an `EtnicNotFoundError` |
+| `SepsUeInconnueError` | 30100, 30101 |
+| `SepsEtudiantInconnuError` | 30011, 30120 |
+| `SepsConflictError` | CONFLICT codes |
+| `SepsInscriptionExisteError` | 30200 |
+| `SepsEtudiantExisteError` | 30201, `cf_num` |
+| `SepsDoublonsError` | 30202-30204, `cf_nums`, `niss` |
+| `SepsAucuneModificationError` | 30443 |
+
 ### Stable — Dataclasses (read only)
 
 | Symbol | Notes |

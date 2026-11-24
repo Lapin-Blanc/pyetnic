@@ -11,12 +11,22 @@ that supports `bN` pre-releases).
 
 ### Added
 
+- **Typed SEPS refusals** (#20), exported from `pyetnic.seps`: `SepsValidationError`
+  (the manual's BAD_REQUEST codes, also an `EtnicValidationError`), `SepsNotFoundError`
+  (NOT_FOUND, also an `EtnicNotFoundError`) with `SepsUeInconnueError` (30100, 30101) and
+  `SepsEtudiantInconnuError` (30011, 30120), `SepsConflictError` with
+  `SepsInscriptionExisteError` (30200), `SepsEtudiantExisteError` (30201, `cf_num`) and
+  `SepsDoublonsError` (30202-30204, `cf_nums`, `niss`), `SepsAucuneModificationError`
+  (30443). `TropDeResultatsError` also covers 30503.
 - **`tools/refresh_seps_contracts.py`** refetches the SEPS contracts from the live
   services and rewrites their imports to the local files; `--check` reports the
   drift without writing.
 
 ### Changed
 
+- **`SepsEtnicError` derives from `EtnicBusinessError`** (#20): `except EtnicBusinessError`
+  and `except EtnicError` now catch SEPS refusals too. Names, constructors and the existing
+  subclasses are unchanged; a SEPS error carries `request_id` when the answer has one.
 - **The embedded SEPS contracts come from the live production services**
   (`https://ws.etnic.be/seps/<service>/v1?wsdl` and the schemas it imports), not
   from the SOA catalogue, whose "2.1" archives lag behind (checked 2026-11-24). The
@@ -43,6 +53,11 @@ that supports `bN` pre-releases).
 
 ### Fixed
 
+- **A SEPS refusal carried as a warning was swallowed** (#20). The inscription services
+  read only `messages.error`, so `success=false` with the warning 30101 (seen in production,
+  2026-11-10) returned `None`, like a success without data. One check now serves the seven
+  SEPS operations: `success=false` raises whether the code is an error or a warning; reads
+  return `None` / `[]` on their "nothing found" codes (30110, 30115; 30102, 30103).
 - **README: the Doc 1 approval example** now reads the population back and sends
   it with `approuver_document_1`; the bare call always failed with error 20104.
 - **README: the Doc 3 example** no longer sends `coNumAttribution`, which targets

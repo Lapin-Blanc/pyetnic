@@ -16,7 +16,21 @@ from ..services import (
 )
 
 # Exceptions
-from ..services.seps import SepsEtnicError, SepsAuthError, NissMutationError, TropDeResultatsError
+from ..services.seps_errors import (
+    SepsEtnicError,
+    SepsAuthError,
+    NissMutationError,
+    TropDeResultatsError,
+    SepsValidationError,
+    SepsNotFoundError,
+    SepsUeInconnueError,
+    SepsEtudiantInconnuError,
+    SepsConflictError,
+    SepsInscriptionExisteError,
+    SepsEtudiantExisteError,
+    SepsDoublonsError,
+    SepsAucuneModificationError,
+)
 
 # Nomenclatures — typed Enums (H9)
 from ..nomenclatures import (
@@ -81,6 +95,15 @@ __all__ = [
     "SepsAuthError",
     "NissMutationError",
     "TropDeResultatsError",
+    "SepsValidationError",
+    "SepsNotFoundError",
+    "SepsUeInconnueError",
+    "SepsEtudiantInconnuError",
+    "SepsConflictError",
+    "SepsInscriptionExisteError",
+    "SepsEtudiantExisteError",
+    "SepsDoublonsError",
+    "SepsAucuneModificationError",
     # Modèles (lecture)
     "Etudiant",
     "EtudiantDetails",
