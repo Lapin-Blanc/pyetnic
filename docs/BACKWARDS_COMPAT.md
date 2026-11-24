@@ -95,10 +95,16 @@ This project follows [Semantic Versioning](https://semver.org/) with pre-1.0 sem
 | `1.0.0` | First stable release. Stable API frozen. Construction APIs either promoted to stable or removed. |
 | `1.x.y` | Stable API frozen. Breaking changes require a major bump to `2.0.0`. |
 
-Current trajectory:
-- **0.0.12** → **0.1.0**: end of Sprint 4, stable beta.
-- **0.1.0** → **0.2.0**: when deprecated behaviors introduced in 0.1.0 are removed.
-- **0.2.0** → **1.0.0**: when we're ready to freeze the API and promote construction APIs.
+Trajectory:
+- **0.0.12** -> **0.1.0b1**: end of Sprint 4, stable beta.
+- **0.2.0b1**: SEPS follows the live contracts (construction APIs changed).
+- **0.3.0b1**: EPROM catches up (Organisation v8, Document 1D); two announced breaking changes
+  to stable functions, each with its migration path in the CHANGELOG: refusals raise by
+  default (the old mode stays, deprecated, until 1.0) and `approuver_document_1` requires
+  the population (a call without it never succeeded).
+- **1.0.0**: the deprecated behaviours go (permissive mode, `SoapError`,
+  `TYPES_INTERVENTION_EXTERIEURE`), D6 and H7 are settled, construction APIs are promoted
+  or removed, and the stable API freezes.
 
 ---
 
