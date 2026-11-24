@@ -17,7 +17,7 @@ applications that consume pyetnic.
 | `docs/ARCHITECTURE.md` | Architecture decisions, scope boundary, known limitations | Reference |
 | `specs/` | Exhaustive per-service reference (French), built from the WSDL/XSD and the ETNIC manuals; `00_REGISTRE.md` holds the shared types and the error-code table | Richest business reference |
 | `documentation/` | The official ETNIC user manuals the specs are built from. The SEPS manual is kept out of the repository (one of its examples shows an unmasked NISS): ask ETNIC for it | Primary source |
-| `pyetnic/resources/` | The embedded WSDL and XSD, one folder per service | Contract |
+| `pyetnic/resources/` | The embedded WSDL and XSD, one folder per service. The SEPS ones are taken from the live production services, ahead of the SOA catalogue: refresh them with `tools/refresh_seps_contracts.py` (`--check` to compare) | Contract |
 | GitHub issues | Backlog: open defects, deferred decisions, missing services | Current |
 | `CLAUDE.md` | Conventions for Claude Code sessions | Current |
 

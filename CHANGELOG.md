@@ -9,8 +9,25 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+### Added
+
+- **`tools/refresh_seps_contracts.py`** refetches the SEPS contracts from the live
+  services and rewrites their imports to the local files; `--check` reports the
+  drift without writing.
+
 ### Changed
 
+- **The embedded SEPS contracts come from the live production services**
+  (`https://ws.etnic.be/seps/<service>/v1?wsdl` and the schemas it imports), not
+  from the SOA catalogue, whose "2.1" archives lag behind (checked 2026-11-24). The
+  new schemas add, all optional: `audit` (creation and modification date and user)
+  on every inscription, `bisCreated` on the student, `montant` on both enrolment
+  fees, the input flag `fse`, `pourcentageAttribue`, `codeSectionFlag`,
+  `codeSection` and `point` on the sanction, the admission code `AUCUN` and the
+  codes `C50`; `enregistrerInscription` alone also has `regulier3` and
+  `ajournement1Session` (user manual 2.4). Production's `rechercheInscriptions`
+  still serves the schema without these two, and TQ lags behind production.
+  Requests built with the previous contracts stay valid. Folder names are kept.
 - **Documentation of server behaviour observed in production** (docs only, no code
   change): Doc 3 ceiling, `coDispo` wire format, skeleton documents, error 20108,
   organisation creation and deletion, errors 20010 and 20030, document statuses,
