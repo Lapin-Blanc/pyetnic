@@ -92,7 +92,7 @@ REFERENTIELS = "15_referentiels_seps.md"
 
 WATCHED = [
     Watched("LISTE_FORMATIONS", "EPROM", "Formations Liste", ("01_formations_liste_v2.md",)),
-    Watched("ORGANISATION", "EPROM", "Formation Organisation", ("02_formation_organisation_v7.md",)),
+    Watched("ORGANISATION", "EPROM", "Formation Organisation", ("02_formation_organisation_v8.md",)),
     Watched("DOCUMENT1", "EPROM", "Formation Population", ("03_formation_population_v1.md",)),
     Watched("DOCUMENT2", "EPROM", "Formation Périodes", ("04_formation_periodes_v1.md",)),
     Watched("DOCUMENT3", "EPROM", "Document 3", ("05_document3_v1.md",)),

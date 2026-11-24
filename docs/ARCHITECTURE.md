@@ -98,7 +98,7 @@ deferred to post-0.1.0.
   single-threaded scripts; revisit for concurrent use.
 - `Organisation.statutDocument*` fields are always `None` when the object comes from
   `lire_organisation()` — they are only populated on the `lister_formations()` aperçu.
-- SSL verification is disabled in `dev` (EPROM TQ endpoints) — never deploy with `ENV=dev`.
+- `ENV=dev` reaches TQ, the ETNIC test environment: never deploy with it.
 
 ## Not Yet Decided
 

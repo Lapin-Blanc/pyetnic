@@ -50,9 +50,10 @@ class TestTypeInterventionExterieure:
         """Drift guard: pin the full name->letter mapping so a future edit cannot
         silently reintroduce the long French labels (which ETNIC rejects, code 30004).
 
-        Authoritative source: specs/02_formation_organisation_v7.md
-        §"Valeurs de typeInterventionExterieure" (validated 2025-06-10).
-        Codes R and S were removed by ETNIC and have no member here.
+        Authoritative source: specs/02_formation_organisation_v8.md
+        §"Valeurs de typeInterventionExterieure" (Organisation v8 manual rev. 6.0,
+        list dated 2026-04-27; G is new in v8). Codes R and S are struck through
+        in the manual and have no member here.
         """
         expected = {
             "PERSONNEL_NON_CHARGE_DE_COURS": "A",
@@ -61,6 +62,7 @@ class TestTypeInterventionExterieure:
             "DISCRIMINATIONS_POSITIVES": "D",
             "EHR": "E",
             "FONDS_EUROPEENS": "F",
+            "BES": "G",
             "FORMATION_PUBLICS_INFRA_SCOLARISES": "I",
             "REORIENTATION_7TQ_7P": "J",
             "OCTROI_PERIODES_CABINET_PROJETS_TRANSVER": "K",
@@ -189,7 +191,7 @@ class TestLegacyConstant:
 
     def test_still_exists(self):
         assert TYPES_INTERVENTION_EXTERIEURE is not None
-        assert len(TYPES_INTERVENTION_EXTERIEURE) == 13
+        assert len(TYPES_INTERVENTION_EXTERIEURE) == 14
 
     def test_is_a_list(self):
         """Shape must stay the same: a plain list of strings."""

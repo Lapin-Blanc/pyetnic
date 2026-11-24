@@ -46,6 +46,9 @@ class Organisation(OrganisationApercu):
     numOrganisation2AnneesScolaires: Optional[int] = None
     typeInterventionExterieure: Optional[str] = None
     interventionExterieure50p: Optional[bool] = None
+    # Organisation v8: unit given only for the BES "assistant en soins infirmiers"
+    # (from school year 2026-2027). Last, so that positional construction keeps working.
+    BESAeSI: Optional[bool] = None
 
 @dataclass
 class Formation:

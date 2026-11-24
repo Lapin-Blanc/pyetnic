@@ -211,9 +211,11 @@ def test_strict_mode_raises_not_found_on_00009(mock_soap_call):
         ("30007", EtnicValidationError),
         ("30008", EtnicValidationError),
         ("30009", EtnicValidationError),
+        ("30010", EtnicValidationError),  # BESAeSI before 2026-2027 (Organisation v8)
         ("20005", EtnicValidationError),
         ("20016", EtnicValidationError),
         ("20038", EtnicValidationError),
+        ("20042", EtnicValidationError),  # BESAeSI switch (Organisation v8)
         ("1113", EtnicValidationError),
         ("1114", EtnicValidationError),
         ("2106", EtnicValidationError),

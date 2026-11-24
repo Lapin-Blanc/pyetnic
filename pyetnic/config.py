@@ -168,36 +168,48 @@ class Config(metaclass=_ConfigMeta):
 
     @classmethod
     def get_verify_ssl(cls) -> bool:
-        """Return whether SSL verification should be enabled."""
-        return cls.ENV != "dev"
+        """Return whether TLS certificates are verified: always, since 0.3.0.
+
+        Every service, EPROM and SEPS, is now called on the ETNIC gateway
+        (``ws.etnic.be`` / ``ws-tq.etnic.be``), whose certificates chain to a
+        public CA in both environments. The older EPROM hosts
+        (``services-web(.tq).etnic.be:11443``) required verification to be
+        turned off on TQ.
+        """
+        return True
 
     @classmethod
     def _build_services(cls) -> dict[str, ServiceConfig]:
-        """Build the SERVICES dict based on the current ENV value."""
+        """Build the SERVICES dict based on the current ENV value.
+
+        The endpoints are those the SOA catalogue announces, on the ETNIC
+        gateway (``ws.etnic.be`` in production, ``ws-tq.etnic.be`` on TQ);
+        ``tools/refresh_contracts.py`` reports any difference.
+        """
         env = cls.ENV
         return {
             "LISTE_FORMATIONS": ServiceConfig(
-                endpoint=f"https://services-web.{'tq.' if env == 'dev' else ''}etnic.be:11443/eprom/formations/liste/v2",
+                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formations/liste/v2",
                 wsdl_path="EPROM_Formations_Liste_2.0/EpromFormationsListeService_external_v2.wsdl",
                 binding_name="{http://services-web.etnic.be/eprom/formations/liste/v2}EPROMFormationsListeExternalV2Binding",
             ),
             "ORGANISATION": ServiceConfig(
-                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formation/organisation/v7",
-                wsdl_path="EPROM_Formation_Organisation_7.0/EpromFormationOrganisationService_v7.wsdl",
-                binding_name="{http://services-web.etnic.be/eprom/formation/organisation/v7}EPROMFormationOrganisationV7Binding",
+                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formation/organisation/v8",
+                wsdl_path="EPROM_Formation_Organisation_8.0/EpromFormationOrganisationService_v8.wsdl",
+                binding_name="{http://services-web.etnic.be/eprom/formation/organisation/v8}EPROMFormationOrganisationV8Binding",
             ),
             "DOCUMENT1": ServiceConfig(
-                endpoint=f"https://services-web.{'tq.' if env == 'dev' else ''}etnic.be:11443/eprom/formation/document1/v1",
+                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formation/document1/v1",
                 wsdl_path="EPROM_Formation_Population_1.0/EpromFormationDocument1Service_external_v1.wsdl",
                 binding_name="{http://services-web.etnic.be/eprom/formation/document1/v1}EPROMFormationDocument1ExternalV1Binding",
             ),
             "DOCUMENT2": ServiceConfig(
-                endpoint=f"https://services-web.{'tq.' if env == 'dev' else ''}etnic.be:11443/eprom/formation/document2/v1",
+                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formation/document2/v1",
                 wsdl_path="EPROM_Formation_Periodes_1.0/EpromFormationDocument2Service_external_v1.wsdl",
                 binding_name="{http://services-web.etnic.be/eprom/formation/document2/v1}EPROMFormationDocument2ExternalV1Binding",
             ),
             "DOCUMENT3": ServiceConfig(
-                endpoint=f"https://services-web.{'tq.' if env == 'dev' else ''}etnic.be:11443/eprom/formation/document3/v1",
+                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/eprom/formation/document3/v1",
                 wsdl_path="EPROM_Document_3_1.0/EpromFormationDocument3Service_external_v1.wsdl",
                 binding_name="{http://services-web.etnic.be/eprom/formation/document3/v1}EPROMFormationDocument3ExternalV1Binding",
             ),

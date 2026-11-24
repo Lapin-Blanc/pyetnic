@@ -40,7 +40,7 @@ A symbol is **construction** otherwise. Construction symbols are still exported 
 | Symbol | Notes |
 |---|---|
 | `OrganisationId` | Constructed by callers |
-| `Organisation` | Returned by `lire_organisation`, `creer_organisation`, `modifier_organisation` |
+| `Organisation` | Returned by `lire_organisation`, `creer_organisation`, `modifier_organisation`. Gained `BESAeSI` (last field) in 0.3.0, Organisation v8 |
 | `OrganisationApercu` | Returned by `lister_formations` |
 | `Formation` | Returned by `lister_formations` |
 | `FormationsListeResult` | Returned by `lister_formations*` |
@@ -86,7 +86,7 @@ All use `(str, Enum)` base — members compare equal to their raw string value.
 
 | Symbol | Notes |
 |---|---|
-| `TypeInterventionExterieure` | Intervention types for organisations. Exported from `pyetnic.eprom`. |
+| `TypeInterventionExterieure` | Intervention types for organisations (14 codes, `G` added in 0.3.0). Exported from `pyetnic.eprom`. |
 | `CodeAdmission` | Admission codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
 | `CodeSanction` | Sanction codes. Exported from `pyetnic.eprom` and `pyetnic.seps`. |
 | `MotifAbandon` | Abandon reasons. Exported from `pyetnic.eprom` and `pyetnic.seps`. |

@@ -83,3 +83,17 @@ def test_annee_scolaire_returns_str():
     """Config.ANNEE_SCOLAIRE must still return a string (no caster)."""
     result = Config.ANNEE_SCOLAIRE
     assert isinstance(result, str)
+
+
+@pytest.mark.parametrize("env, host", [("prod", "ws.etnic.be"), ("dev", "ws-tq.etnic.be")])
+def test_every_service_is_on_the_etnic_gateway(env, host):
+    """Every endpoint is the one the SOA catalogue announces, on the gateway."""
+    Config.ENV = env
+    for key, service in Config.SERVICES.items():
+        assert service.endpoint.startswith(f"https://{host}/"), (key, service.endpoint)
+
+
+@pytest.mark.parametrize("env", ["prod", "dev"])
+def test_tls_is_verified_in_every_environment(env):
+    Config.ENV = env
+    assert Config.get_verify_ssl() is True

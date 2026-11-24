@@ -3,7 +3,7 @@ import os
 
 
 def init_config(output_file=".env"):
-    contenu_env = """# Environnement : dev (services-web.tq.etnic.be) ou prod (services-web.etnic.be)
+    contenu_env = """# Environnement : dev (ws-tq.etnic.be) ou prod (ws.etnic.be)
 ENV=dev
 
 # Identifiants pour le developpement

@@ -157,6 +157,7 @@ _CODE_TO_CLASS: dict[str, Type[EtnicBusinessError]] = {
     "30007": EtnicValidationError,
     "30008": EtnicValidationError,
     "30009": EtnicValidationError,
+    "30010": EtnicValidationError,  # BESAeSI before 2026-2027 (Organisation v8)
     # Input validation — Organisation (20xxx)
     "20005": EtnicValidationError,
     "20006": EtnicValidationError,
@@ -179,6 +180,7 @@ _CODE_TO_CLASS: dict[str, Type[EtnicBusinessError]] = {
     "20034": EtnicValidationError,
     "20037": EtnicValidationError,
     "20038": EtnicValidationError,
+    "20042": EtnicValidationError,  # BESAeSI switch (Organisation v8)
     # Input validation — Documents 1 & 2
     "1113": EtnicValidationError,
     "1114": EtnicValidationError,
@@ -241,10 +243,11 @@ def extract_error_info(result: Any) -> Tuple[Optional[str], Optional[str], Optio
     if not isinstance(body, dict):
         return code, description, request_id
 
-    # Common_v2 services (e.g. Organisation v7) carry requestId as an XML
-    # attribute on the response body root rather than in a SOAP header, so it
-    # lands as a top-level key of ``body`` after zeep serialization. Fall back
-    # to it when no header requestId was found (non-regressive for v1/v3).
+    # Common_v2 services (Organisation v8) also carry requestId as an XML
+    # attribute of the response root, which lands as a top-level key of
+    # ``body`` after zeep serialization. Organisation v8 echoes it in the SOAP
+    # header too, with the same value (TQ, 2026-11-24): the header wins and the
+    # attribute is the fallback.
     if request_id is None:
         rid = body.get("requestId")
         if rid is not None:

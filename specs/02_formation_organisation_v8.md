@@ -1,8 +1,8 @@
-# EPROM — Formation Organisation v7.0
+# EPROM - Formation Organisation v8.0
 
 > Spécification technique et fonctionnelle complète
-> Sources : WSDL `EpromFormationOrganisationService_v7.wsdl` + PDF Manuel d'utilisation rev5.1 (01-07-2025)
-> Date d'analyse : 2026-04-14
+> Sources : WSDL et XSD servis par la production (`https://ws.etnic.be/eprom/formation/organisation/v8?wsdl`, identiques à l'archive « 8.0 » du catalogue SOA), embarqués dans `pyetnic/resources/EPROM_Formation_Organisation_8.0/` (relevé du 2026-11-24) + PDF Manuel d'utilisation v8.0.0 rev6.0 (27-04-2026, édité le 21-05-2026, `ETNIC_Services_Web_EPROM_FormationOrganisation_v8.0_Manuel_d_utilisation_rev6.0.pdf`). La v7 (manuel rev5.1, 01-07-2025) n'est plus embarquée depuis 0.3.0.
+> Date d'analyse : 2026-04-14 (v7) ; passage à la v8 le 2026-11-24 (#32)
 
 ---
 
@@ -12,27 +12,27 @@
 |---|---|
 | Produit | EPROM |
 | Service | Formation Organisation |
-| Version service | 7.0.0 |
+| Version service | 8.0.0 (v7 : 7.0.0, le manuel n'annonce pas sa fin) |
 | Domaine | Enseignement - Promotion sociale |
 | Type d'échange | Synchrone |
 | Format messages | SOAP 1.1 |
 | Sécurité | WS-Security Username Token Profile (ou certificat X.509) |
-| WSDL namespace | `http://services-web.etnic.be/eprom/formation/organisation/v7` |
-| Messages namespace | `http://services-web.etnic.be/eprom/formation/organisation/messages/v7` |
-| Types namespace | `http://enseignement.cfwb.be/types/formation/organisation/v7` |
-| Binding | `EPROMFormationOrganisationV7Binding` (document/literal) |
+| WSDL namespace | `http://services-web.etnic.be/eprom/formation/organisation/v8` |
+| Messages namespace | `http://services-web.etnic.be/eprom/formation/organisation/messages/v8` |
+| Types namespace | `http://enseignement.cfwb.be/types/formation/organisation/v8` |
+| Binding | `EPROMFormationOrganisationV8Binding` (document/literal) |
 
 ### Endpoints
 
-| Env | Source | URL |
-|---|---|---|
-| TQ | WSDL | `https://ws-tq.etnic.be/eprom/formation/organisation/v7` |
-| PROD | page web | `https://ws.etnic.be/eprom/formation/organisation/v7` |
-| TQ | PDF (TLS 1.2) | `https://services-web.tq.etnic.be:11443/eprom/formation/organisation/v7` |
-| PROD | PDF (TLS 1.2) | `https://services-web.etnic.be:11443/eprom/formation/organisation/v7` |
+| Env | URL |
+|---|---|
+| TQ | `https://ws-tq.etnic.be/eprom/formation/organisation/v8` |
+| PROD | `https://ws.etnic.be/eprom/formation/organisation/v8` |
 
-> **Note** : même divergence que pour Formations Liste entre WSDL (`ws-tq.etnic.be`) et PDF (`services-web.tq.etnic.be:11443`).
-> Le PDF rev4.1 a ajouté le port 11443 pour TLS 1.2 (mai 2023).
+> Le manuel v8 (§2.2.1, « Endpoint EPROM ») et le catalogue SOA donnent ces deux adresses, sur la
+> passerelle ETNIC ; ce sont celles de pyetnic. Le manuel rev4.1 (mai 2023) annonçait aussi
+> `services-web(.tq).etnic.be:11443`, qui ne figure plus au manuel v8. Lecture vérifiée sur TQ et
+> en production le 2026-11-24, certificat TLS vérifié dans les deux environnements.
 
 ---
 
@@ -57,8 +57,14 @@ lecture, modification ou suppression ultérieure.
 ## Bloc Retour — ResponseType (Common_v2.xsd)
 
 > **Évolution par rapport à Formations Liste v2** : ce service utilise `Common_v2.xsd`
-> (au lieu de `Common_v1.xsd`). Le `requestId` et le `transactionId` sont désormais
-> des **attributs XML** de l'élément réponse, et non plus un header SOAP séparé.
+> (au lieu de `Common_v1.xsd`). Le `requestId` et le `transactionId` sont des **attributs XML**
+> de l'élément réponse.
+>
+> **Observé sur TQ (2026-11-24, `LireOrganisation` v8, succès et erreur 00009)** : le serveur
+> renvoie le `requestId` reçu **deux fois**, dans l'en-tête SOAP `requestId` (comme les services
+> Common_v1) et en attribut de la racine de la réponse, avec la même valeur ; il ajoute un
+> `transactionId` propre au serveur (ex. `000001a1d5d8e8dc-8984b`). pyetnic lit l'en-tête, puis
+> l'attribut en repli.
 
 ### Structure ResponseType
 
@@ -94,7 +100,7 @@ ResponseType (abstract, extends ResponseAttributesType)
 ## Opération 1 : CreerOrganisation
 
 ### SOAP Action
-`http://services-web.etnic.be/eprom/formation/organisation/v7/CreerOrganisation`
+`http://services-web.etnic.be/eprom/formation/organisation/v8/CreerOrganisation`
 
 ### Requête
 
@@ -112,6 +118,7 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `valorisationAcquis` | boolean | non | Flag : formation pour la valorisation des acquis |
 | `enPrison` | boolean | non | Flag : formation donnée en prison |
 | `reorientation7TP` | boolean | non | Flag : formation donnée uniquement pour les 7TQ, 7P (ajouté v7, rentrée 2025-2026) |
+| `BESAeSI` | boolean | non | Flag : formation donnée uniquement pour les BES AeSI, Brevet d'Enseignement Supérieur d'Assistant en Soins Infirmiers (**ajouté v8**, rentrée 2026-2027, erreur 30010 avant) |
 | `activiteFormation` | boolean | non | Flag : formation organisée dans le cadre des activités de formation |
 | `conseillerPrevention` | boolean | non | Flag : formation organisée dans le cadre de la mission de conseiller en prévention ou de DPO |
 | `enseignementHybride` | boolean | non | Flag : formation donnée en enseignement hybride (ajouté depuis rentrée 2022-2023) |
@@ -159,21 +166,21 @@ ResponseType (abstract, extends ResponseAttributesType)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:v7="http://services-web.etnic.be/eprom/formation/organisation/messages/v7">
+                  xmlns:v8="http://services-web.etnic.be/eprom/formation/organisation/messages/v8">
   <soapenv:Header/>
   <soapenv:Body>
-    <v7:CreerOrganisation>
-      <v7:id>
-        <v7:anneeScolaire>2024-2025</v7:anneeScolaire>
-        <v7:etabId>41</v7:etabId>
-        <v7:implId>66</v7:implId>
-        <v7:numAdmFormation>186</v7:numAdmFormation>
-      </v7:id>
-      <v7:dateDebutOrganisation>2024-09-01</v7:dateDebutOrganisation>
-      <v7:dateFinOrganisation>2024-10-30</v7:dateFinOrganisation>
+    <v8:CreerOrganisation>
+      <v8:id>
+        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:etabId>41</v8:etabId>
+        <v8:implId>66</v8:implId>
+        <v8:numAdmFormation>186</v8:numAdmFormation>
+      </v8:id>
+      <v8:dateDebutOrganisation>2024-09-01</v8:dateDebutOrganisation>
+      <v8:dateFinOrganisation>2024-10-30</v8:dateFinOrganisation>
       <!--Optional:-->
-      <v7:enseignementHybride>true</v7:enseignementHybride>
-    </v7:CreerOrganisation>
+      <v8:enseignementHybride>true</v8:enseignementHybride>
+    </v8:CreerOrganisation>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -182,37 +189,37 @@ ResponseType (abstract, extends ResponseAttributesType)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:msg="http://services-web.etnic.be/eprom/formation/organisation/messages/v7"
-                  xmlns:orgv7="http://enseignement.cfwb.be/types/formation/organisation/v7"
+                  xmlns:msg="http://services-web.etnic.be/eprom/formation/organisation/messages/v8"
+                  xmlns:orgv8="http://enseignement.cfwb.be/types/formation/organisation/v8"
                   xmlns:status="http://etnic.be/types/technical/ResponseStatus/v3">
   <soapenv:Body>
     <CreerOrganisationReponse requestId="a6424b1b-a08e-4b89-91e6-0ca4107ef25b"
                              transactionId="000001955cf2dcb4-22c41b6"
-                             xmlns="http://services-web.etnic.be/eprom/formation/organisation/messages/v7">
+                             xmlns="http://services-web.etnic.be/eprom/formation/organisation/messages/v8">
       <success xmlns="http://etnic.be/types/technical/ResponseStatus/v3">true</success>
       <response>
         <organisation>
-          <orgv7:id>
-            <orgv7:anneeScolaire>2024-2025</orgv7:anneeScolaire>
-            <orgv7:etabId>41</orgv7:etabId>
-            <orgv7:implId>66</orgv7:implId>
-            <orgv7:numAdmFormation>186</orgv7:numAdmFormation>
-            <orgv7:numOrganisation>1</orgv7:numOrganisation>
-          </orgv7:id>
-          <orgv7:dateDebutOrganisation>2024-09-01</orgv7:dateDebutOrganisation>
-          <orgv7:dateFinOrganisation>2024-10-30</orgv7:dateFinOrganisation>
-          <orgv7:nombreSemaineFormation>9</orgv7:nombreSemaineFormation>
-          <orgv7:organisationPeriodesSupplOuEPT>false</orgv7:organisationPeriodesSupplOuEPT>
-          <orgv7:valorisationAcquis>false</orgv7:valorisationAcquis>
-          <orgv7:enPrison>false</orgv7:enPrison>
-          <orgv7:reorientation7TP>false</orgv7:reorientation7TP>
-          <orgv7:activiteFormation>false</orgv7:activiteFormation>
-          <orgv7:conseillerPrevention>false</orgv7:conseillerPrevention>
-          <orgv7:enseignementHybride>true</orgv7:enseignementHybride>
-          <orgv7:statut>
-            <orgv7:statut>Encodé école</orgv7:statut>
-            <orgv7:dateStatut>2025-04-29</orgv7:dateStatut>
-          </orgv7:statut>
+          <orgv8:id>
+            <orgv8:anneeScolaire>2024-2025</orgv8:anneeScolaire>
+            <orgv8:etabId>41</orgv8:etabId>
+            <orgv8:implId>66</orgv8:implId>
+            <orgv8:numAdmFormation>186</orgv8:numAdmFormation>
+            <orgv8:numOrganisation>1</orgv8:numOrganisation>
+          </orgv8:id>
+          <orgv8:dateDebutOrganisation>2024-09-01</orgv8:dateDebutOrganisation>
+          <orgv8:dateFinOrganisation>2024-10-30</orgv8:dateFinOrganisation>
+          <orgv8:nombreSemaineFormation>9</orgv8:nombreSemaineFormation>
+          <orgv8:organisationPeriodesSupplOuEPT>false</orgv8:organisationPeriodesSupplOuEPT>
+          <orgv8:valorisationAcquis>false</orgv8:valorisationAcquis>
+          <orgv8:enPrison>false</orgv8:enPrison>
+          <orgv8:reorientation7TP>false</orgv8:reorientation7TP>
+          <orgv8:activiteFormation>false</orgv8:activiteFormation>
+          <orgv8:conseillerPrevention>false</orgv8:conseillerPrevention>
+          <orgv8:enseignementHybride>true</orgv8:enseignementHybride>
+          <orgv8:statut>
+            <orgv8:statut>Encodé école</orgv8:statut>
+            <orgv8:dateStatut>2025-04-29</orgv8:dateStatut>
+          </orgv8:statut>
         </organisation>
       </response>
     </CreerOrganisationReponse>
@@ -225,7 +232,7 @@ ResponseType (abstract, extends ResponseAttributesType)
 ## Opération 2 : LireOrganisation
 
 ### SOAP Action
-`http://services-web.etnic.be/eprom/formation/organisation/v7/LireOrganisation`
+`http://services-web.etnic.be/eprom/formation/organisation/v8/LireOrganisation`
 
 ### Requête
 
@@ -263,17 +270,17 @@ ResponseType (abstract, extends ResponseAttributesType)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:v7="http://services-web.etnic.be/eprom/formation/organisation/messages/v7">
+                  xmlns:v8="http://services-web.etnic.be/eprom/formation/organisation/messages/v8">
   <soapenv:Header/>
   <soapenv:Body>
-    <v7:LireOrganisation>
-      <v7:id>
-        <v7:anneeScolaire>2024-2025</v7:anneeScolaire>
-        <v7:etabId>41</v7:etabId>
-        <v7:numAdmFormation>186</v7:numAdmFormation>
-        <v7:numOrganisation>1</v7:numOrganisation>
-      </v7:id>
-    </v7:LireOrganisation>
+    <v8:LireOrganisation>
+      <v8:id>
+        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:etabId>41</v8:etabId>
+        <v8:numAdmFormation>186</v8:numAdmFormation>
+        <v8:numOrganisation>1</v8:numOrganisation>
+      </v8:id>
+    </v8:LireOrganisation>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -283,7 +290,7 @@ ResponseType (abstract, extends ResponseAttributesType)
 ## Opération 3 : ModifierOrganisation
 
 ### SOAP Action
-`http://services-web.etnic.be/eprom/formation/organisation/v7/ModifierOrganisation`
+`http://services-web.etnic.be/eprom/formation/organisation/v8/ModifierOrganisation`
 
 ### Requête
 
@@ -301,6 +308,7 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `valorisationAcquis` | boolean | non | Flag valorisation des acquis |
 | `enPrison` | boolean | non | Flag formation en prison |
 | `reorientation7TP` | boolean | non | Flag réorientation 7TQ/7P |
+| `BESAeSI` | boolean | non | Flag BES AeSI (**ajouté v8**, rentrée 2026-2027) |
 | `activiteFormation` | boolean | non | Flag activité de formation |
 | `conseillerPrevention` | boolean | non | Flag conseiller prévention / DPO |
 | `enseignementHybride` | boolean | non | Flag enseignement hybride |
@@ -310,6 +318,13 @@ ResponseType (abstract, extends ResponseAttributesType)
 
 > **Règle métier** : la structure est identique à CreerOrganisation sauf que
 > l'id contient `numOrganisation` (au lieu de `implId`). Les dates restent obligatoires.
+
+> **Un champ facultatif omis est remis à sa valeur par défaut, pas conservé** (testé sur TQ,
+> 2026-11-24) : une organisation créée avec `BESAeSI` et `enPrison` à `true`, modifiée par une
+> requête qui omet ces deux champs, se relit avec les deux à `false`. Modifier remplace donc
+> l'organisation entière : envoyer l'organisation telle que relue, changements appliqués. Le
+> même essai montre `BESAeSI` accepté en 2026-2027 et relu tel quel, et une création 2025-2026
+> portant `BESAeSI` refusée par l'erreur 30010.
 
 ### Réponse
 
@@ -321,21 +336,21 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:v7="http://services-web.etnic.be/eprom/formation/organisation/messages/v7">
+                  xmlns:v8="http://services-web.etnic.be/eprom/formation/organisation/messages/v8">
   <soapenv:Header/>
   <soapenv:Body>
-    <v7:ModifierOrganisation>
-      <v7:id>
-        <v7:anneeScolaire>2024-2025</v7:anneeScolaire>
-        <v7:etabId>41</v7:etabId>
-        <v7:numAdmFormation>186</v7:numAdmFormation>
-        <v7:numOrganisation>1</v7:numOrganisation>
-      </v7:id>
-      <v7:dateDebutOrganisation>2024-09-01</v7:dateDebutOrganisation>
-      <v7:dateFinOrganisation>2024-10-30</v7:dateFinOrganisation>
+    <v8:ModifierOrganisation>
+      <v8:id>
+        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:etabId>41</v8:etabId>
+        <v8:numAdmFormation>186</v8:numAdmFormation>
+        <v8:numOrganisation>1</v8:numOrganisation>
+      </v8:id>
+      <v8:dateDebutOrganisation>2024-09-01</v8:dateDebutOrganisation>
+      <v8:dateFinOrganisation>2024-10-30</v8:dateFinOrganisation>
       <!--Optional:-->
-      <v7:conseillerPrevention>true</v7:conseillerPrevention>
-    </v7:ModifierOrganisation>
+      <v8:conseillerPrevention>true</v8:conseillerPrevention>
+    </v8:ModifierOrganisation>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -345,7 +360,7 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 ## Opération 4 : SupprimerOrganisation
 
 ### SOAP Action
-`http://services-web.etnic.be/eprom/formation/organisation/v7/SupprimerOrganisation`
+`http://services-web.etnic.be/eprom/formation/organisation/v8/SupprimerOrganisation`
 
 ### Requête
 
@@ -386,17 +401,17 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:v7="http://services-web.etnic.be/eprom/formation/organisation/messages/v7">
+                  xmlns:v8="http://services-web.etnic.be/eprom/formation/organisation/messages/v8">
   <soapenv:Header/>
   <soapenv:Body>
-    <v7:SupprimerOrganisation>
-      <v7:id>
-        <v7:anneeScolaire>2024-2025</v7:anneeScolaire>
-        <v7:etabId>41</v7:etabId>
-        <v7:numAdmFormation>186</v7:numAdmFormation>
-        <v7:numOrganisation>1</v7:numOrganisation>
-      </v7:id>
-    </v7:SupprimerOrganisation>
+    <v8:SupprimerOrganisation>
+      <v8:id>
+        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:etabId>41</v8:etabId>
+        <v8:numAdmFormation>186</v8:numAdmFormation>
+        <v8:numOrganisation>1</v8:numOrganisation>
+      </v8:id>
+    </v8:SupprimerOrganisation>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
@@ -418,6 +433,7 @@ Structure complète du type retourné dans les réponses Créer, Lire et Modifie
 | `eLearning` | boolean | non | Formation en e-Learning (**supprimé depuis rentrée 2022-2023**, présent en lecture seule) |
 | `enPrison` | boolean | non | Formation en prison |
 | `reorientation7TP` | boolean | non | Réorientation 7TQ/7P (**ajouté rentrée 2025-2026**) |
+| `BESAeSI` | boolean | non | BES AeSI (**ajouté v8**, rentrée 2026-2027) ; lu `false` sur une organisation qui ne le porte pas (TQ, 2026-11-24) |
 | `activiteFormation` | boolean | non | Activité de formation |
 | `conseillerPrevention` | boolean | non | Conseiller prévention / DPO |
 | `partiellementDistance` | boolean | non | Partiellement à distance (**supprimé depuis rentrée 2022-2023**, présent en lecture seule) |
@@ -440,7 +456,7 @@ Structure complète du type retourné dans les réponses Créer, Lire et Modifie
 
 ## Valeurs de typeInterventionExterieure
 
-Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
+Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 27-04-2026 ; la liste du manuel v7 rev5.1 datait du 10-06-2025). R et S sont barrés dans les deux manuels :
 
 | Code | Description | Statut |
 |---|---|---|
@@ -450,6 +466,7 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 | `"D"` | Discriminations positives | actif |
 | `"E"` | EHR | actif |
 | `"F"` | Fonds Européens | actif |
+| `"G"` | BES | actif (**nouveau v8**) |
 | `"I"` | Formation des publics Infra scolarisés | actif |
 | `"J"` | Réorientation 7TQ/7P | actif (**nouveau v7**) |
 | `"K"` | Octroi périodes cabinet-projets transvers | actif |
@@ -508,6 +525,7 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 | `false` | `20034` | Le type d'intervention x n'est plus disponible à l'encodage | Créer, Modifier |
 | `false` | `20037` | Switch réorientation 7TQ 7P incorrect (O/N) | Créer, Modifier |
 | `false` | `20038` | Le switch réorientation 7TQ 7P doit obligatoirement être à oui pour cette implantation réservée aux réorientations des 7e TQ/P | Créer, Modifier |
+| `false` | `20042` | Switch BES AeSI incorrect (O/N) (**nouveau v8**) | Créer, Modifier |
 
 ### Codes spécifiques Formation Organisation (30xxx)
 
@@ -522,6 +540,7 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 | `false` | `30007` | Paramètre anneeScolaire incorrect (xxxx-xxxx) | toutes |
 | `false` | `30008` | La donnée 'enseignementHybride' n'est disponible qu'à partir de la rentrée scolaire 2022-2023 | Créer, Modifier |
 | `false` | `30009` | La donnée 'reorientation7TP' n'est disponible qu'à partir de la rentrée scolaire 2025-2026 | Créer, Modifier |
+| `false` | `30010` | La donnée 'BESAeSI' n'est disponible qu'à partir de la rentrée scolaire 2026-2027 (**nouveau v8**) | Créer, Modifier |
 
 ---
 
@@ -604,8 +623,8 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 
 | Fichier | Rôle | Partagé avec d'autres services |
 |---|---|---|
-| `EpromFormationOrganisationMessages_v7.xsd` | Messages requête/réponse (4 opérations) | non (spécifique) |
-| `FormationOrganisation_v7.xsd` | FormationOrganisationCT, OrganisationIdCT, OrganisationApercuCT, StatutCT | oui (Formations Liste utilise v2) |
+| `EpromFormationOrganisationMessages_v8.xsd` | Messages requête/réponse (4 opérations) | non (spécifique) |
+| `FormationOrganisation_v8.xsd` | FormationOrganisationCT, OrganisationIdCT, OrganisationApercuCT, StatutCT | oui (Formations Liste utilise v2) |
 | `AnneeScolaire_v1.xsd` | AnneeScolaireST | oui (tous services) — identique |
 | `Etablissement_v1.xsd` | EtabIdST, ImplIdST, CodeUniteST | oui (tous services) — identique |
 | `ResponseStatus_v3.xsd` | success, messages, MessageType | oui (tous services) — identique |
@@ -615,9 +634,14 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 > **Évolution XSD** : ce service utilise `Common_v2.xsd` au lieu de `Common_v1.xsd`.
 > Le type de base des réponses est `ResponseType` (avec attributs requestId + transactionId)
 > au lieu de `AbstractExternalResponseType` (avec header SOAP).
-> De même, `FormationOrganisation_v7.xsd` remplace `FormationOrganisation_v2.xsd` avec
-> les nouveaux champs booléens (reorientation7TP, activiteFormation, conseillerPrevention,
+> De même, `FormationOrganisation_v8.xsd` remplace `FormationOrganisation_v2.xsd` avec
+> les nouveaux champs booléens (reorientation7TP, BESAeSI, activiteFormation, conseillerPrevention,
 > partiellementDistance, enseignementHybride, numOrganisation2AnneesScolaires).
+>
+> **v7 -> v8** : seul ajout au contrat, `BESAeSI` (facultatif) dans `FormationOrganisationCT` et dans
+> les requêtes Créer et Modifier, entre `reorientation7TP` et `activiteFormation` ; mêmes opérations,
+> liaison renommée `EPROMFormationOrganisationV8Binding`. Le manuel ajoute aussi le code « G » et
+> les erreurs 20042 et 30010 (comparaison du contrat et du manuel, 2026-11-24).
 
 ---
 
@@ -625,12 +649,13 @@ Liste exhaustive des codes (validée au 10-06-2025, hors contrat XSD) :
 
 | Élément spec | Code pyetnic actuel | Notes refonte |
 |---|---|---|
-| `CreerOrganisation` | `FormationOrganisationService.creer_organisation()` | OK — adapter au nouveau ResponseType |
-| `LireOrganisation` | `FormationOrganisationService.lire_organisation()` | OK |
-| `ModifierOrganisation` | `FormationOrganisationService.modifier_organisation()` | OK |
-| `SupprimerOrganisation` | `FormationOrganisationService.supprimer_organisation()` | OK |
-| `FormationOrganisationCT` | `FormationOrganisation` dataclass | **À refondre** : ajouter nouveaux champs v7 |
-| `OrganisationIdCT` | `OrganisationId` dataclass | OK |
-| `StatutCT` | `StatutDocument` dataclass | OK (partagé avec Formations Liste) |
-| Codes d'erreur | catch-all `except Exception` | **À refondre** : exceptions typées par code |
-| ResponseType (v2) | non géré | **Nouveau** : parser attributs requestId + transactionId |
+| `CreerOrganisation` | `pyetnic.eprom.creer_organisation()` | paramètre `BESAeSI` (v8) |
+| `LireOrganisation` | `pyetnic.eprom.lire_organisation()` | |
+| `ModifierOrganisation` | `pyetnic.eprom.modifier_organisation()` | envoie les champs non `None` de l'`Organisation` |
+| `SupprimerOrganisation` | `pyetnic.eprom.supprimer_organisation()` | |
+| `FormationOrganisationCT` | dataclass `Organisation` | tous les champs, `BESAeSI` compris (en dernier) |
+| `OrganisationIdCT` | dataclass `OrganisationId` | |
+| `StatutCT` | dataclass `StatutDocument` | partagé avec Formations Liste |
+| `typeInterventionExterieure` | enum `TypeInterventionExterieure` | 14 codes, `G` compris ; pas de R ni de S |
+| Codes d'erreur | exceptions typées (`pyetnic.exceptions`) | 20042 et 30010 -> `EtnicValidationError` |
+| ResponseType (v2) | `extract_error_info` | `requestId` lu dans l'en-tête, l'attribut en repli ; `transactionId` non exposé |
