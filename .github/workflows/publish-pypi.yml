@@ -17,23 +17,29 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
-      - name: Verify tag matches pyproject version
+      - name: Verify tag matches pyetnic.__version__
         run: |
           python - <<'PY'
+          import ast
           import os
           import pathlib
           import sys
-          import tomllib
 
-          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))
-          version = pyproject["project"]["version"]
+          # pyproject.toml reads the version from pyetnic/__init__.py (dynamic).
+          tree = ast.parse(pathlib.Path("pyetnic/__init__.py").read_text(encoding="utf-8"))
+          version = next(
+              node.value.value
+              for node in tree.body
+              if isinstance(node, ast.Assign)
+              and any(getattr(t, "id", None) == "__version__" for t in node.targets)
+          )
           tag = os.environ["GITHUB_REF_NAME"]
           expected = f"v{version}"
 
@@ -41,7 +47,7 @@ jobs:
           print(f"Expected: {expected}")
 
           if tag != expected:
-            print("Error: git tag and pyproject.toml version do not match.", file=sys.stderr)
+            print("Error: git tag and pyetnic.__version__ do not match.", file=sys.stderr)
             sys.exit(1)
           PY
 
