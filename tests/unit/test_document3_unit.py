@@ -296,3 +296,23 @@ def test_ajouter_matches_the_year_of_study_too(service, recorded):
     assert branche["noAnneeEtude"] == "2"
     assert branche["enseignantListe"]["enseignant"] == [
         {"noMatEns": "444444", "teStatut": "TEMP", "nbPeriodesAttribuees": 4.0}]
+
+
+def test_doc3_period_counters_follow_the_contract_types():
+    """Audit D7: the XSD declares the three counters xs:int, the attribution xs:float."""
+    import typing
+
+    from zeep import Client
+
+    from pyetnic.config import Config
+    from pyetnic.soap_client import get_wsdl_path
+
+    hints = typing.get_type_hints(Doc3ActiviteDetail)
+    for name in ("nbPeriodesDoc8", "nbPeriodesPrevuesDoc2", "nbPeriodesReellesDoc2"):
+        assert hints[name] == typing.Optional[int], name
+    client = Client(get_wsdl_path("pyetnic.resources", Config.SERVICES["DOCUMENT3"].wsdl_path))
+    ns = "http://enseignement.cfwb.be/types/formation/document3/v1"
+    types = {name: el.type.name for name, el in client.get_type(f"{{{ns}}}Doc3ActiviteDetailCT").elements}
+    assert {types[n] for n in ("nbPeriodesDoc8", "nbPeriodesPrevuesDoc2", "nbPeriodesReellesDoc2")} == {"int"}
+    detail = {name: el.type.name for name, el in client.get_type(f"{{{ns}}}Doc3EnseignantDetailCT").elements}
+    assert detail["nbPeriodesAttribuees"] == "float"

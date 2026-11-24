@@ -158,7 +158,7 @@ class Document3Service:
         The placeholder line of a branch never written (no staff number, see
         :func:`lire_document_3`) is not sent back. A branch is matched on
         ``coNumBranche`` and ``noAnneeEtude``; one that the document does not
-        have is refused, as the server would refuse it.
+        have raises ``ValueError`` before anything is written.
 
         Returns what the server answers to the write, the whole document.
         """

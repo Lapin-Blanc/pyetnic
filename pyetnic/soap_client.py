@@ -16,11 +16,12 @@ from zeep.helpers import serialize_object
 from zeep.wsse.username import UsernameToken
 from zeep.transports import Transport
 from zeep.exceptions import Fault, TransportError
+from zeep.exceptions import ValidationError as ZeepValidationError
 from requests import Session
 from requests.exceptions import RequestException
 
 from .config import Config
-from .exceptions import EtnicTransportError
+from .exceptions import EtnicTransportError, EtnicValidationError
 
 # Support optionnel de la signature X509 (nécessite xmlsec + cryptography)
 try:
@@ -223,7 +224,9 @@ class SoapClientManager:
             dict: Réponse du service, sérialisée en dictionnaire
             
         Raises:
-            SoapError: Si l'appel au service échoue
+            SoapError: Si l'appel au service échoue (transport, SOAP Fault).
+            EtnicValidationError: Si la requête ne respecte pas le contrat
+                embarqué (zeep la refuse avant tout envoi).
         """
         service = self._initialize_client()
         try:
@@ -237,6 +240,18 @@ class SoapClientManager:
             )
             return serialize_object(result, dict)
 
+        except ZeepValidationError as e:
+            # The request does not match the embedded contract (a required element
+            # missing, a [1..*] list empty...): zeep refuses it before sending.
+            logger.error(
+                "SOAP request rejected by the contract: service=%s method=%s error=%s",
+                self.service_name, method_name, str(e),
+            )
+            raise EtnicValidationError(
+                f"{method_name} on {self.service_name} does not match the contract: {e}",
+                description=str(e),
+                request_id=request_id,
+            ) from e
         except (Fault, TransportError, RequestException) as e:
             error_msg = f"Erreur lors de l'appel à {method_name} sur {self.service_name}: {str(e)}"
             logger.error(

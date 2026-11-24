@@ -21,6 +21,12 @@
 | Messages namespace | `http://services-web.etnic.be/eprom/formation/organisation/messages/v8` |
 | Types namespace | `http://enseignement.cfwb.be/types/formation/organisation/v8` |
 | Binding | `EPROMFormationOrganisationV8Binding` (document/literal) |
+| Transport | TLS 1.2 et 1.3 (manuel v8 rev 6.0, §2.2 ; le §2.1, non mis à jour, dit encore « TLS 1.0 ou TLS 1.2 ») |
+
+> Sources : contrat (WSDL : espaces de noms, liaison, une seule liaison `soap/`, donc SOAP 1.1) ;
+> manuel v8 rev 6.0, §2.1 (échange synchrone, WS-Security par certificat X.509 ou login / mot de
+> passe) et §2.2 (SOAP 1.1). Le manuel (§2.2.1) nomme la liaison
+> `EPROMFormationOrganisationExternalV8Binding` ; le WSDL, qui fait foi, `EPROMFormationOrganisationV8Binding`.
 
 ### Endpoints
 
@@ -39,9 +45,10 @@
 ## Description fonctionnelle
 
 Le service FormationOrganisation met à disposition toutes les fonctionnalités de gestion
-des organisations de formation (Doc A) aux utilisateurs gérant les formations de leur établissement.
+des organisations de formation (Doc A) aux utilisateurs gérant les formations de leur établissement
+(manuel v8 rev 6.0, §1.1 et §3.1.1).
 
-Il expose **4 opérations** CRUD :
+Il expose **4 opérations** CRUD (contrat : WSDL ; manuel v8 rev 6.0, §1.1) :
 
 1. **CreerOrganisation** — crée une nouvelle organisation de formation
 2. **LireOrganisation** — fournit les informations de la formation et de son organisation
@@ -50,15 +57,16 @@ Il expose **4 opérations** CRUD :
 
 **Règle clé** : l'opération Créer renvoie en retour le même ID fourni en entrée **complété du numéro
 d'organisation généré par le système**. C'est cet ID complété qu'il faut utiliser pour toute
-lecture, modification ou suppression ultérieure.
+lecture, modification ou suppression ultérieure (manuel v8 rev 6.0, §3.1.1).
 
 ---
 
 ## Bloc Retour — ResponseType (Common_v2.xsd)
 
 > **Évolution par rapport à Formations Liste v2** : ce service utilise `Common_v2.xsd`
-> (au lieu de `Common_v1.xsd`). Le `requestId` et le `transactionId` sont des **attributs XML**
-> de l'élément réponse.
+> (au lieu de `Common_v1.xsd`), depuis la v7 (manuel v7 rev 5.1, §1.2.1). Le `requestId` et le
+> `transactionId` sont des **attributs XML** de l'élément réponse (contrat : `Common_v2.xsd`,
+> `ResponseAttributesType`).
 >
 > **Observé sur TQ (2026-11-24, `LireOrganisation` v8, succès et erreur 00009)** : le serveur
 > renvoie le `requestId` reçu **deux fois**, dans l'en-tête SOAP `requestId` (comme les services
@@ -83,6 +91,8 @@ ResponseType (abstract, extends ResponseAttributesType)
     └── info    : MessageType [0..*]
 ```
 
+(contrat : `Common_v2.xsd` et `ResponseStatus_v3.xsd` ; manuel v8 rev 6.0, §2.4)
+
 ### Types auxiliaires
 
 | Type | Base | Description |
@@ -91,9 +101,15 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `Str36Type` | `xsd:string` (maxLength 36) | Identifiant de transaction |
 | `UUIDType` | `xsd:string` (pattern UUID) | Identifiant de requête |
 
-> **Note** : le `requestId` est optionnel en entrée (header SOAP), mais **obligatoire en sortie**
-> (attribut de la réponse). Si non fourni en entrée, l'ETNIC en génère un.
-> Le `transactionId` est toujours généré par l'ETNIC.
+(contrat : `Common_v2.xsd`, `requestId_v1.xsd` ; le manuel, §2.4, décrit `UUIDType` comme une chaîne
+de 36 caractères au plus)
+
+> **Note** : le `requestId` est facultatif en entrée, dans l'en-tête SOAP (WSDL :
+> `wsdl:required="false"` ; manuel v8 rev 6.0, §2.3), et **obligatoire en sortie**, à la fois dans
+> l'en-tête (WSDL : `wsdl:required="true"`) et en attribut de la réponse (`Common_v2.xsd` :
+> `use="required"`). Sans `requestId` fourni, l'ETNIC en affecte un, à retrouver dans les en-têtes
+> de la réponse (manuel, §2.3). Le `transactionId` vient du serveur (observé sur TQ, 2026-11-24,
+> ci-dessus).
 
 ---
 
@@ -108,7 +124,7 @@ ResponseType (abstract, extends ResponseAttributesType)
 
 | Champ | Type | Obligatoire | Description |
 |---|---|---|---|
-| `id/anneeScolaire` | AnneeScolaireST | oui | Année scolaire (ex: `"2024-2025"`) |
+| `id/anneeScolaire` | AnneeScolaireST | oui | Année scolaire, motif `\d{4}-\d{4}` (ex: `"2026-2027"`) |
 | `id/etabId` | EtabIdST (int) | oui | Identifiant FASE de l'établissement |
 | `id/implId` | ImplIdST (int) | **oui** | Identifiant FASE de l'implantation (**obligatoire en Créer**) |
 | `id/numAdmFormation` | int | oui | Numéro administratif de la formation |
@@ -126,7 +142,11 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `typeInterventionExterieure` | string | non | Code type d'intervention extérieure (voir liste des valeurs) |
 | `interventionExterieure50p` | boolean | non | Intervention d'un tiers de 50% ou plus |
 
-> **Règle métier** : `implId` est **obligatoire** dans CreerOrganisation (contrairement à Lire/Modifier/Supprimer où il est absent du bloc id de la requête).
+(contrat : `CreerOrganisationRequeteCT` ; libellés et rentrées d'ajout : manuel v8 rev 6.0, §3.1.2.1
+et §3.1.3.2. Le manuel écrit `interventionExtérieure50p`, avec un accent ; le contrat, qui fait foi,
+`interventionExterieure50p`.)
+
+> **Règle métier** : `implId` est **obligatoire** dans CreerOrganisation, contrairement à Lire/Modifier/Supprimer où il est absent du bloc id de la requête (contrat ; manuel v8 rev 6.0, §3.1.2.1 à §3.1.5.1).
 
 > **Sémantique observée en production (11/06/2026, un établissement)** : UE sur 2 années scolaires :
 > chaque année porte son propre enregistrement d'organisation, et **les deux portent les dates
@@ -149,20 +169,25 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `response` | responseType | non | Présent uniquement si `success=true` |
 | `response/organisation` | FormationOrganisationCT | oui | Détail complet de l'organisation créée |
 
+(contrat : `CreerOrganisationReponseCT` ; manuel v8 rev 6.0, §3.1.2.2)
+
 > **Comportement** : la réponse renvoie l'organisation créée avec le `numOrganisation` généré
-> par le système (incrémenté automatiquement). Ce numéro est nécessaire pour les opérations
-> Lire, Modifier, Supprimer.
+> par le système (incrémenté automatiquement, voir règle 2). Ce numéro est nécessaire pour les
+> opérations Lire, Modifier, Supprimer (manuel v8 rev 6.0, §3.1.1).
 
 > **Observé en production** :
-> - Les champs facultatifs omis reviennent avec les valeurs par défaut du serveur : booléens à
->   `False`, `numOrganisation2AnneesScolaires` à `0`, `typeInterventionExterieure` à `None`
+> - Les champs facultatifs omis à la création se relisent avec les valeurs par défaut du serveur :
+>   booléens à `False` (`eLearning` et `partiellementDistance` compris),
+>   `numOrganisation2AnneesScolaires` à `0`, `typeInterventionExterieure` absent (`None`)
 >   (observé une fois, 2026-06-11).
+> - L'organisation créée porte le statut « Encodé école », daté du jour de la création (observé
+>   en production, 2026-06-11 ; même valeur dans les exemples du manuel, §3.1.2.4).
 > - Une création refusée est atomique : rien ne reste en base (observé une fois, 2026-06-11).
 > - `CreerOrganisation` ne vérifie pas que la formation est encore organisable quand son dossier a
 >   été remplacé par un nouveau : l'enregistrement est accepté, le refus ne vient qu'à
 >   l'approbation (observé une fois, octobre 2026).
 
-### Exemple de requête XML
+### Exemple de requête XML (manuel v8 rev 6.0, §3.1.2.3)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -171,54 +196,63 @@ ResponseType (abstract, extends ResponseAttributesType)
   <soapenv:Body>
     <v8:CreerOrganisation>
       <v8:id>
-        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:anneeScolaire>2026-2027</v8:anneeScolaire>
         <v8:etabId>41</v8:etabId>
         <v8:implId>66</v8:implId>
         <v8:numAdmFormation>186</v8:numAdmFormation>
       </v8:id>
-      <v8:dateDebutOrganisation>2024-09-01</v8:dateDebutOrganisation>
-      <v8:dateFinOrganisation>2024-10-30</v8:dateFinOrganisation>
+      <v8:dateDebutOrganisation>2026-08-26</v8:dateDebutOrganisation>
+      <v8:dateFinOrganisation>2026-10-30</v8:dateFinOrganisation>
       <!--Optional:-->
-      <v8:enseignementHybride>true</v8:enseignementHybride>
+      <v8:organisationPeriodesSupplOuEPT>false</v8:organisationPeriodesSupplOuEPT>
+      <v8:valorisationAcquis>false</v8:valorisationAcquis>
+      <v8:enPrison>false</v8:enPrison>
+      <v8:reorientation7TP>false</v8:reorientation7TP>
+      <v8:BESAeSI>true</v8:BESAeSI>
+      <v8:activiteFormation>false</v8:activiteFormation>
+      <v8:conseillerPrevention>false</v8:conseillerPrevention>
+      <v8:enseignementHybride>false</v8:enseignementHybride>
     </v8:CreerOrganisation>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
 
-### Exemple de réponse XML (succès, simplifié)
+### Exemple de réponse XML (succès, simplifié ; manuel v8 rev 6.0, §3.1.2.4)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:msg="http://services-web.etnic.be/eprom/formation/organisation/messages/v8"
-                  xmlns:orgv8="http://enseignement.cfwb.be/types/formation/organisation/v8"
-                  xmlns:status="http://etnic.be/types/technical/ResponseStatus/v3">
+                  xmlns:orgv8="http://enseignement.cfwb.be/types/formation/organisation/v8">
+  <soapenv:Header>
+    <requestId xmlns="http://etnic.be/types/technical/requestId/v1">d14df9ed-d277-4b72-80e4-c0e5dbf54d0c</requestId>
+  </soapenv:Header>
   <soapenv:Body>
-    <CreerOrganisationReponse requestId="a6424b1b-a08e-4b89-91e6-0ca4107ef25b"
-                             transactionId="000001955cf2dcb4-22c41b6"
+    <CreerOrganisationReponse requestId="d14df9ed-d277-4b72-80e4-c0e5dbf54d0c"
+                             transactionId="0000019caf470a2d-27f24c"
                              xmlns="http://services-web.etnic.be/eprom/formation/organisation/messages/v8">
       <success xmlns="http://etnic.be/types/technical/ResponseStatus/v3">true</success>
       <response>
         <organisation>
           <orgv8:id>
-            <orgv8:anneeScolaire>2024-2025</orgv8:anneeScolaire>
+            <orgv8:anneeScolaire>2026-2027</orgv8:anneeScolaire>
             <orgv8:etabId>41</orgv8:etabId>
             <orgv8:implId>66</orgv8:implId>
             <orgv8:numAdmFormation>186</orgv8:numAdmFormation>
             <orgv8:numOrganisation>1</orgv8:numOrganisation>
           </orgv8:id>
-          <orgv8:dateDebutOrganisation>2024-09-01</orgv8:dateDebutOrganisation>
-          <orgv8:dateFinOrganisation>2024-10-30</orgv8:dateFinOrganisation>
-          <orgv8:nombreSemaineFormation>9</orgv8:nombreSemaineFormation>
+          <orgv8:dateDebutOrganisation>2026-08-26</orgv8:dateDebutOrganisation>
+          <orgv8:dateFinOrganisation>2026-10-30</orgv8:dateFinOrganisation>
+          <orgv8:nombreSemaineFormation>10</orgv8:nombreSemaineFormation>
           <orgv8:organisationPeriodesSupplOuEPT>false</orgv8:organisationPeriodesSupplOuEPT>
           <orgv8:valorisationAcquis>false</orgv8:valorisationAcquis>
           <orgv8:enPrison>false</orgv8:enPrison>
           <orgv8:reorientation7TP>false</orgv8:reorientation7TP>
+          <orgv8:BESAeSI>true</orgv8:BESAeSI>
           <orgv8:activiteFormation>false</orgv8:activiteFormation>
           <orgv8:conseillerPrevention>false</orgv8:conseillerPrevention>
-          <orgv8:enseignementHybride>true</orgv8:enseignementHybride>
+          <orgv8:enseignementHybride>false</orgv8:enseignementHybride>
           <orgv8:statut>
             <orgv8:statut>Encodé école</orgv8:statut>
-            <orgv8:dateStatut>2025-04-29</orgv8:dateStatut>
+            <orgv8:dateStatut>2026-04-29</orgv8:dateStatut>
           </orgv8:statut>
         </organisation>
       </response>
@@ -226,6 +260,9 @@ ResponseType (abstract, extends ResponseAttributesType)
   </soapenv:Body>
 </soapenv:Envelope>
 ```
+
+> Préfixes d'espaces de noms normalisés (`orgv8`) et déclarations inutilisées retirées. Le
+> `requestId` figure dans l'en-tête et en attribut, comme observé sur TQ (2026-11-24).
 
 ---
 
@@ -245,6 +282,8 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `id/numAdmFormation` | int | oui | Numéro administratif de la formation |
 | `id/numOrganisation` | int | oui | Numéro de l'organisation |
 
+(contrat : `LireOrganisationRequeteCT` ; manuel v8 rev 6.0, §3.1.3.1)
+
 > **Règle métier** : `implId` est **absent** de la requête Lire (et Modifier/Supprimer).
 > Seul Créer requiert `implId`.
 
@@ -261,12 +300,18 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `response` | responseType | non | |
 | `response/organisation` | FormationOrganisationCT | oui | Détail complet de l'organisation |
 
-> **Note** : la réponse Lire renvoie **tous les champs** de FormationOrganisationCT,
-> y compris les champs supprimés comme `eLearning` (supprimé depuis 2022-2023)
-> et `partiellementDistance` (supprimé depuis 2022-2023). Ces champs restent dans le
-> type de retour pour compatibilité mais ne sont plus éditables.
+(contrat : `LireOrganisationReponseCT` ; manuel v8 rev 6.0, §3.1.3.2)
 
-### Exemple de requête XML
+> **Note** : `eLearning` et `partiellementDistance`, supprimés depuis la rentrée 2022-2023, restent
+> dans `FormationOrganisationCT` (contrat) et figurent dans la réponse Lire du manuel (§3.1.3.2,
+> exemple §3.1.3.4, à `false`) ; relus à `false` en production (observé une fois, 2026-06-11). Ils ne
+> sont plus éditables : les requêtes Créer et Modifier n'ont pas ces éléments (contrat). Le manuel
+> les omet des réponses Créer et Modifier (§3.1.2.2, §3.1.4.2) alors que le contrat les y autorise ;
+> leur présence dans ces deux réponses n'a pas été vérifiée. Un champ facultatif sans valeur peut
+> manquer de la réponse : `typeInterventionExterieure` est absent de l'exemple §3.1.3.4 et a été relu
+> `None` en production (2026-06-11).
+
+### Exemple de requête XML (manuel v8 rev 6.0, §3.1.3.3, coquille de balise corrigée)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -275,7 +320,7 @@ ResponseType (abstract, extends ResponseAttributesType)
   <soapenv:Body>
     <v8:LireOrganisation>
       <v8:id>
-        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:anneeScolaire>2026-2027</v8:anneeScolaire>
         <v8:etabId>41</v8:etabId>
         <v8:numAdmFormation>186</v8:numAdmFormation>
         <v8:numOrganisation>1</v8:numOrganisation>
@@ -316,8 +361,10 @@ ResponseType (abstract, extends ResponseAttributesType)
 | `typeInterventionExterieure` | string | non | Code type intervention extérieure |
 | `interventionExterieure50p` | boolean | non | Intervention ≥ 50% |
 
+(contrat : `ModifierOrganisationRequeteCT` ; manuel v8 rev 6.0, §3.1.4.1)
+
 > **Règle métier** : la structure est identique à CreerOrganisation sauf que
-> l'id contient `numOrganisation` (au lieu de `implId`). Les dates restent obligatoires.
+> l'id contient `numOrganisation` (au lieu de `implId`). Les dates restent obligatoires (contrat).
 
 > **Un champ facultatif omis est remis à sa valeur par défaut, pas conservé** (testé sur TQ,
 > 2026-11-24) : une organisation créée avec `BESAeSI` et `enPrison` à `true`, modifiée par une
@@ -330,9 +377,14 @@ ResponseType (abstract, extends ResponseAttributesType)
 
 **Type** : `ModifierOrganisationReponseCT` extends `ResponseType`
 
-Structure identique à CreerOrganisationReponseCT : retourne l'organisation modifiée complète.
+Structure identique à CreerOrganisationReponseCT : retourne l'organisation modifiée complète
+(contrat ; manuel v8 rev 6.0, §3.1.4.2).
 
-### Exemple de requête XML
+> Le manuel décrit ici un `OrganisationIdCT` sans `implId` (§3.1.4.2) et son exemple de réponse
+> (§3.1.4.4) n'en porte pas ; le contrat déclare `implId` facultatif. Ce que renvoie le serveur :
+> (inconnu). pyetnic garde l'`OrganisationId` passé à `modifier_organisation`.
+
+### Exemple de requête XML (manuel v8 rev 6.0, §3.1.4.3)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -341,19 +393,30 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
   <soapenv:Body>
     <v8:ModifierOrganisation>
       <v8:id>
-        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:anneeScolaire>2026-2027</v8:anneeScolaire>
         <v8:etabId>41</v8:etabId>
         <v8:numAdmFormation>186</v8:numAdmFormation>
         <v8:numOrganisation>1</v8:numOrganisation>
       </v8:id>
-      <v8:dateDebutOrganisation>2024-09-01</v8:dateDebutOrganisation>
-      <v8:dateFinOrganisation>2024-10-30</v8:dateFinOrganisation>
+      <v8:dateDebutOrganisation>2026-08-26</v8:dateDebutOrganisation>
+      <v8:dateFinOrganisation>2026-10-30</v8:dateFinOrganisation>
       <!--Optional:-->
-      <v8:conseillerPrevention>true</v8:conseillerPrevention>
+      <v8:organisationPeriodesSupplOuEPT>false</v8:organisationPeriodesSupplOuEPT>
+      <v8:valorisationAcquis>false</v8:valorisationAcquis>
+      <v8:enPrison>false</v8:enPrison>
+      <v8:reorientation7TP>false</v8:reorientation7TP>
+      <v8:BESAeSI>true</v8:BESAeSI>
+      <v8:activiteFormation>false</v8:activiteFormation>
+      <v8:conseillerPrevention>false</v8:conseillerPrevention>
+      <v8:enseignementHybride>false</v8:enseignementHybride>
     </v8:ModifierOrganisation>
   </soapenv:Body>
 </soapenv:Envelope>
 ```
+
+> L'exemple omet `numOrganisation2AnneesScolaires`, `typeInterventionExterieure` et
+> `interventionExterieure50p` : d'après l'essai TQ ci-dessus, le serveur les remettrait à leur valeur
+> par défaut (vérifié pour deux booléens seulement, à confirmer pour ces trois champs).
 
 ---
 
@@ -373,6 +436,8 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 | `id/numAdmFormation` | int | oui | Numéro administratif de la formation |
 | `id/numOrganisation` | int | oui | Numéro de l'organisation |
 
+(contrat : `SupprimerOrganisationRequeteCT` ; manuel v8 rev 6.0, §3.1.5.1)
+
 ### Réponse
 
 **Type** : `SupprimerOrganisationReponseCT` extends `ResponseType`
@@ -384,20 +449,22 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 | `success` | boolean | oui | |
 | `messages` | messagesType | non | |
 
-> **Note** : la réponse Supprimer ne contient **pas de bloc `response`** — uniquement
-> le bloc retour (success + messages). C'est la seule opération sans données de retour.
+> **Note** : la réponse Supprimer ne contient **pas de bloc `response`**, seulement le bloc retour
+> (success + messages) (contrat : `SupprimerOrganisationReponseCT` ; manuel v8 rev 6.0, §3.1.5.2 et
+> exemple §3.1.5.4). C'est la seule opération sans données de retour.
 
 > **Observé en production** (2026-09-30, six suppressions, année relue après chacune) :
 > `SupprimerOrganisation` accepte une organisation « Encodé école » sans document ; il ne laisse ni
 > statut ni trace : l'organisation disparaît de `ListerFormations`, et les autres organisations de
 > l'année ne bougent pas. Une organisation approuvée ou portant des documents n'a pas été essayée
-> (le manuel annonce `30003`).
+> (le manuel liste `30003`, « Le statut des documents ne permet pas cette opération », sans dire
+> quelles opérations il vise).
 >
 > **Numéro libéré** (testé sur TQ, 2026-11-10) : la création suivante reçoit le plus grand
 > `numOrganisation` existant + 1. Un numéro supprimé au milieu de la série n'est donc jamais
 > réattribué ; le dernier numéro, une fois supprimé, l'est de nouveau (règle 2).
 
-### Exemple de requête XML
+### Exemple de requête XML (manuel v8 rev 6.0, §3.1.5.3)
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -406,7 +473,7 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
   <soapenv:Body>
     <v8:SupprimerOrganisation>
       <v8:id>
-        <v8:anneeScolaire>2024-2025</v8:anneeScolaire>
+        <v8:anneeScolaire>2026-2027</v8:anneeScolaire>
         <v8:etabId>41</v8:etabId>
         <v8:numAdmFormation>186</v8:numAdmFormation>
         <v8:numOrganisation>1</v8:numOrganisation>
@@ -443,14 +510,23 @@ Structure complète du type retourné dans les réponses Créer, Lire et Modifie
 | `interventionExterieure50p` | boolean | non | Intervention ≥ 50% |
 | `statut` | StatutCT | non | Statut de l'organisation de formation |
 
-> **Champs supprimés vs ajoutés** : `eLearning` et `partiellementDistance` ont été remplacés par
-> `enseignementHybride` à la rentrée 2022-2023. Les anciens champs restent dans le type de retour
-> pour compatibilité descendante mais ne sont plus éditables via Créer/Modifier.
+(contrat : `FormationOrganisation_v8.xsd`, ordre des éléments compris ; mentions de rentrée : manuel v8
+rev 6.0, §3.1.3.2)
+
+> **`OrganisationIdCT`** : `anneeScolaire`, `etabId`, `implId` [0..1], `numAdmFormation`,
+> `numOrganisation` (contrat). Le manuel annonce `implId` obligatoire (§3.1.2.2, §3.1.3.2) mais
+> l'omet de la réponse Modifier (§3.1.4.2) ; le contrat, qui fait foi, le rend facultatif. Il figure
+> dans les exemples de réponse Créer et Lire du manuel (§3.1.2.4, §3.1.3.4).
+
+> **Champs supprimés vs ajoutés** : `eLearning` et `partiellementDistance` ont été supprimés et
+> `enseignementHybride` ajouté à la rentrée 2022-2023 (manuel v8 rev 6.0 : historique, révision 4.0
+> du 29-08-2022, et §3.1.3.2). Les anciens champs restent dans le type de retour mais ne figurent plus
+> dans les requêtes Créer et Modifier (contrat).
 
 > **Pas de dates de dixièmes** : aucun service ne porte les dates des dixièmes d'une organisation.
 > Les seules dates des XSD EPROM sont `dateDebutOrganisation`, `dateFinOrganisation`,
-> `dateStatut`, `dateFemeture` (sic) et `tsMaj`, et l'écran n'affiche aucune date de dixième (écran
-> relu le 2026-11-05).
+> `dateStatut`, `dateFemeture` (sic) et `tsMaj` (une chaîne) (contrats EPROM embarqués, relus le
+> 2026-11-24), et l'écran n'affiche aucune date de dixième (écran relu le 2026-11-05).
 
 ---
 
@@ -477,19 +553,33 @@ Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 
 | `"U"` | Union Européenne | actif |
 | `"V"` | Validation des compétences | actif |
 
+Le contrat type le champ en `xs:string`, sans énumération : la liste ne vit que dans le manuel
+(§3.1.2.1, §3.1.4.1). La réponse du serveur à un code barré (R, S) n'a pas été essayée ; `20016`
+et `20034` sont les libellés candidats du manuel (§4).
+
 ---
 
 ## Valeurs de StatutCT.statut
 
-| Valeur | Description |
+Le contrat type `statut` en `xs:string`, sans énumération ; le manuel (v8 rev 6.0, §3.1.2.2) liste
+trois valeurs, les mêmes qu'au manuel Formations Liste v2 rev 2.0. `dateStatut` est la « date de la
+dernière màj du statut » (manuel, §3.1.2.2).
+
+| Valeur | Ce qu'on en sait |
 |---|---|
-| `"Encodé école"` | Encodé par l'école, pas encore validé |
-| `"Encodé PO"` | Encodé par le pouvoir organisateur |
-| `"Approuvé"` | Approuvé/validé |
+| `"Encodé école"` | statut d'une organisation à sa création, daté du jour (observé en production, 2026-06-11 ; exemples du manuel) |
+| `"Encodé PO"` | jamais observé ; le libellé suggère l'étape du pouvoir organisateur (à confirmer, voir `30006`) |
+| `"Approuvé"` | observé en production sur une organisation 2025-2026 (2026-06-11) |
 
 ---
 
 ## Codes d'erreur spécifiques
+
+Libellés : manuel v8 rev 6.0, §4 (la v7 rev 5.1 avait les mêmes, sans `20042` ni `30010`). Le manuel
+ne dit pas quelle opération renvoie quel code : la colonne « Opérations » est déduite des champs en
+cause. Codes observés : `00009` (Lire, TQ, 2026-11-24), `20011` (TQ, 2026-11-10), `20030` (Créer,
+production, 2026-06-11), `30010` (Créer, TQ, 2026-11-24) ; aucune observation consignée pour les
+autres.
 
 ### Codes communs (cross-service)
 
@@ -544,20 +634,27 @@ Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 
 
 ---
 
-## Règles métier (extraites du PDF)
+## Règles métier (manuel, contrat et essais)
 
 1. **implId obligatoire uniquement en Créer** : les opérations Lire, Modifier et Supprimer
-   n'incluent pas `implId` dans leur bloc `id` de requête. Seul Créer le requiert.
+   n'incluent pas `implId` dans leur bloc `id` de requête. Seul Créer le requiert (contrat ;
+   manuel v8 rev 6.0, §3.1.2.1 à §3.1.5.1).
 
 2. **numOrganisation généré automatiquement** : lors de la création, le système attribue un
    numéro d'organisation incrémental, **dans l'ordre de déclaration**. Ce numéro est retourné
-   dans la réponse et doit être utilisé pour toutes les opérations suivantes. Le numéro attribué
+   dans la réponse et doit être utilisé pour toutes les opérations suivantes (manuel v8 rev 6.0,
+   §3.1.1). Le numéro attribué
    est le plus grand `numOrganisation` existant + 1 (testé sur TQ, 2026-11-10) : avec 1 et 2
    créés puis 1 supprimé, la création suivante reçoit 3, et le trou n'est jamais comblé ; 3
    supprimé, la création suivante reçoit de nouveau 3 : supprimer le dernier numéro le libère.
 
-3. **nombreSemaineFormation calculé** : ce champ est calculé automatiquement par le système
-   à partir des dates de début et fin. Il apparaît uniquement dans les réponses (pas en entrée).
+3. **nombreSemaineFormation calculé** : ce champ est calculé par le système ; il apparaît
+   uniquement dans les réponses, pas en entrée (contrat ; le manuel, §3.1.2.2, dit seulement
+   « Nombre de semaine de formation »). Sous le plafond, les valeurs connues concordent avec
+   l'arrondi supérieur de (fin - début) en jours divisé par 7 : 10 pour le 26/08/2026 → 30/10/2026
+   (manuel v8, §3.1.2.4), 9 pour le 01/09/2024 → 30/10/2024 (manuel v7 rev 5.1, §3.1.3.4), 4 pour le
+   15/09/2026 → 13/10/2026 et 40 pour le 14/09/2026 → 21/06/2027 (observé en production, 2026-06-11) ;
+   règle non documentée, à confirmer.
    Ce n'est pas un simple nombre de semaines : la valeur est **plafonnée à 40**, observé trois
    fois : 40 rendu pour le 09/03/2026 → 29/01/2027 (46 semaines) et pour le 08/01/2026 →
    07/01/2027 (52 semaines) en production, et pour le 01/09/2026 → 31/08/2027 (52 semaines
@@ -566,9 +663,10 @@ Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 
 
 4. **Champs supprimés** : `eLearning` et `partiellementDistance` ont été supprimés depuis la
    rentrée 2022-2023 et remplacés par `enseignementHybride`. Ils restent dans
-   FormationOrganisationCT (retour) mais ne sont plus dans les types de requête Créer/Modifier.
+   FormationOrganisationCT (retour) mais ne sont plus dans les types de requête Créer/Modifier
+   (contrat ; manuel v8 rev 6.0, §3.1.3.2).
 
-5. **Contraintes temporelles sur les dates** :
+5. **Contraintes temporelles sur les dates** (codes et libellés : manuel v8 rev 6.0, §4) :
    - Date début < date fin (code 20006)
    - Date début ≥ une date plancher (code 20010) : plancher non identifié. Le serveur a accepté
      une date de début antérieure à l'année scolaire de l'enregistrement quand
@@ -587,22 +685,26 @@ Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 
      déduite, non mesurée). Début passé de nouveau accepté : 01/09/2026 déclaré le 10/11/2026
      (testé sur TQ, 2026-11-10).
 
-6. **Contrainte statut documents** (code 30003) : certaines opérations (Modifier, Supprimer)
-   ne sont pas autorisées si le statut des documents associés ne le permet pas
-   (par ex. un document "Approuvé" bloque la modification).
+6. **Contrainte statut documents** (code 30003, « Le statut des documents ne permet pas cette
+   opération », manuel v8 rev 6.0, §4) : le manuel ne dit ni quelles opérations ni quels statuts
+   sont visés. Modifier et Supprimer sur une organisation approuvée ou portant des documents sont
+   les cas probables ; jamais observé, à confirmer.
 
-7. **Passage PO** (code 30006) : certaines opérations ne sont pas possibles si le passage
-   au pouvoir organisateur n'est pas actif.
+7. **Passage PO** (code 30006, « Vous ne pouvez pas effectuer cette opération (Passage PO non
+   actif) », manuel v8 rev 6.0, §4) : seul le libellé est connu ; jamais observé.
 
-8. **Contraintes de rentrée scolaire** :
+8. **Contraintes de rentrée scolaire** (manuel v8 rev 6.0, §4) :
    - `enseignementHybride` : disponible uniquement à partir de la rentrée 2022-2023 (code 30008)
    - `reorientation7TP` : disponible uniquement à partir de la rentrée 2025-2026 (code 30009)
+   - `BESAeSI` : disponible uniquement à partir de la rentrée 2026-2027 (code 30010 ; création
+     2025-2026 refusée, testé sur TQ, 2026-11-24)
 
 9. **reorientation7TP obligatoire** (code 20038) : pour certaines implantations réservées
-   aux réorientations 7TQ/7P, le flag doit obligatoirement être à `true`.
+   aux réorientations 7TQ/7P, le flag doit obligatoirement être à `true` (libellé du manuel v8
+   rev 6.0, §4 ; jamais observé).
 
-10. **Valeurs de statut** : `"Encodé école"`, `"Encodé PO"`, `"Approuvé"` (identiques à
-    Formations Liste).
+10. **Valeurs de statut** : `"Encodé école"`, `"Encodé PO"`, `"Approuvé"` (manuel v8 rev 6.0,
+    §3.1.2.2 ; même liste au manuel Formations Liste v2 rev 2.0).
 
 ---
 
@@ -610,12 +712,14 @@ Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 
 
 | Champ | En requête (Créer) | En requête (Modifier) | En retour (FormationOrganisationCT) |
 |---|---|---|---|
-| `id/implId` | **obligatoire** | **absent** | présent (dans OrganisationIdCT) |
+| `id/implId` | **obligatoire** | **absent** | facultatif (OrganisationIdCT, `minOccurs="0"`) |
 | `id/numOrganisation` | **absent** (généré) | **obligatoire** | présent |
 | `nombreSemaineFormation` | **absent** (calculé) | **absent** (calculé) | **obligatoire** (calculé) |
 | `eLearning` | **absent** (supprimé) | **absent** (supprimé) | présent (lecture seule) |
 | `partiellementDistance` | **absent** (supprimé) | **absent** (supprimé) | présent (lecture seule) |
 | `statut` | **absent** (géré par le système) | **absent** | présent |
+
+(contrat : `EpromFormationOrganisationMessages_v8.xsd` et `FormationOrganisation_v8.xsd`)
 
 ---
 
@@ -624,19 +728,25 @@ Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 
 | Fichier | Rôle | Partagé avec d'autres services |
 |---|---|---|
 | `EpromFormationOrganisationMessages_v8.xsd` | Messages requête/réponse (4 opérations) | non (spécifique) |
-| `FormationOrganisation_v8.xsd` | FormationOrganisationCT, OrganisationIdCT, OrganisationApercuCT, StatutCT | oui (Formations Liste utilise v2) |
-| `AnneeScolaire_v1.xsd` | AnneeScolaireST | oui (tous services) — identique |
-| `Etablissement_v1.xsd` | EtabIdST, ImplIdST, CodeUniteST | oui (tous services) — identique |
-| `ResponseStatus_v3.xsd` | success, messages, MessageType | oui (tous services) — identique |
-| `Common_v2.xsd` | ResponseType, ResponseAttributesType, Str36Type | **nouveau** (remplace Common_v1.xsd) |
-| `requestId_v1.xsd` | UUIDType | oui (tous services) — identique |
+| `FormationOrganisation_v8.xsd` | FormationOrganisationCT, OrganisationIdCT, OrganisationApercuCT (inutilisé par les messages v8), StatutCT | non : Formations Liste v2 embarque sa `FormationOrganisation_v2.xsd` |
+| `AnneeScolaire_v1.xsd` | AnneeScolaireST | oui (services EPROM) : même contenu aux blancs près |
+| `Etablissement_v1.xsd` | EtabIdST, ImplIdST, CodeUniteST | oui (services EPROM) : même contenu aux blancs près |
+| `ResponseStatus_v3.xsd` | success, messages, MessageType | oui (services EPROM) : même contenu aux blancs près ; la copie des contrats SEPS diffère |
+| `Common_v2.xsd` | ResponseType, ResponseAttributesType, Str36Type | non : seul contrat embarqué à l'utiliser (depuis la v7) |
+| `requestId_v1.xsd` | UUIDType | oui (services EPROM) : même contenu aux blancs près ; la copie des contrats SEPS diffère |
 
-> **Évolution XSD** : ce service utilise `Common_v2.xsd` au lieu de `Common_v1.xsd`.
-> Le type de base des réponses est `ResponseType` (avec attributs requestId + transactionId)
-> au lieu de `AbstractExternalResponseType` (avec header SOAP).
-> De même, `FormationOrganisation_v8.xsd` remplace `FormationOrganisation_v2.xsd` avec
-> les nouveaux champs booléens (reorientation7TP, BESAeSI, activiteFormation, conseillerPrevention,
-> partiellementDistance, enseignementHybride, numOrganisation2AnneesScolaires).
+(comparaison des contrats embarqués dans `pyetnic/resources/`, 2026-11-24)
+
+> **Évolution XSD** : ce service utilise `Common_v2.xsd` au lieu de `Common_v1.xsd` (depuis la v7,
+> manuel v7 rev 5.1, §1.2.1). Le type de base des réponses est `ResponseType`, qui ajoute les
+> attributs `requestId` et `transactionId`, au lieu d'`AbstractExternalResponseType` (Common_v1,
+> sans attributs) ; le WSDL v8 déclare toujours l'en-tête SOAP `requestId`.
+> `FormationOrganisation_v8.xsd` (espace de noms `.../organisation/v8`) coexiste avec la
+> `FormationOrganisation_v2.xsd` de Formations Liste v2 (`.../organisation/v2`) : leurs
+> `OrganisationIdCT`, `OrganisationApercuCT` et `StatutCT` sont identiques, mais le
+> `FormationOrganisationCT` v2 n'a pas les six booléens `reorientation7TP`, `BESAeSI`,
+> `activiteFormation`, `conseillerPrevention`, `partiellementDistance`, `enseignementHybride` ni
+> l'entier `numOrganisation2AnneesScolaires` (contrats embarqués).
 >
 > **v7 -> v8** : seul ajout au contrat, `BESAeSI` (facultatif) dans `FormationOrganisationCT` et dans
 > les requêtes Créer et Modifier, entre `reorientation7TP` et `activiteFormation` ; mêmes opérations,
@@ -655,7 +765,7 @@ Liste exhaustive des codes (manuel v8 rev6.0, « validé hors contrat xml » au 
 | `SupprimerOrganisation` | `pyetnic.eprom.supprimer_organisation()` | |
 | `FormationOrganisationCT` | dataclass `Organisation` | tous les champs, `BESAeSI` compris (en dernier) |
 | `OrganisationIdCT` | dataclass `OrganisationId` | |
-| `StatutCT` | dataclass `StatutDocument` | partagé avec Formations Liste |
+| `StatutCT` | dataclass `StatutDocument` | partagé avec Formations Liste ; le `statut` lu va dans `Organisation.statutDocumentOrganisation` |
 | `typeInterventionExterieure` | enum `TypeInterventionExterieure` | 14 codes, `G` compris ; pas de R ni de S |
 | Codes d'erreur | exceptions typées (`pyetnic.exceptions`) | 20042 et 30010 -> `EtnicValidationError` |
 | ResponseType (v2) | `extract_error_info` | `requestId` lu dans l'en-tête, l'attribut en repli ; `transactionId` non exposé |

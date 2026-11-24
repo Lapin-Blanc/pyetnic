@@ -242,10 +242,14 @@ def test_strict_mode_raises_not_found_on_00009(mock_soap_call):
         ("20016", EtnicValidationError),
         ("20038", EtnicValidationError),
         ("20042", EtnicValidationError),  # BESAeSI switch (Organisation v8)
+        ("20041", EtnicValidationError),  # Doc 2: sub-type imposed by the type (rev 1.4)
         ("1113", EtnicValidationError),
         ("1114", EtnicValidationError),
         ("2106", EtnicValidationError),
         ("2118", EtnicValidationError),
+        ("1574", EtnicValidationError),  # Doc 3: attributions above the periods organised
+        ("20108", EtnicValidationError),  # Doc 3: staff number unknown to EPROM
+        ("20110", EtnicValidationError),  # Doc 3: status incorrect
         # Numeric ranges
         ("4004", EtnicValidationError),
         ("4012", EtnicValidationError),

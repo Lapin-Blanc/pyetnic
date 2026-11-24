@@ -54,9 +54,36 @@ that supports `bN` pre-releases).
   population is approved) raise `EtnicDocumentNotAccessibleError`, like 20102; 20104 (an
   approval with values that differ from the stored ones) raises `EtnicConcurrencyError`.
   They raised the base `EtnicBusinessError`, which they still derive from.
+- **Document 3 refusals are typed** (#36): 1538 and 1574 to 1576 (periods above a ceiling),
+  20108 to 20110 (unknown staff number, availability code or status) raise
+  `EtnicValidationError` instead of the base `EtnicBusinessError`.
+- **`Doc3ActiviteDetail` counters are `Optional[int]`** (#36, audit D7):
+  `nbPeriodesDoc8`, `nbPeriodesPrevuesDoc2` and `nbPeriodesReellesDoc2` are `xs:int` in the
+  contract and zeep always returned integers; the `float` annotation was wrong.
+- **`SepsDeces.date` is annotated `Optional[date]`**: inside its class body the name `date`
+  was bound to the default before the annotation was evaluated, which made it `NoneType`.
+- **A request that breaks the embedded contract raises `EtnicValidationError`** (#36):
+  zeep refuses it before sending (a required element missing, a `[1..*]` list empty, as
+  in a Doc 3 write without any branch), and its `ValidationError` escaped as a non-pyetnic
+  exception. `except EtnicError` now catches it.
+- **`lister_formations*` on a success without `response`** (the contract allows it)
+  return an empty list instead of raising `AttributeError`.
+- **Error 20041 from Document 2** (an intervention type without the sub-type it imposes,
+  new in the Périodes manual rev 1.4) raises `EtnicValidationError`.
+- **Every model mirroring an XSD type is checked against it** (`tests/unit/test_models_contract.py`):
+  element names, simple types and optional elements, for the EPROM and SEPS models, with the
+  deliberate differences listed.
 
 ### Changed
 
+- **EPROM specs 01 to 06 reviewed** (#36, docs): every statement is sourced (manual and
+  page, contract, dated production or TQ observation, or marked unknown); spec 02 follows
+  Organisation v8 (manual rev 6.0), spec 04 the Périodes manual rev 1.4 (intervention type
+  `G` "BES" with sub-type `AI`, `J` with `OA`, error 20041), specs 01, 03, 05 and 06 their
+  current revision; the manuals' contradictions with the contracts are listed; the
+  "Mapping pyetnic" sections describe the current API; regulatory wording is removed. The
+  EPROM part of `specs/00_REGISTRE.md` follows (error routing table, gateway endpoints,
+  SOAP 1.1 only).
 - **EPROM services raise on a server refusal by default** (#35, breaking):
   `Config.RAISE_ON_ERROR` is true by default, as SEPS always behaved. A refusal raises the
   typed `EtnicBusinessError` subclass of its code, `lister_formations*` raise instead of

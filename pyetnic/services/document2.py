@@ -121,9 +121,9 @@ class Document2Service:
     def lire_document_2(self, organisation_id: OrganisationId) -> Optional[FormationDocument2]:
         """Read Doc 2 (teaching periods).
 
-        Returns ``None`` until the Doc 1 population has been validated: the
-        Doc 2 does not exist before that, and the server refuses with error
-        20103 (tested on TQ, 2026-11-10): ``EtnicDocumentNotAccessibleError``.
+        Refused until the Doc 1 population has been validated: the Doc 2 does
+        not exist before that, and the server answers error 20103 (tested on
+        TQ, 2026-11-10), raised as ``EtnicDocumentNotAccessibleError``.
 
         At validation it appears as a skeleton: every branch of the dossier
         with its volume (``nbPeriodeBranche``), lines 91 to 99 included, every

@@ -260,14 +260,14 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 
 | Code | Meaning |
 |---|---|
-| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. Lines carrying a `coDispo` do not count toward the total (observed in production, 2026-09). The `$1` of the message announced 72,00 for 80 periods sent without `coDispo` (observed once, 2026-09-22, unexplained). |
+| 1574 | Doc 3: total attributed periods exceed the periods organised. The ceiling is the **real** periods of Doc 2 once filled, not the planned ones. Lines carrying a `coDispo` do not count toward the total (observed in production, 2026-09). The `$1` of the message announced 72,00 for 80 periods sent without `coDispo` (observed once, 2026-09-22, unexplained). `EtnicValidationError`, like 1538, 1575 and 1576. |
 | 20101 | `LireDocument1` and `LireDocument1D` before the Doc A is approved. Server text: « Le "Doc A" doit être approuvé pour pouvoir accéder au document suivant » (tested on TQ, 2026-11-10; Doc 1D observed in production, 2026-11-24). `EtnicDocumentNotAccessibleError`. |
 | 20102 | Document 3 inaccessible until Doc A (the organisation) and Doc 2 are approved. Server text: « Les "Doc A" et "Doc 2" doivent être approuvés pour pouvoir accéder au "Doc 3" ». |
 | 20103 | `LireDocument2` before the Doc 1 population is validated. Server text: « Le "Doc 1" doit être approuvé pour pouvoir accéder au document suivant »; the school's validation (`swAppPopD1`) is enough, `swAppD1` may still be false (tested on TQ, 2026-11-10). `EtnicDocumentNotAccessibleError`. |
 | 20104 | Doc 1 or Doc 1D approval refused: the values sent differ from the stored ones, or none were sent. Send back the lines just read. `EtnicConcurrencyError`. |
 | 20112 | Doc 1D: fee (`mtDroitsInscription`) written before the population is approved (tested on TQ, 2026-11-24; the manual numbers it 1546). `EtnicDocumentNotAccessibleError`. |
 | 1545 | « Document déjà approuvé » for Documents 1 and 1D (`EtnicAlreadyApprovedError`), but « Vous ne pouvez pas créer une 5ième intervention extérieure » for Document 2 (`EtnicValidationError`): the routing takes the service into account. |
-| 20108 | Doc 3: « Le numéro de matricule d'enseignement n°$1 est incorrect ». Also returned for a well-formed staff number when the teacher is not (yet) in the EPROM teacher referential, which is fed outside these services; the same payload passes once the referential is updated (observed in production: refused 2026-09-21, accepted 2026-09-22). A write refused with 20108 leaves nothing behind (observed twice on blank documents). |
+| 20108 | Doc 3: « Le numéro de matricule d'enseignement n°$1 est incorrect ». Also returned for a well-formed staff number when the teacher is not (yet) in the EPROM teacher referential, which is fed outside these services; the same payload passes once the referential is updated (observed in production: refused 2026-09-21, accepted 2026-09-22). A write refused with 20108 leaves nothing behind (observed twice on blank documents). `EtnicValidationError`, like 20109 (availability code) and 20110 (status). |
 | 30100, 30101 | SEPS: no such UE (`SepsUeInconnueError`). 30101 came as a warning 18 minutes after the organisation was declared in EPROM (production, 2026-11-10): SEPS receives organisations with a delay. Inscriptions on organisations whose Doc A was not yet approved were accepted (production, 2026-09-30, approval 2026-10-23). |
 | 30011, 30120 | SEPS: no student for this CF / no person for this NISS at the national register (`SepsEtudiantInconnuError`). |
 | 30200 | SEPS: the student is already enrolled in this UE (`SepsInscriptionExisteError`). |
@@ -341,5 +341,5 @@ fields are `camelCase`.
 ```bash
 # Read a service's WSDL and matching XSD:
 cat "pyetnic/resources/EPROM_Document_3_1.0/EpromFormationDocument3Service_external_v1.wsdl"
-cat "pyetnic/resources/EPROM_Document_3_1.0/xsd/EpromFormationDocument3_external_v1.xsd"
+cat "pyetnic/resources/EPROM_Document_3_1.0/xsd/EpromFormationDocument3Messages_external_v1.xsd"
 ```

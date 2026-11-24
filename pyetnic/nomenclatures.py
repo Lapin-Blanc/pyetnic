@@ -34,7 +34,8 @@ from enum import Enum
 class TypeInterventionExterieure(str, Enum):
     """Types d'intervention extérieure pour une organisation.
 
-    Used in ``Organisation.typeInterventionExterieure``. The XSD defines
+    Used in ``Organisation.typeInterventionExterieure``; the same 14 codes are
+    the active ``coCatCol`` values of Document 2 (Périodes manual rev 1.4). The XSD defines
     the field as ``xs:string``: ETNIC expects the single-letter codes
     below (Organisation v8 manual rev. 6.0, list dated 2026-04-27), not
     the long French labels. ``G`` (BES) is new in v8. Codes ``R``

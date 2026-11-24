@@ -133,8 +133,8 @@ All SEPS inscription enums are pinned against `inscription_v1.xsd`.
 | `EtnicDocumentNotAccessibleError` | Document not yet reachable in the workflow (e.g. error 20102) |
 | `EtnicNotFoundError` | Resource not found (e.g. error 00009) |
 | `EtnicValidationError` | Input rejected by validation (most `20xxx`/`30xxx` codes, `4004`-`4012`, …) |
-| `EtnicAlreadyApprovedError` | Document already approved by the administration (codes 1530, 1545) |
-| `EtnicConcurrencyError` | Record modified by another user since read (code 00011) |
+| `EtnicAlreadyApprovedError` | Document already approved: by the administration (1530) or, for Documents 1 and 1D, by the school (1545) |
+| `EtnicConcurrencyError` | Record modified since read (00011), or an approval sent with values that differ from the stored ones (20104): re-read and retry |
 | `SoapError` | **Deprecated** alias for `EtnicTransportError`. Will be removed in 1.0.0 |
 
 ---

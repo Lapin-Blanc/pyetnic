@@ -2,7 +2,7 @@
 
 > Ce fichier centralise tous les types XSD réutilisés par plusieurs services ETNIC.
 > Il est enrichi à chaque session d'analyse d'un nouveau service.
-> Dernière mise à jour : 2026-11-24 (#24 : section 7, **famille SEPS**, refondue sur les manuels de juin 2026, les contrats de production et les observations de production ; session 7 pour la première version)
+> Dernière mise à jour : 2026-11-24 (#36 : sections 1 à 6, famille EPROM, relues sur les contrats en direct, les derniers manuels du catalogue et les essais sur TQ ; #24 : section 7, **famille SEPS**, refondue sur les manuels de juin 2026, les contrats de production et les observations de production)
 >
 > **Deux familles distinctes** : **EPROM** (sections 1-6, organisation des formations) et **SEPS**
 > (section 7, étudiants & inscriptions — Enseignement pour Adultes). Patterns techniques différents
@@ -96,7 +96,7 @@
   - `Str36Type` : `xsd:string` (maxLength 36), identifiant de transaction
 - **Différence avec v1** : `requestId` et `transactionId` sont des **attributs XML** de la réponse
   (et non plus un header SOAP séparé). Ajout de `transactionId`.
-- **Utilisé par** : Formation Organisation v7
+- **Utilisé par** : Formation Organisation v8
 
 ### MessageType
 - **Fichier XSD** : `ResponseStatus_v3.xsd`
@@ -119,11 +119,11 @@
   ├── statut     : xsd:string [obligatoire]
   └── dateStatut : xsd:date   [obligatoire]
   ```
-- **Valeurs possibles de `statut`** (source : PDF manuel) :
-  - `"Encodé école"` — encodé par l'école, pas encore validé
-  - `"Encodé PO"` — encodé par le pouvoir organisateur
-  - `"Approuvé"` — approuvé/validé
-- **Utilisé par** : Formations Liste (OrganisationApercuCT), Formation Organisation v7
+- **Valeurs possibles de `statut`** (la liste vient du manuel ; les gloses sont déduites des libellés) :
+  - `"Encodé école"` - encodé par l'école, pas encore approuvé
+  - `"Encodé PO"` - encodé par le pouvoir organisateur (jamais observé)
+  - `"Approuvé"` - approuvé par l'administration
+- **Utilisé par** : Formations Liste (OrganisationApercuCT), Formation Organisation v8
 - **Note** : structure identique entre v2 et v7, seul le namespace change
 - **`dateStatut`** date l'entrée dans le statut, pas la dernière modification ; c'est le `tsMaj` de
   chaque document qui date la dernière écriture (observé une fois, 2026-09-18)
@@ -146,7 +146,7 @@
 - **Rôle** : vue résumée d'une organisation, retournée dans les listes
 - **Utilisé par** : Formations Liste (réponse ListerFormations)
 - **Mapping des 4 statuts ↔ services (confirmé session 5)** :
-  - `statutDocumentOrganisation` → Formation Organisation v7 (statut `StatutCT`)
+  - `statutDocumentOrganisation` → Formation Organisation v8 (statut `StatutCT`)
   - `statutDocumentPopulationPeriodes` → Document 1 (Population) **+** Document 2 (Périodes)
   - `statutDocumentDroitsInscription` → **Document 1D (Droits d'Inscription)** — switches `swAppPopD1D` + `swAppD1D`
   - `statutDocumentAttributions` → Document 3 (Attributions)
@@ -165,7 +165,7 @@
   └── numOrganisation : int             [obligatoire]
   ```
 - **Différence avec OrganisationIdCT** (namespace `/v2` ou `/v7`) : pas de `implId`
-- **Utilisé par** : Document 1 (Population), Document 2 (Périodes), Document 3 (Attributions) — en requête (Lire/Modifier)
+- **Utilisé par** : Document 1 (Population), Document 2 (Périodes), Document 3 (Attributions), Document 1D (Droits d'inscription) - en requête (Lire/Modifier/Approuver)
 
 ### OrganisationResIdCT (NOUVEAU — session 3)
 - **Fichier XSD** : `Organisation_v1.xsd`
@@ -179,9 +179,9 @@
   ├── numAdmFormation : int             [obligatoire]
   └── numOrganisation : int             [obligatoire]
   ```
-- **⚠️ Divergence** : le PDF dit `implId` « obligatoire » (Document 1 page 9, Document 2, **et Document 3 page 8**),
+- **⚠️ Divergence** : le PDF dit `implId` « obligatoire » (Document 1 page 8 pour le texte, `ImplIdST` page 9, Document 2, **et Document 3 page 8**),
   mais le XSD déclare `minOccurs="0"` — divergence **confirmée sur les 3 documents** (le diagramme UML affiche `[0..1]`)
-- **Utilisé par** : Document 1 (Population), Document 2 (Périodes), Document 3 (Attributions) — en réponse uniquement
+- **Utilisé par** : Document 1 (Population), Document 2 (Périodes), Document 3 (Attributions), Document 1D (Droits d'inscription) - en réponse uniquement
 
 ### OrganisationIdCT
 - **Fichier XSD** : `FormationOrganisation_v2.xsd`
@@ -208,7 +208,7 @@
   ├── codeFormation    : xsd:string            [obligatoire]
   └── organisation     : OrganisationApercuCT  [0..*]
   ```
-- **Note fonctionnelle** : le champ `organisation` est **ignoré** (non renvoyé)
+- **Note fonctionnelle** : le champ `organisation` est **« ignoré »** (terme du manuel Formations Liste rév 2.0)
   dans la réponse de `ListerFormationsOrganisables`, mais **renseigné** dans
   la réponse de `ListerFormations`
 - **Utilisé par** : Formations Liste
@@ -237,7 +237,7 @@
   ├── interventionExterieure50p      : xsd:boolean      [0..1]
   └── statut                         : StatutCT         [0..1]
   ```
-- **Utilisé par** : Formation Organisation v7 (réponses Créer, Lire, Modifier)
+- **Utilisé par** : Formation Organisation v8 (réponses Créer, Lire, Modifier)
 
 ### FormationDocument3CT (NOUVEAU — session 4)
 - **Fichier XSD** : `FormationDocument3_v1.xsd` (version 1.1)
@@ -262,12 +262,12 @@
   ├── teNomBranche          : string  — nom de l'activité
   ├── noAnneeEtude          : string  — numéro de l'année d'étude
   ├── nbPeriodesDoc8        : int     — périodes au Doc 8bis ("24.0" seulement dans l'exemple du manuel)
-  ├── nbPeriodesPrevuesDoc2 : int     — ⚠️ PDF : float obligatoire
-  ├── nbPeriodesReellesDoc2 : int     — ⚠️ PDF : float obligatoire
+  ├── nbPeriodesPrevuesDoc2 : int     - ⚠️ texte du manuel : float ; diagramme et XSD : int
+  ├── nbPeriodesReellesDoc2 : int     - ⚠️ texte du manuel : float ; diagramme et XSD : int
   └── enseignantListe       : Doc3EnseignantLstCT [0..1] → enseignant [0..*]
   ```
 - **Type Save (requête)** `Doc3ActiviteDetailSaveCT` : `coNumBranche` + `noAnneeEtude` + `enseignantListe`
-  (obligatoires au XSD, facultatifs selon le PDF)
+  (obligatoires au XSD et dans les diagrammes du manuel ; facultatifs selon son texte)
 
 ### Doc3EnseignantDetailCT (NOUVEAU — session 4)
 - **Fichier XSD** : `FormationDocument3_v1.xsd`
@@ -280,13 +280,13 @@
   ├── tePrenomEns          : string  — prénom
   ├── teAbrEns             : string  — abréviation
   ├── teEnseignant         : string  — "NOM PRENOM MATRICULE"
-  ├── coDispo              : string  — code disponibilité (~60 codes, hors contrat XML)
+  ├── coDispo              : string  - code disponibilité (60 codes au manuel rév 1.3, hors contrat XML)
   ├── teStatut             : string  — code statut (C/P/A/D/E/X/T, hors contrat XML)
   ├── nbPeriodesAttribuees : float   — périodes attribuées
   ├── tsMaj                : string  — timestamp dernière MAJ
   └── teUserMaj            : string  — userid dernière MAJ
   ```
-- **Type Save (requête)** `Doc3EnseignantDetailSaveCT` : `coNumAttribution` (⚠️ **absent du PDF**),
+- **Type Save (requête)** `Doc3EnseignantDetailSaveCT` : `coNumAttribution` (⚠️ absent du texte du manuel, présent dans son diagramme p. 15),
   `noMatEns`, `coDispo`, `teStatut`, `nbPeriodesAttribuees` — tous `[0..1]`
 - **Note** : `coCategorie` (table) **partagé avec Document 2** ; `coDispo` et `teStatut` sont **propres au Document 3**
 
@@ -323,7 +323,7 @@
 - **Type Appr (requête Approuver)** `Doc1DDroitInscriptionApprLineCT` : `coAnnEtude` (oblig.) +
   `nbEleves5ieme` (**obligatoire** au XSD+UML, « facultatif » au texte PDF — contrôle de concurrence).
 - **Règle métier** : `nbEleves5ieme` modifiable *jusqu'à* approbation population (`swAppPopD1D`),
-  `mtDroitsInscription` modifiable *après* (erreurs `1546`/`1545`/`1530`).
+  `mtDroitsInscription` modifiable *après* (erreurs `20112`/`1545`/`1530` ; `1546` au manuel).
 
 ---
 
@@ -386,7 +386,7 @@
 | `30004` | `false` | Type d'intervention extérieure incorrect | Organisation |
 | `30005` | `false` | Numéro administratif de la formation incorrect | Organisation |
 | `30006` | `false` | Opération impossible (Passage PO non actif) | Organisation |
-| `30007` | `false` | Paramètre anneeScolaire incorrect (format xxxx-xxxx) | Formations Liste, Organisation |
+| `30007` | `false` | Paramètre anneeScolaire incorrect (format xxxx-xxxx) ; aussi pour une année bien formée que le serveur ne connaît pas (`2030-2031`, testé sur TQ, 2026-11-24) | Formations Liste, Organisation |
 | `30008` | `false` | enseignementHybride disponible qu'à partir 2022-2023 | Organisation |
 | `30009` | `false` | reorientation7TP disponible qu'à partir 2025-2026 | Organisation |
 | `30010` | `false` | BESAeSI disponible qu'à partir 2026-2027 (Organisation v8) | Organisation |
@@ -394,10 +394,10 @@
 | `1113` | `false` | Paramètre anneeScolaire incorrect (xxxx-xxxx) | Documents 1, 2, 3 |
 | `1114` | `false` | Numéro d'établissement incorrect | Documents 1, 2, 3 |
 | `1530` | `false` | Document déjà approuvé par l'administration | Document 1 (Approuver), Document 2 (Modifier) |
-| `1545` | `false` | Doc 1 approuvé / max 5 interventions ext. (Doc 2) | Document 1 (Modifier), Document 2 (Modifier) |
+| `1545` | `false` | Doc 1 approuvé (Doc 1) / « Vous ne pouvez pas créer une 5ième intervention extérieure » (Doc 2 : 4 au plus) | Document 1 (Modifier), Document 2 (Modifier) |
 | `2106` | `false` | Code Année d'études de la population scolaire incorrect | Document 1, Document 2 |
 | `4004`-`4012` | `false` | Contrôles cohérence population (totaux, ventilations) | Document 1 |
-| `20101` | `false` | « Doc A » doit être approuvé pour accéder au document suivant (workflow ; testé sur TQ, 2026-11-10) | Document 1 (Lire) |
+| `20101` | `false` | « Doc A » doit être approuvé pour accéder au document suivant (workflow ; testé sur TQ, 2026-11-10 ; Doc 1D observé en production, 2026-11-24) | Document 1 (Lire), Document 1D (Lire) |
 | `20103` | `false` | « Doc 1 » doit être approuvé pour accéder au document suivant : population non validée (`swAppPopD1`) (workflow ; testé sur TQ, 2026-11-10) | Document 2 (Lire) |
 | `20104` | `false` | Valeurs à valider différentes de celles enregistrées (recharger avant la validation) ; population absente ou différente (observé en production, 2026-09-18) ; `nbEleves5ieme` différent au Doc 1D (testé sur TQ, 2026-11-24) | Document 1 (Approuver), Document 1D (Approuver) |
 | `20112` | `false` | Mise à jour du champ "mtDroitsInscription" impossible : population au 5/10 non approuvée (testé sur TQ, 2026-11-24 ; le manuel annonce `1546`) | Document 1D (Modifier) |
@@ -405,6 +405,7 @@
 | `1598`-`1604` | `false` | Erreurs type/sous-type intervention extérieure | Document 2 |
 | `2118` | `false` | Numéro activité d'enseignement incorrect | Document 2 |
 | `20015`-`20036` | `false` | Erreurs intervention extérieure (type, sous-type, relation) | Document 2 |
+| `20041` | `false` | « Le sous-type d'intervention "x" est obligatoire avec le type d'intervention "x" » (type `J` -> sous-type `OA`, type `G` -> `AI` ; manuel Périodes rév 1.4, §4) | Document 2 |
 | `30016`-`30017` | `false` | Contraintes métier (date valorisation, part supplémentaire) | Document 2 |
 | `1538` | `false` | Périodes Doc3 > périodes Doc2 + IE par branche | Document 3 |
 | `1574` | `false` | Total attributions > total périodes organisées dans formation | Document 3 |
@@ -415,15 +416,29 @@
 | `20109` | `false` | Code dispo d'enseignement incorrect | Document 3 |
 | `20110` | `false` | Statut d'enseignement incorrect | Document 3 |
 | `2106` | `false` | Année d'étude invalide *(Doc 1D)* / Code année d'études population incorrect *(Doc 1/2)* | Doc 1, Doc 2, **Doc 1D** |
-| `1545` | `false` | **« Document déjà approuvé ! »** *(Doc 1D)* — ⚠️ libellé ≠ Doc 1/2 (« Doc 1 approuvé / max 5 IE ») | **Document 1D** (sens propre) |
-| `1546` | `false` | **« Document non encore approuvé ! »** (modif. montants avant approbation population) | **Document 1D** |
+| `1545` | `false` | **« Document déjà approuvé ! »** *(Doc 1D)* - ⚠️ libellé ≠ Doc 1/2 (« Doc 1 approuvé » / « 5ième intervention extérieure ») | **Document 1D** (sens propre) |
+| `1546` | `false` | **« Document non encore approuvé ! »** (modif. montants avant approbation population) ; au manuel seulement : TQ répond `20112` (2026-11-24) | **Document 1D** |
 | `1530` | `false` | « Mise à jour impossible; document déjà approuvé par l'administration ! » | Doc 1 (Approuver), Doc 2 (Modifier), **Doc 1D** (Modifier) |
 | `1114` | `false` | **« Matricule école inexistant »** *(Doc 1D)* / « Numéro d'établissement incorrect » *(Doc 1/2/3)* | Doc 1/2/3, **Doc 1D** |
 
 > ⚠️ **Codes non universels** : un même code numérique peut avoir un **libellé/sens différent selon le
-> service** (ex. `1545` = « Document déjà approuvé » au Doc 1D, mais « Doc 1 approuvé / max 5 interventions
-> extérieures » au Doc 1/2). → côté pyetnic, indexer les exceptions typées par **(service, code)**, pas par
-> code seul.
+> service** (ex. `1545` = « Document déjà approuvé » aux Doc 1 et 1D, mais « Vous ne pouvez pas créer une
+> 5ième intervention extérieure » au Doc 2).
+
+### Routage pyetnic (`pyetnic/exceptions.py`, état au 2026-11-24)
+
+| Classe levée | Codes |
+|---|---|
+| `EtnicNotFoundError` | `00009` |
+| `EtnicDocumentNotAccessibleError` | `20101`, `20102`, `20103`, `20112`, `1546`, `30003`, `30006` |
+| `EtnicConcurrencyError` | `00011`, `20104` |
+| `EtnicAlreadyApprovedError` | `1530`, `1545` (sauf au Document 2) |
+| `EtnicValidationError` | `1113`, `1114`, `2106`, `2118`, les `200xx` et `300xx` de l'Organisation, `4004`-`4012`, `1527`-`1528`, `1598`-`1604`, `20015`-`20036`, `20041`, `30016`-`30017`, ceux du Document 3 (`1538`, `1574`-`1576`, `20108`-`20110`), et `1545` **au Document 2** |
+| `EtnicBusinessError` (classe de base) | les autres, dont `00025`, `00999` et `99999` |
+
+Le routage tient compte du service qui répond (`map_etnic_error_code_to_class(code, service)`) : seul
+`1545` en dépend aujourd'hui. Depuis 0.3.0, tout refus lève par défaut ; `permissive_errors()` rend
+l'ancien `None`, déprécié.
 
 ---
 
@@ -431,13 +446,20 @@
 
 ### Endpoints EPROM
 
-| Environnement | URL spécifique EPROM (recommandé) | URL générique Ecole (déprécié) |
+| Environnement | URL spécifique EPROM (catalogue SOA, pyetnic) | URL générique Ecole (déprécié) |
 |---|---|---|
-| TQ (dev) | `https://services-web.tq.etnic.be/eprom/{service}/v{n}` | `https://services-web.tq.etnic.be/ecole` |
-| PROD | `https://services-web.etnic.be/eprom/{service}/v{n}` | `https://services-web.etnic.be/ecole` |
+| TQ (dev) | `https://ws-tq.etnic.be/eprom/{service}/v{n}` | `https://services-web.tq.etnic.be/ecole` (manuels) |
+| PROD | `https://ws.etnic.be/eprom/{service}/v{n}` | `https://services-web.etnic.be/ecole` (manuels) |
 
-- **Port TLS 1.2** : 11443 (en complément du port standard)
-- **Protocole** : SOAP 1.1 ou SOAP 1.2, document/literal
+- **Adresses** : celles que le catalogue SOA annonce pour les six services EPROM (relevé du 2026-11-24) et
+  que pyetnic appelle depuis 0.3.0, certificat TLS vérifié sur TQ comme en production. Les manuels de
+  2023 donnaient aussi `services-web(.tq).etnic.be:11443` (TLS 1.2), qu'appelait pyetnic jusqu'en 0.2 ;
+  le manuel Organisation v8 (2026) ne les mentionne plus.
+- **Contrats** : chaque service publie son WSDL à l'adresse suivie de `?wsdl`. Organisation sert aussi ses
+  schémas (URL absolues) ; les autres les importent en relatif, et la passerelle les refuse (« Policy
+  Falsified ») : leurs XSD viennent de l'archive du catalogue. `tools/refresh_contracts.py` compare les
+  deux sources à l'embarqué.
+- **Protocole** : SOAP 1.1, document/literal : les six WSDL EPROM n'ont qu'une liaison SOAP 1.1 (vérifié le 2026-11-24), et les manuels Formations Liste, Population, Périodes et Organisation le disent
 - **Authentification** : WS-Security Username Token Profile
 - **Endpoint spécifique EPROM** : pas de WS-Addressing requis
 - **Endpoint générique Ecole** : WS-Addressing requis (Action + To), déprécié
@@ -454,7 +476,10 @@
 ## 6. Suivi des XSD par service
 
 > Tableau de traçabilité : quel XSD est utilisé par quel service.
-> ✓ = confirmé par analyse WSDL, ? = probable, à confirmer
+> ✓ = confirmé par analyse WSDL, ? = probable, à confirmer. « identique » : même forme canonique (C14N, sans
+> annotations ni mise en forme) dans tous les dossiers de `pyetnic/resources` qui le portent (vérifié le
+> 2026-11-24 avec la fonction `canonical` de `tools/refresh_contracts.py`) ; les octets diffèrent entre les
+> dossiers repris de l'archive du catalogue et les plus anciens.
 
 | Fichier XSD | Formations Liste v2 | Organisation v8 | Document 1 | Document 2 | Document 3 | Document 1D (Droits Insc.) |
 |---|---|---|---|---|---|---|

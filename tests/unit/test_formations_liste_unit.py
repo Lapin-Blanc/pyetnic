@@ -152,3 +152,14 @@ def test_lister_formations_raises_typed_by_default_on_refusal(monkeypatch):
     monkeypatch.setattr(svc.client_manager, "call_service", lambda *a, **kw: response)
     with pytest.raises(EtnicNotFoundError):
         svc.lister_formations()
+
+
+@pytest.mark.parametrize("method", ["lister_formations", "lister_formations_organisables"])
+def test_success_without_response_is_an_empty_list(monkeypatch, method):
+    """The contract makes `response` optional: a success without it lists nothing."""
+    svc = FormationsListeService()
+    monkeypatch.setattr(svc.client_manager, "call_service",
+                        lambda *a, **kw: {"body": {"success": True, "response": None}})
+    result = getattr(svc, method)()
+    assert result.success is True
+    assert result.formations == []

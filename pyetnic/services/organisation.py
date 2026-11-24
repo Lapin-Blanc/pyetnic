@@ -203,10 +203,11 @@ class OrganisationService:
         return self._parse_organisation_response(result, organisation.id)
 
     def supprimer_organisation(self, organisation_id: OrganisationId) -> bool:
-        """Supprime une organisation de formation.
+        """Delete an organisation.
 
-        Retourne True si la suppression a réussi, False sinon.
-        En mode strict, lève une EtnicBusinessError sur échec.
+        Returns ``True`` once deleted. A refusal raises the typed
+        ``EtnicBusinessError`` of its code (``EtnicNotFoundError`` for 00009);
+        in the deprecated permissive mode it returns ``False`` instead.
 
         Observed in production (2026-09-30, six deletions): an organisation
         "Encodé école" without documents is deleted without leaving any status
