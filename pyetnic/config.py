@@ -19,14 +19,16 @@ from __future__ import annotations
 
 import logging
 import os
+import warnings
 from contextvars import ContextVar
 from typing import Any, Callable, NamedTuple, Optional
 
 logger = logging.getLogger(__name__)
 
 # Thread-safe and asyncio-safe storage for the raise-on-error flag.
-# Each thread / asyncio task sees its own value; the default is False.
-_raise_on_error: ContextVar[bool] = ContextVar("pyetnic_raise_on_error", default=False)
+# Each thread / asyncio task sees its own value; the default is True since 0.3.0
+# (see pyetnic.error_mode).
+_raise_on_error: ContextVar[bool] = ContextVar("pyetnic_raise_on_error", default=True)
 
 
 def _load_dotenv_compat() -> None:
@@ -130,6 +132,10 @@ class _ConfigMeta(type):
 
     def __setattr__(cls, name: str, value: Any) -> None:
         if name == "RAISE_ON_ERROR":
+            if not value:
+                from .error_mode import PERMISSIVE_DEPRECATION
+
+                warnings.warn(PERMISSIVE_DEPRECATION, DeprecationWarning, stacklevel=2)
             _raise_on_error.set(bool(value))
             return
         if name in _ALL_CONFIG_ATTRS:
@@ -255,4 +261,4 @@ class Config(metaclass=_ConfigMeta):
         """Reset all overrides and dotenv state.  For testing only."""
         _ConfigMeta._overrides.clear()
         _ConfigMeta._dotenv_loaded = False
-        _raise_on_error.set(False)
+        _raise_on_error.set(True)

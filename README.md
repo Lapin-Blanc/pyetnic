@@ -184,7 +184,7 @@ from pyetnic.eprom import lire_document_1, modifier_document_1, approuver_docume
 from pyetnic.eprom import Doc1PopulationListSave, Doc1PopulationLineSave
 
 doc1 = lire_document_1(org_id)
-# doc1 est None si le document n'est pas accessible (statut org insuffisant)
+# EtnicDocumentNotAccessibleError (20101) tant que le Doc A n'est pas approuvé
 
 # Modifier
 liste_save = Doc1PopulationListSave(population=[
@@ -251,7 +251,7 @@ from pyetnic.eprom import (
 )
 
 doc3 = lire_document_3(org_id)
-# doc3 est None tant que le Doc A (l'organisation) et le Doc 2 ne sont pas approuvés
+# EtnicDocumentNotAccessibleError (20102) tant que le Doc A et le Doc 2 ne sont pas approuvés
 
 # La liste envoyée REMPLACE celle de la branche : envoyer toutes ses lignes.
 # coNumAttribution est facultatif et ne cible rien : le serveur numérote les lignes.
@@ -427,34 +427,35 @@ org_id = OrganisationId(
 
 ## Gestion des erreurs
 
-Par défaut, les fonctions EPROM retournent `None` (ou `FormationsListeResult(success=False)` pour `lister_formations*`) en cas d'échec serveur, pour préserver la compatibilité ascendante.
-
-Pour du nouveau code, préférer le **mode strict** qui lève des exceptions typées :
+Depuis 0.3.0, un refus du serveur **lève une exception typée**, pour EPROM comme pour SEPS :
 
 ```python
-from pyetnic import strict_errors, EtnicBusinessError, EtnicDocumentNotAccessibleError
+from pyetnic import EtnicBusinessError, EtnicDocumentNotAccessibleError
 from pyetnic.eprom import lire_document_3
 
-with strict_errors():
-    try:
-        doc3 = lire_document_3(org_id)
-    except EtnicDocumentNotAccessibleError as e:
-        print(f"Doc 3 pas encore accessible : {e}")
-    except EtnicBusinessError as e:
-        print(f"Erreur ETNIC {e.code} : {e.description}")
+try:
+    doc3 = lire_document_3(org_id)
+except EtnicDocumentNotAccessibleError as e:
+    print(f"Doc 3 pas encore accessible : {e}")
+except EtnicBusinessError as e:
+    print(f"Erreur ETNIC {e.code} : {e.description}")
 ```
 
-Le mode strict peut aussi être activé globalement :
+**Migration depuis 0.2 et avant** : le code qui testait `None` (ou `success` de
+`lister_formations*`) peut, le temps de migrer, retrouver l'ancien comportement dans un bloc
+`permissive_errors()` (ou avec `Config.RAISE_ON_ERROR = False`). Ce mode émet un
+`DeprecationWarning` et disparaîtra en 1.0 :
 
 ```python
-from pyetnic import Config
-Config.RAISE_ON_ERROR = True
+from pyetnic import permissive_errors
+
+with permissive_errors():
+    doc3 = lire_document_3(org_id)   # None en cas de refus, comme avant 0.3.0
 ```
 
-Le flag est stocké dans un `ContextVar` : il est donc sûr en contexte multi-threads et asyncio (chaque thread/tâche voit sa propre valeur).
-
-Le comportement par défaut (retour de `None`) deviendra « lever » en version 0.2.0.
-Les services SEPS lèvent toujours, sur tout refus (`success=false`), que le code arrive en erreur ou en avertissement ; ils ne sont pas affectés par ce flag.
+`strict_errors()` reste disponible (c'est le défaut) et rétablit les exceptions à l'intérieur
+d'un bloc permissif. Le mode est stocké dans un `ContextVar` : chaque thread et chaque tâche
+asyncio voit le sien.
 
 **Hiérarchie des exceptions :**
 
@@ -462,9 +463,11 @@ Les services SEPS lèvent toujours, sur tout refus (`success=false`), que le cod
 EtnicError
 ├── EtnicTransportError          # erreurs réseau/SOAP (alias historique : SoapError)
 └── EtnicBusinessError           # refus serveur (success=False)
-    ├── EtnicDocumentNotAccessibleError  # code 20102
+    ├── EtnicDocumentNotAccessibleError  # 20101, 20102, 20103, 20112 : document pas encore accessible
     ├── EtnicNotFoundError               # code 00009
     ├── EtnicValidationError             # entrée invalide
+    ├── EtnicAlreadyApprovedError        # 1530, 1545 (Doc 1, Doc 1D)
+    ├── EtnicConcurrencyError            # 00011, 20104 : relire, puis recommencer
     └── SepsEtnicError                   # tout refus SEPS
         ├── SepsAuthError                # 30550
         ├── TropDeResultatsError         # 30501, 30503
@@ -495,7 +498,7 @@ EtnicError
 
 | Symptôme | Cause probable | Que faire |
 |---|---|---|
-| Une lecture renvoie `None` | Document pas encore accessible (statut de l'organisation), ou refus du serveur avalé par le mode permissif | Lire les statuts via `eprom.lister_formations()` ; rejouer sous `strict_errors()` pour voir l'erreur |
+| `EtnicDocumentNotAccessibleError` à la lecture | Document pas encore accessible : Doc A, Doc 1 ou Doc 2 non approuvé (20101, 20103, 20102) | Lire les statuts via `eprom.lister_formations()` |
 | Les `statutDocument*` d'une organisation valent `None` | `lire_organisation()` ne les reçoit pas du serveur | Les lire via `eprom.lister_formations()` |
 | `SoapError` au démarrage | Identifiants erronés ou `.env` absent | Vérifier le `.env`, au besoin `pyetnic init-config` |
 | `SECU-0104` (SEPS) | Appel SEPS en `ENV=dev` | SEPS n'existe qu'en production : `ENV=prod` |

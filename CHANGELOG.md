@@ -57,6 +57,14 @@ that supports `bN` pre-releases).
 
 ### Changed
 
+- **EPROM services raise on a server refusal by default** (#35, breaking):
+  `Config.RAISE_ON_ERROR` is true by default, as SEPS always behaved. A refusal raises the
+  typed `EtnicBusinessError` subclass of its code, `lister_formations*` raise instead of
+  returning `FormationsListeResult(success=False)` (a transport failure there raises
+  `EtnicTransportError`), and `supprimer_organisation` raises instead of returning `False`.
+  The pre-0.3.0 behaviour stays available, **deprecated**, inside `permissive_errors()` (new,
+  exported from `pyetnic` and `pyetnic.eprom`) or with `Config.RAISE_ON_ERROR = False`; both
+  emit a `DeprecationWarning` and go in 1.0. `strict_errors()` keeps working.
 - **`approuver_document_1` requires `population_liste`** (#34, breaking): the server
   compares it with the stored population and refused every call without it (error
   20104). A call without it now raises `TypeError` before reaching the server. Pass

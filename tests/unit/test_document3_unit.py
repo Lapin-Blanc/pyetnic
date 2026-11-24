@@ -5,6 +5,8 @@ import logging
 import pytest
 
 from pyetnic.config import Config
+from pyetnic.error_mode import permissive_errors
+from pyetnic.exceptions import EtnicBusinessError
 from pyetnic.services.document3 import Document3Service
 from pyetnic.services.models import (
     Doc3ActiviteDetail,
@@ -115,7 +117,10 @@ def test_lire_document3_mock_reponse_vide(service, monkeypatch):
         lambda *a, **kw: {"body": {"success": True, "response": {}}},
     )
 
-    assert service.lire_document_3(org_id) is None
+    with pytest.raises(EtnicBusinessError):
+        service.lire_document_3(org_id)
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        assert service.lire_document_3(org_id) is None
 
 
 def test_lire_document3_activite_sans_enseignants(service, monkeypatch):

@@ -74,12 +74,15 @@ they map to distinct XSD contracts (e.g. `Doc1PopulationLine` vs `Doc1Population
 Two public namespaces with different auth and maturity: `eprom` (WSSE UsernameToken, dev+prod)
 and `seps` (X509 PFX, prod-only). They evolved separately; SEPS pioneered typed exceptions.
 
-### Strict error mode via ContextVar (Sprint 1)
-EPROM services return `None` / result objects on business errors by default, or raise the typed
-hierarchy (`EtnicError` …) when `Config.RAISE_ON_ERROR` is on, toggled by the `strict_errors()`
-context manager. The flag is backed by a `contextvars.ContextVar` (not a class attribute) so it
-is isolated per thread and per asyncio task. `signal_business_error()` centralizes the
-raise-or-return decision so every `_parse_*_response` stays small and uniform.
+### Error mode via ContextVar (Sprint 1, default switched in 0.3.0)
+EPROM services raise the typed hierarchy (`EtnicError` ...) on a server refusal, as SEPS does:
+`Config.RAISE_ON_ERROR` defaults to true since 0.3.0 (#35). `permissive_errors()` (or
+`Config.RAISE_ON_ERROR = False`) restores the pre-0.3.0 contract, `None` or a result object
+with `success=False`, for callers still migrating; it warns and goes in 1.0. `strict_errors()`
+forces raising inside a block. The flag is a `contextvars.ContextVar`, so it is isolated per
+thread and per asyncio task. `signal_business_error()` centralizes the raise-or-return decision
+so every `_parse_*_response` stays small and uniform, and routes each code to its class with
+the service taken into account (`1545` differs between Documents 1 and 2).
 
 ### Private helpers module (Sprint 2)
 `services/_helpers.py` holds `to_soap_dict()` (recursive, `exclude_none=True` — strips `None`
@@ -105,8 +108,5 @@ deferred to post-0.1.0.
 - **`OrganisationKey` split (D6)** — separate key/full types to make the `implId` rule
   type-enforced. Breaking change, deferred to 1.0.0.
 - **Pydantic migration** — deferred to post-0.1.0.
-- **SEPS/EPROM error policy** — the hierarchies are joined (`SepsEtnicError` derives from
-  `EtnicBusinessError`, #20), but the policies differ: SEPS always raises, EPROM raises only
-  under `strict_errors()` until the 0.2.0 default switch.
-- **Default-mode switch to raise** — making strict mode the default is a 0.2.0 change, not
-  scheduled in Sprints 1-4.
+- **Removal of the permissive mode** - `permissive_errors()` and `Config.RAISE_ON_ERROR = False`
+  are deprecated since 0.3.0 and go in 1.0.

@@ -54,6 +54,8 @@ from pyetnic.eprom import (
     modifier_organisation,
     supprimer_organisation,
 )
+from pyetnic.error_mode import permissive_errors
+from pyetnic.exceptions import EtnicBusinessError
 
 from .fixtures.eprom_responses import (
     CANONICAL_DOCUMENT1_APPROUVE_RESPONSE,
@@ -125,9 +127,12 @@ class TestListerFormations:
         assert result.success is True
         assert len(result) == 0
 
-    def test_error_response_returns_failure(self, mock_soap_call):
+    def test_error_response_raises(self, mock_soap_call):
         mock_soap_call.return_value = SUCCESS_FALSE_RESPONSE
-        result = lister_formations()
+        with pytest.raises(EtnicBusinessError):
+            lister_formations()
+        with pytest.warns(DeprecationWarning), permissive_errors():
+            result = lister_formations()
         assert result.success is False
         assert result.formations == []
 
@@ -202,7 +207,10 @@ class TestLireOrganisation:
 
     def test_empty_response_returns_none(self, mock_soap_call):
         mock_soap_call.return_value = EMPTY_RESPONSE
-        assert lire_organisation(_org_id()) is None
+        with pytest.raises(EtnicBusinessError):
+            lire_organisation(_org_id())
+        with pytest.warns(DeprecationWarning), permissive_errors():
+            assert lire_organisation(_org_id()) is None
 
     def test_request_excludes_impl_id(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_ORGANISATION_RESPONSE
@@ -305,7 +313,10 @@ class TestSupprimerOrganisation:
 
     def test_failure_returns_false(self, mock_soap_call):
         mock_soap_call.return_value = {"body": {"success": False}}
-        assert supprimer_organisation(_org_id()) is False
+        with pytest.raises(EtnicBusinessError):
+            supprimer_organisation(_org_id())
+        with pytest.warns(DeprecationWarning), permissive_errors():
+            assert supprimer_organisation(_org_id()) is False
 
     def test_request_excludes_impl_id(self, mock_soap_call):
         mock_soap_call.return_value = {"body": {"success": True}}
@@ -337,7 +348,10 @@ class TestLireDocument1:
 
     def test_empty_response_returns_none(self, mock_soap_call):
         mock_soap_call.return_value = EMPTY_RESPONSE
-        assert lire_document_1(_org_id()) is None
+        with pytest.raises(EtnicBusinessError):
+            lire_document_1(_org_id())
+        with pytest.warns(DeprecationWarning), permissive_errors():
+            assert lire_document_1(_org_id()) is None
 
     def test_request_excludes_impl_id(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_DOCUMENT1_RESPONSE
@@ -437,7 +451,10 @@ class TestLireDocument2:
 
     def test_empty_response_returns_none(self, mock_soap_call):
         mock_soap_call.return_value = EMPTY_RESPONSE
-        assert lire_document_2(_org_id()) is None
+        with pytest.raises(EtnicBusinessError):
+            lire_document_2(_org_id())
+        with pytest.warns(DeprecationWarning), permissive_errors():
+            assert lire_document_2(_org_id()) is None
 
     def test_request_excludes_impl_id(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_DOCUMENT2_RESPONSE
@@ -527,7 +544,10 @@ class TestLireDocument3:
 
     def test_empty_response_returns_none(self, mock_soap_call):
         mock_soap_call.return_value = EMPTY_RESPONSE
-        assert lire_document_3(_org_id()) is None
+        with pytest.raises(EtnicBusinessError):
+            lire_document_3(_org_id())
+        with pytest.warns(DeprecationWarning), permissive_errors():
+            assert lire_document_3(_org_id()) is None
 
     def test_request_excludes_impl_id(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_DOCUMENT3_RESPONSE

@@ -6,6 +6,8 @@ from dataclasses import MISSING, fields
 import pytest
 
 from pyetnic.config import Config
+from pyetnic.error_mode import permissive_errors
+from pyetnic.exceptions import EtnicBusinessError
 from pyetnic.services.document2 import Document2Service
 from pyetnic.services.models import (
     Doc2ActiviteEnseignementLine,
@@ -124,7 +126,10 @@ def test_lire_document2_mock_reponse_vide(service, monkeypatch):
         lambda *a, **kw: {"body": {"success": True, "response": {}}},
     )
 
-    assert service.lire_document_2(org_id) is None
+    with pytest.raises(EtnicBusinessError):
+        service.lire_document_2(org_id)
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        assert service.lire_document_2(org_id) is None
 
 
 def test_lire_document2_mock_sans_activites(service, monkeypatch):

@@ -1,7 +1,7 @@
 """Exception hierarchy for pyetnic.
 
-This module defines the typed exceptions raised by EPROM services when
-strict error mode is enabled (see phase 1.3 / opt-in raise-on-error).
+This module defines the typed exceptions the EPROM services raise when the
+server refuses a call: the default since 0.3.0 (see :mod:`pyetnic.error_mode`).
 
 The hierarchy is designed so that:
 
@@ -313,17 +313,17 @@ def signal_business_error(
     error_class: Optional[Type[EtnicBusinessError]] = None,
     service: Optional[str] = None,
 ) -> None:
-    """Raise a typed business error if strict mode is on, else return ``None``.
+    """Raise a typed business error, or return ``None`` in permissive mode.
 
     Service methods call this when they detect a server-side failure
     (``success=False``, empty ``response``, etc.).
 
-    - In default mode (``Config.RAISE_ON_ERROR == False``), this function
-      returns ``None`` silently, preserving the legacy "return None on
-      error" contract.
-    - In strict mode, it raises a subclass of :class:`EtnicBusinessError`
-      chosen by :func:`map_etnic_error_code_to_class` (unless
-      ``error_class`` is given explicitly).
+    - By default (``Config.RAISE_ON_ERROR`` true since 0.3.0), it raises a
+      subclass of :class:`EtnicBusinessError` chosen by
+      :func:`map_etnic_error_code_to_class` (unless ``error_class`` is given
+      explicitly).
+    - In the deprecated permissive mode (:func:`permissive_errors`), it
+      returns ``None``, the pre-0.3.0 contract.
 
     Args:
         result: The raw SOAP response dict. If provided, error fields
@@ -340,7 +340,7 @@ def signal_business_error(
             the codes whose meaning depends on the service.
 
     Returns:
-        ``None`` — but only in default mode. In strict mode, this raises.
+        ``None``, in permissive mode only; otherwise this raises.
     """
     # Local import to avoid a circular import at module load time.
     from .config import Config
