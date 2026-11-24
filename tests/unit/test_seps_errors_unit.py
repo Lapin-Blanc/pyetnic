@@ -223,7 +223,9 @@ class TestTypedRefusals:
             check_seps_response(answer(False, error=[msg("30503", "Erreur si trop de résultats")]))
         assert exc_info.value.code == "30503"
 
-    @pytest.mark.parametrize("code", ["30010", "30013", "30024", "30033", "30042", "30070", "30079", "30076"])
+    @pytest.mark.parametrize(
+        "code", ["30010", "30013", "30024", "30033", "30042", "30043", "30046", "30047", "30048", "30070", "30079", "30076"]
+    )
     def test_bad_request_codes_are_validation_errors(self, code):
         with pytest.raises(SepsValidationError) as exc_info:
             check_seps_response(answer(False, error=[msg(code, "refus")]))

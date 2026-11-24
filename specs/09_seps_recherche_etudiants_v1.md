@@ -367,7 +367,7 @@ def rechercher_etudiants(niss: str | None = None, nom: str | None = None,
 - `rechercher_etudiants` envoie le choix A si `niss` est donné, sinon le choix B (`nom` requis, `ValueError` sinon) ; `force_rn_flag` devient `forceRnFlag`.
 - **Résultat vide** : `lire_etudiant` rend `None` et `rechercher_etudiants` rend `[]` sur `30110` et `30115`.
 - **Refus** : tout autre `success=false`, que le code arrive en `error` ou en `warning`, lève une sous-classe de `SepsEtnicError` (`docs/SPEC.md`, table des erreurs) : `NissMutationError` pour `30401` (avec `ancien_niss`, `nouveau_niss` lu dans la description), `TropDeResultatsError` pour `30501` / `30503`, `SepsValidationError` pour `30042`, `SepsAuthError` pour `30550`. `30502` lève la classe de base `SepsEtnicError` : il couvre aussi les vraies pannes de la BCED, il n'est pas transformé en liste vide.
-- **Écart relevé** : les codes de validation `30043` à `30048` de ce service (nom, prénom, date de naissance, sexe, `cfNum`, `fromDate`) ne figurent pas dans la liste des codes de validation de `pyetnic/services/seps_errors.py` (état au 2026-11-24) : ils lèvent la classe de base `SepsEtnicError`, pas `SepsValidationError`.
+- **Codes de validation** : `30043` à `30048` de ce service (nom, prénom, date de naissance, sexe, `cfNum`, `fromDate`) lèvent `SepsValidationError`, comme les autres codes BAD_REQUEST (absents de la liste jusqu'à #24, ils levaient la classe de base).
 
 Modèles (dataclasses, noms des champs = noms XSD) :
 

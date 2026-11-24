@@ -261,7 +261,7 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 | 30502 | SEPS: error calling the BCED (national register). `rechercherEtudiants` by name answers it, as an error, for a person found nowhere: « Une erreur s'est produite dans le processus, veuillez réessayer plus tard » (production, 2026-11-24, three requests). Raised as the base `SepsEtnicError`, not turned into an empty result: the code also covers real BCED failures. |
 | 30550 | SEPS: authentication (`SepsAuthError`). |
 | other SEPS 300xx | `SepsValidationError` for the manual's BAD_REQUEST codes, `SepsNotFoundError` for NOT_FOUND, the base `SepsEtnicError` otherwise. |
-| SECU-0104 | SEPS call in dev (`tq`) with a prod certificate — the prod X509 is not registered in the TQ environment. SEPS is prod-only. |
+| SECU-0102 / SECU-0104 | SEPS call on TQ with the production certificate: refused. TQ answered `SECU-0102` (no security information received) on 2026-11-24; `SECU-0104` (X509 rejected by the LDAP) was recorded earlier for the same call. SEPS is usable in production only. |
 
 TODO: expand this section as new error codes are encountered and handled.
 
@@ -292,7 +292,7 @@ Config.PASSWORD = "my_pass"
 ## Test Environment
 
 - EPROM server: `services-web.tq.etnic.be` (`ENV=dev`). SEPS has no usable test
-  environment: it runs in production only (see `SECU-0104`).
+  environment: it runs in production only (TQ refuses the production certificate, `SECU-0102` / `SECU-0104`).
 - Organisations created there stay "Encodé école": documents 1, 2 and 3 cannot be reached
   on a fresh organisation. Past school years with approved organisations are the only way to
   exercise the documents: on 2025-2026 organisations whose Doc A is approved, Doc 1 encoding

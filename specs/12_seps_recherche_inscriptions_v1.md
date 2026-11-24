@@ -92,7 +92,7 @@ InscriptionType
 └── audit           : AuditType            [0..1]   (contrat de production ; absent des manuels)
 ```
 
-**AuditType** (contrat de production, tous les champs `xs:string` obligatoires dans le bloc) :
+**AuditType** (contrat de production, tous les champs `xs:string` obligatoires dans le bloc). Observé en production (2026-11-24) : chacune des 17 inscriptions d'une organisation lue par `rechercherInscriptions` porte son bloc ; `dateCreation` / `dateModification` au format `AAAA-MM-JJTHH:MM:SS` sans fuseau ; `utilisateurCreation` / `utilisateurModification` portent un identifiant d'utilisateur, le même pour toutes les inscriptions d'un même envoi (sa nature n'est pas documentée) :
 ```
 AuditType
 ├── dateCreation            : xs:string

@@ -26,11 +26,10 @@
 
 ### Authentification
 
-<!-- lot4: authentification à confirmer -->
-
 - **Manuel 2.3, §2.1** : WS-Security avec **certificat X.509**, comme les quatre autres services ; ses exemples de réponse (§3.1.1.6) portent un `BinarySecurityToken` X509v3 et une signature.
 - **Page du catalogue SOA** : annonce pour ce service un profil **WS-Security UsernameToken**, et X.509 pour les quatre autres.
-- Les deux sources divergent ; à confirmer.
+- **Tranché en production (2026-11-24) : X.509.** Le certificat de l'établissement est accepté. Les identifiants EPROM en UsernameToken sont refusés par une SOAP Fault `SECU-1101` (« Authorization denied : missing security profiles »). pyetnic signe donc ce service comme les autres (`auth_type="x509_pfx"`).
+- **Observé avec ce certificat (2026-11-24)** : 41 notifications depuis le 2026-10-01 pour un établissement (30 en 05, 8 en 04, 1 en 06, 2 en 08) ; les deux `08` arrivent **sans `description`**. Une `dateDebut` future (2027-12-31) répond `success=true` avec `30050` (« La valeur entrée est trop grande ») et `30105` : `lire_notifications` rend `[]` et journalise les deux codes.
 
 ### Endpoints
 
@@ -170,7 +169,7 @@ Absence de résultat (§3.1.1.6.2) : `success=false` et un `warning` `30105` « 
 Fonction publique de `pyetnic.seps` :
 
 ```python
-def lire_notifications(etab_id, date_debut) -> list[SepsNotification]: ...
+def lire_notifications(etab_id: int | str, date_debut: str | datetime.date) -> list[SepsNotification]: ...
 ```
 
 | Classe | Champs |

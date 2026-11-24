@@ -195,7 +195,7 @@ def _codes(*items: Any) -> frozenset:
 
 
 _VALIDATION_CODES = _codes(
-    30010, range(30012, 30038), range(30039, 30043), 30049, 30050, 30052, range(30060, 30081)
+    30010, range(30012, 30038), range(30039, 30049), 30049, 30050, 30052, range(30060, 30081)
 )
 
 _CODE_CLASSES: Dict[str, Type[SepsEtnicError]] = {

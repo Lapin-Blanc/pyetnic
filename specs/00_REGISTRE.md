@@ -611,8 +611,8 @@ NotificationType : id(unsignedLong) + cfNum + date + code(NotificationCodeType \
 | `30040` | Validation SSIN | Sauv. Étud. | `SepsValidationError` |
 | `30041` | Validation cfNum | Sauv. Étud., Enr. Insc., Rech. Insc. | `SepsValidationError` |
 | `30042` | **Validation SSIN** (Recherche Étudiants) / **pas d'EtudiantDetail fourni** (Sauvegarde) : deux sens | Rech. Étud., Sauv. Étud. | `SepsValidationError` |
-| `30043`-`30046` | Validation nom / prénom / date de naissance / sexe | Rech. Étud. | classe de base (absents de la liste des codes de validation) |
-| `30047` / `30048` | Validation cfNum / fromDate | `lireEtudiant` | classe de base (idem) |
+| `30043`-`30046` | Validation nom / prénom / date de naissance / sexe | Rech. Étud. | `SepsValidationError` (depuis #24) |
+| `30047` / `30048` | Validation cfNum / fromDate | `lireEtudiant` | `SepsValidationError` (depuis #24) |
 | `30049` / `30050` | Validation etabId / dateDebut (`dateFrom`) | Notifications, Rech. Insc. (30049) | `SepsValidationError` |
 | `30051` | OK, création, mais inscrit dans plus de 4 UE (succès) | Enr. Insc. | succès, `InscriptionResult.plus_de_4_ue` |
 | `30052` | Compte multi-profil : etabId requis | Rech. Insc. | `SepsValidationError` |
