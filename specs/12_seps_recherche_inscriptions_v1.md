@@ -2,7 +2,7 @@
 
 > Spécification technique et fonctionnelle complète
 > Sources :
-> - **Manuel** : « Services Web SEPS - Recherche inscriptions » **2.4** (version de service 2.4.0 ; historique jusqu'à la rev 16.0 du 18/06/2026, la page de garde indiquant encore 15.0 / 10-06-2026), §2, §3.1 (types), §3.2 (service). Remplace le manuel général 2.1.9 (18/01/2023, §3.7) comme référence.
+> - **Manuel** : « Services Web SEPS - Recherche inscriptions » **2.4** (version de service 2.4.0 ; historique jusqu'à la rev 16.0 du 18/06/2026, la page de garde indiquant encore 15.0 / 10-06-2026 ; `ETNIC_Services_Web_SIEL_SEPS_RechercheInscriptions_v2.4_Manuel_d_utilisation_rev16.0.pdf`), §2, §3.1 (types), §3.2 (service). Remplace le manuel général 2.1.9 (18/01/2023, §3.7) comme référence.
 > - **Contrat** : WSDL + XSD servis par la production (`https://ws.etnic.be/seps/rechercheInscriptions/v1?wsdl`), embarqués dans `pyetnic/resources/SEPS_Recherche_Inscriptions_2.1/` (relevé du 2026-11-24).
 > - **Observations de production** (datées dans le texte).
 >

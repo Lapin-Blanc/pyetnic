@@ -17,7 +17,7 @@ applications that consume pyetnic.
 | `docs/ARCHITECTURE.md` | Architecture decisions, scope boundary, known limitations | Reference |
 | `specs/` | Exhaustive per-service reference (French), built from the WSDL/XSD and the ETNIC manuals; `00_REGISTRE.md` holds the shared types and the error-code table | Richest business reference |
 | `documentation/` | The official ETNIC user manuals the specs are built from. The SEPS manual is kept out of the repository (one of its examples shows an unmasked NISS): ask ETNIC for it | Primary source |
-| `pyetnic/resources/` | The embedded WSDL and XSD, one folder per service. The SEPS ones are taken from the live production services, ahead of the SOA catalogue: refresh them with `tools/refresh_seps_contracts.py` (`--check` to compare) | Contract |
+| `pyetnic/resources/` | The embedded WSDL and XSD, one folder per service. Where the live gateway serves the schemas (SEPS, Formation Organisation) they come from the production service, ahead of the SOA catalogue; elsewhere the WSDL is compared live and the schemas come from the catalogue archive. `tools/refresh_contracts.py` refreshes them (`--check` to compare); a weekly GitHub Actions run compares them with the gateway and opens a `contract-watch` issue on drift (the catalogue part runs from a workstation: it refuses the GitHub runners) | Contract |
 | GitHub issues | Backlog: open defects, deferred decisions, missing services | Current |
 | `CLAUDE.md` | Conventions for Claude Code sessions | Current |
 
@@ -27,6 +27,7 @@ applications that consume pyetnic.
 - **"Can I rename / change this public symbol?"** -> `docs/PUBLIC_API_SURFACE.md` + `docs/BACKWARDS_COMPAT.md`.
 - **"What does ETNIC error code 30007 mean / what fields does this XSD have?"** -> `specs/` (richest), then `docs/SPEC.md`.
 - **"Does this operation exist?"** -> the WSDL in `pyetnic/resources/` decides.
+- **"Is the embedded contract, or a spec, behind ETNIC?"** -> `python tools/refresh_contracts.py --check`: it compares the live services, the catalogue's versions, endpoints and contract archives, and the manual revisions the specs name.
 - **"What is left to do?"** -> the GitHub issues.
 
 ## History

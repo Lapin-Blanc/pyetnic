@@ -1,6 +1,6 @@
 """The embedded SEPS contracts load offline and carry the live production fields.
 
-The contracts come from the live services (``tools/refresh_seps_contracts.py``),
+The contracts come from the live services (``tools/refresh_contracts.py``),
 not from the SOA catalogue, whose "2.1" archives lag behind production.
 """
 

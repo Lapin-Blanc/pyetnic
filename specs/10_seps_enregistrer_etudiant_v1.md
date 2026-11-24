@@ -2,7 +2,7 @@
 
 > Spécification technique et fonctionnelle complète
 > Sources :
-> - **Manuel** : « Services Web SEPS - Enregistrer étudiant » **2.3** (version de service 2.3.0, rev 10.0, 10/06/2026), §2 et §3.3. Remplace le manuel général 2.1.9 (18/01/2023, §3.5) comme référence.
+> - **Manuel** : « Services Web SEPS - Enregistrer étudiant » **2.3** (version de service 2.3.0, rev 10.0, 10/06/2026, `ETNIC_Services_Web_SIEL_SEPS_EnregistrerEtudiants_v2.3_Manuel_d_utilisation_rev10.0.pdf`), §2 et §3.3. Remplace le manuel général 2.1.9 (18/01/2023, §3.5) comme référence.
 > - **Contrat** : WSDL + XSD servis par la production (`https://ws.etnic.be/seps/enregistrerEtudiant/v1?wsdl`), embarqués dans `pyetnic/resources/SEPS_Enregistrer_Etudiant_2.1/` (relevé du 2026-11-24).
 > - **Observations de production** (datées dans le texte).
 >

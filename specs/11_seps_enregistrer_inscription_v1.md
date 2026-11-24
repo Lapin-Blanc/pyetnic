@@ -2,7 +2,7 @@
 
 > Spécification technique et fonctionnelle complète
 > Sources :
-> - **Manuel** : « Services Web SEPS - Enregistrer Inscriptions » **2.4** (version de service 2.4.0, rev 16.0, 18/06/2026), §2, §3.1 (types), §3.3 (service). Remplace le manuel général 2.1.9 (18/01/2023, §3.1.9 à §3.1.11 et §3.6) comme référence.
+> - **Manuel** : « Services Web SEPS - Enregistrer Inscriptions » **2.4** (version de service 2.4.0, rev 16.0, 18/06/2026, `ETNIC_Services_Web_SIEL_SEPS_EnregistrerInscriptions_v2.4_Manuel_d_utilisation_rev16.0.pdf`), §2, §3.1 (types), §3.3 (service). Remplace le manuel général 2.1.9 (18/01/2023, §3.1.9 à §3.1.11 et §3.6) comme référence.
 > - **Contrat** : WSDL + XSD servis par la production (`https://ws.etnic.be/seps/enregistrerInscription/v1?wsdl`), embarqués dans `pyetnic/resources/SEPS_Enregistrer_Inscription_2.1/` (relevé du 2026-11-24).
 > - **Observations de production** (datées dans le texte).
 >

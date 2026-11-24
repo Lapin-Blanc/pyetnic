@@ -2,7 +2,7 @@
 
 > Spécification technique et fonctionnelle complète
 > Sources :
-> - **Manuel** : « Services Web SEPS - Notifications » **2.3** (rev 2.0, 10/06/2026), §2 et §3.1. Remplace le manuel général 2.1.9 (18/01/2023, §3.3) comme référence.
+> - **Manuel** : « Services Web SEPS - Notifications » **2.3** (rev 2.0, 10/06/2026, `ETNIC_Services_Web_SIEL_SEPS_Notifications_v2.3_Manuel_d_utilisation_rev2.0.pdf`), §2 et §3.1. Remplace le manuel général 2.1.9 (18/01/2023, §3.3) comme référence.
 > - **Contrat** : WSDL + XSD du catalogue SOA « SEPS_Notifications_1.0.8 ». Le contrat servi par la production (`https://ws.etnic.be/seps/notifications/v1?wsdl`) lui est **identique**, aux emplacements d'import près (relevé du 2026-11-24). Ce contrat était absent de `pyetnic/resources/` au moment de cette refonte.
 > - Workflow : manuels « Enregistrer Étudiants » 2.3 et « Enregistrer Inscriptions » 2.4, §3.2.2.
 >

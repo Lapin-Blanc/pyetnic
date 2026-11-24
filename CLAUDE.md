@@ -41,6 +41,7 @@ pyetnic/
 - Run tests (mock only): `pytest tests/regression/ tests/unit/`
 - Run tests (integration, needs `.env`): `pytest tests/integration/`
 - Build and check: `python -m build` then `python -m twine check dist/*`
+- Contract watch: `python tools/refresh_contracts.py --check` (without `--check`: refresh `pyetnic/resources`)
 
 ## Key Documentation
 
