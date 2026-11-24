@@ -104,9 +104,11 @@ class Document1Service:
         organisation_id: OrganisationId,
         population_liste: Optional[Doc1PopulationListSave] = None,
     ) -> Optional[FormationDocument1]:
-        """Modifie le document 1 (populations par année d'étude).
+        """Write the Doc 1 population (per year of study).
 
-        Seules les lignes de population fournies sont envoyées au serveur.
+        Only the lines given are sent, and in each line only the fields that
+        are not ``None``. What the server does with the lines and fields left
+        out is not established (spec 03).
         """
         logger.info("Modification du document 1 pour l'organisation : %s", organisation_id)
         request_data: dict = {'id': organisation_request_id(organisation_id)}

@@ -65,3 +65,31 @@ class TestRequestIdLogging:
             "request_id" in record.message and "succeeded" in record.message
             for record in caplog.records
         ), f"Expected a success log with request_id. Got: {[r.message for r in caplog.records]}"
+
+
+def test_request_breaking_the_contract_raises_an_etnic_validation_error(monkeypatch):
+    """zeep refuses a request that breaks the contract before sending it: pyetnic types it.
+
+    ``except EtnicError`` must catch everything pyetnic raises; a Doc 3 write with an
+    empty ``activite`` list breaks the contract's ``[1..*]``.
+    """
+    from zeep import Client
+
+    from pyetnic.config import Config
+    from pyetnic.exceptions import EtnicError, EtnicValidationError
+    from pyetnic.soap_client import SoapClientManager, get_wsdl_path
+
+    config = Config.SERVICES["DOCUMENT3"]
+    offline = Client(get_wsdl_path("pyetnic.resources", config.wsdl_path)).create_service(
+        config.binding_name, "http://localhost.invalid/never-called")
+    manager = SoapClientManager("DOCUMENT3")
+    monkeypatch.setattr(manager, "_initialize_client", lambda: offline)
+
+    with pytest.raises(EtnicValidationError, match="does not match the contract") as raised:
+        manager.call_service(
+            "ModifierDocument3",
+            id={"anneeScolaire": "2025-2026", "etabId": 1234, "numAdmFormation": 1, "numOrganisation": 1},
+            activiteListe={"activite": []},
+        )
+    assert isinstance(raised.value, EtnicError)
+    assert raised.value.request_id

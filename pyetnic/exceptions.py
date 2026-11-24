@@ -90,8 +90,9 @@ class EtnicDocumentNotAccessibleError(EtnicBusinessError):
     been approved: 20101 for Documents 1 and 1D before "Doc A" (the
     organisation itself) is approved, 20103 for Document 2 before the Doc 1
     population is validated, 20102 for Document 3 before Doc A and Doc 2 are
-    approved. Also 1546, a Document 1D fee written before its population is
-    approved, and 30003 / 30006 (document status, PO step not active).
+    approved. Also 20112 (1546 in the manual), a Document 1D fee written
+    before its population is approved, and 30003 / 30006 (document status,
+    PO step not active).
 
     This is a NORMAL workflow state, not a hard error — calling code may
     legitimately catch this exception to mean "not ready yet".
@@ -117,10 +118,12 @@ class EtnicValidationError(EtnicBusinessError):
 
 
 class EtnicAlreadyApprovedError(EtnicBusinessError):
-    """The document is already approved by the administration.
+    """The document is already approved, so the operation is refused.
 
-    Raised when an edit/approve operation targets a document ETNIC has
-    already locked as approved (codes 1530, 1545).
+    1530: approved by the administration, nothing is writable any more.
+    1545 (Documents 1 and 1D): approved by the school, the population is
+    frozen and a second approval is refused. Document 2 uses 1545 for
+    something else (see ``_SERVICE_CODE_TO_CLASS``).
     """
 
 
@@ -196,6 +199,18 @@ _CODE_TO_CLASS: dict[str, Type[EtnicBusinessError]] = {
     "20037": EtnicValidationError,
     "20038": EtnicValidationError,
     "20042": EtnicValidationError,  # BESAeSI switch (Organisation v8)
+    # Document 2: an intervention type without the sub-type it imposes (J -> OA,
+    # G -> AI; Périodes manual rev 1.4)
+    "20041": EtnicValidationError,
+    # Input validation - Document 3: periods above the ceilings (1538, 1574-1576),
+    # unknown staff number, availability code or status (20108-20110)
+    "1538": EtnicValidationError,
+    "1574": EtnicValidationError,
+    "1575": EtnicValidationError,
+    "1576": EtnicValidationError,
+    "20108": EtnicValidationError,
+    "20109": EtnicValidationError,
+    "20110": EtnicValidationError,
     # Input validation — Documents 1 & 2
     "1113": EtnicValidationError,
     "1114": EtnicValidationError,

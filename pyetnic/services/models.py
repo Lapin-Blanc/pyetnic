@@ -2,6 +2,10 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import date
 
+# Alias for the fields named `date`: inside their class body the name is bound to the
+# field's default before the annotation is evaluated.
+_Date = date
+
 # ---------------------------------------------------------------------------
 # Types communs
 # ---------------------------------------------------------------------------
@@ -176,7 +180,7 @@ class Doc1DDroitInscriptionLineSave:
     """Ligne à modifier (Doc1DDroitInscriptionSaveLineCT).
 
     ``nbEleves5ieme`` is writable until the population is approved,
-    ``mtDroitsInscription`` only after (error 1546 before).
+    ``mtDroitsInscription`` only after (error 20112 before, 1546 in the manual).
     """
     coAnnEtude: str
     nbEleves5ieme: Optional[int] = None
@@ -369,9 +373,10 @@ class Doc3ActiviteDetail:
     coCategorie: Optional[str] = None
     teNomBranche: Optional[str] = None
     noAnneeEtude: Optional[str] = None
-    nbPeriodesDoc8: Optional[float] = None
-    nbPeriodesPrevuesDoc2: Optional[float] = None
-    nbPeriodesReellesDoc2: Optional[float] = None
+    # xs:int in FormationDocument3_v1.xsd (audit D7): zeep returns integers.
+    nbPeriodesDoc8: Optional[int] = None
+    nbPeriodesPrevuesDoc2: Optional[int] = None
+    nbPeriodesReellesDoc2: Optional[int] = None
     enseignantListe: Optional[Doc3EnseignantList] = None
 
 @dataclass
@@ -446,7 +451,7 @@ class SepsNaissance:
 @dataclass
 class SepsDeces:
     """Données de décès (DecesType)."""
-    date: Optional[date] = None
+    date: Optional[_Date] = None
 
 @dataclass
 class EtudiantDetails:

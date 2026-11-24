@@ -7,7 +7,8 @@ is ``statutDocumentDroitsInscription`` in :func:`lister_formations`.
 
 A line goes through two phases (manual §3.1.4.1): the population is writable
 until the school approves it with :func:`approuver_document_1d`
-(``swAppPopD1D``), the fee only afterwards (error 1546 before). Once the
+(``swAppPopD1D``), the fee only afterwards (error 20112 before; the manual
+numbers it 1546). Once the
 administration approves the document (``swAppD1D``), nothing is writable
 (error 1530). pyetnic does not check these phases itself: the server decides,
 and its refusal surfaces as a typed exception.
@@ -95,8 +96,8 @@ class Document1DService:
 
         A line targets its year by ``coAnnEtude`` and carries only the fields
         to write: ``nbEleves5ieme`` until the population is approved,
-        ``mtDroitsInscription`` after (error 1546 before, mapped to
-        ``EtnicDocumentNotAccessibleError``). After the administration's
+        ``mtDroitsInscription`` after (error 20112 before, tested on TQ on
+        2026-11-24, the manual's 1546; ``EtnicDocumentNotAccessibleError``). After the administration's
         approval the server refuses any write (error 1530,
         ``EtnicAlreadyApprovedError``).
         """
@@ -116,8 +117,8 @@ class Document1DService:
         """Approve the population at 5/10 (``swAppPopD1D``, the school's approval).
 
         Send back, per year of study, the ``nbEleves5ieme`` just read: the
-        server checks that nothing changed since (error 00011,
-        ``EtnicConcurrencyError``). Build the list from a read with
+        server checks that nothing changed since (error 20104, tested on TQ on
+        2026-11-24; ``EtnicConcurrencyError``). Build the list from a read with
         :meth:`Doc1DDroitInscriptionListAppr.from_document`. After the
         approval the population is frozen and the fees become writable;
         approving again is refused (error 1545, ``EtnicAlreadyApprovedError``).

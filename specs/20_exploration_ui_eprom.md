@@ -89,10 +89,10 @@ champs `nbEleve*` de la spec 03 — les noms `A`/`B` sont les libellés métier 
 **Tableau « population par activité d'enseignement »** (colonnes 12-19), en-têtes UI :
 `N° | Catégorie | Activité d'enseignement (12) | Année Études (13) | Nb Elèves (14) | Pér. prévues (15) |
 Prévue (16) 2024 | Prévue (17) 2025 | Réel (18) 2024 | Réel (19) 2025` — la ventilation par **année
-civile** est explicite dans les en-têtes (la dotation se calcule par année civile).
+civile** est explicite dans les en-têtes.
 Exemple réel : branche 1 `CTms` Méthodes de travail, 19 élèves, **48,00** (Doc 8bis), prévue 2024
 **20,00**, réel 2024 **20,00** ; branche 2 `Auto` Autonomie **12,00** ; total UE 60 périodes sur
-2 années scolaires (16+17 < 15 conforme à la 8684).
+2 années scolaires.
 
 **Lignes spéciales affichées (91-99)** — complète la liste 91-96 de la 8684 :
 
@@ -197,7 +197,7 @@ du manuel (60 codes, spec 05) n'y figurent pas. Les libellés manquants ne sont 
 `98`/`99` Dispo mission spéciale (pas nb global).
 
 > Les codes **14/15** (« partenaire extérieur prend en charge la rémunération » — circulaire 8684)
-> sont bien dans la liste. Recouvrement confirmé avec les « codes DI » de la circulaire 9589 (section 6).
+> sont bien dans la liste.
 
 ## 3. Notes techniques d'automatisation (pour de futures explorations)
 

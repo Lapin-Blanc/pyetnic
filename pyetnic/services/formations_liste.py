@@ -52,7 +52,7 @@ class FormationsListeService:
 
             if result['body']['success']:
                 formations = []
-                for f in _as_list(result['body']['response'].get('formation')):
+                for f in _as_list((result['body'].get('response') or {}).get('formation')):
                     formations.append(Formation(
                         numAdmFormation=f['numAdmFormation'],
                         libelleFormation=f['libelleFormation'],
@@ -111,7 +111,7 @@ class FormationsListeService:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug("Résultat : %s", pformat(result))
                 formations = []
-                for f in _as_list(result['body']['response'].get('formation')):
+                for f in _as_list((result['body'].get('response') or {}).get('formation')):
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug("Formation : %s", pformat(f))
                     organisations = []
