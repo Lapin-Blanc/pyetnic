@@ -1,0 +1,73 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:org="http://enseignement.cfwb.be/types/organisation/v1" xmlns:tns="http://enseignement.cfwb.be/types/formation/document1D/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/formation/document1D/v1" version="1.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/organisation/v1" schemaLocation="Organisation_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:complexType name="Document1DReponseMetierCT">
+<xs:sequence>
+<xs:element name="document1D" type="tns:FormationDocument1DCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1DCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationResIdCT"></xs:element>
+<xs:element name="droitInscriptionListe" type="tns:Doc1DDroitInscriptionLstCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc1DDroitInscriptionLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="droitInscription" type="tns:Doc1DDroitInscriptionLineCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc1DDroitInscriptionLineCT">
+<xs:sequence>
+<xs:element name="coAnnEtude" type="xs:string"></xs:element>
+<xs:element name="nbEleves5ieme" type="xs:int"></xs:element>
+<xs:element name="mtDroitsInscription" type="xs:float"></xs:element>
+<xs:element name="mtDroitsInscriptionOccupationnel" type="xs:float"></xs:element>
+<xs:element name="swAppPopD1D" type="xs:boolean"></xs:element>
+<xs:element name="swAppD1D" type="xs:boolean"></xs:element>
+<xs:element name="tsMaj" type="xs:string"></xs:element>
+<xs:element name="teUserMaj" type="xs:string"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1DLireReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1DModifReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+<xs:element name="droitInscriptionListe" type="tns:Doc1DDroitInscriptionSaveLstCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc1DDroitInscriptionSaveLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="droitInscription" type="tns:Doc1DDroitInscriptionSaveLineCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc1DDroitInscriptionSaveLineCT">
+<xs:sequence>
+<xs:element name="coAnnEtude" type="xs:string"></xs:element>
+<xs:element minOccurs="0" name="nbEleves5ieme" type="xs:int"></xs:element>
+<xs:element minOccurs="0" name="mtDroitsInscription" type="xs:float"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="FormationDocument1DApprReqCT">
+<xs:sequence>
+<xs:element name="id" type="org:OrganisationReqIdCT"></xs:element>
+<xs:element name="droitInscriptionListe" type="tns:Doc1DDroitInscriptionApprLstCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc1DDroitInscriptionApprLstCT">
+<xs:sequence>
+<xs:element maxOccurs="unbounded" minOccurs="0" name="droitInscription" type="tns:Doc1DDroitInscriptionApprLineCT"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Doc1DDroitInscriptionApprLineCT">
+<xs:sequence>
+<xs:element name="coAnnEtude" type="xs:string"></xs:element>
+<xs:element name="nbEleves5ieme" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

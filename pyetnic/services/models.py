@@ -131,6 +131,72 @@ class FormationDocument1:
     populationListe: Optional[Doc1PopulationList] = None
 
 # ---------------------------------------------------------------------------
+# Modèles Document 1D (droits d'inscription)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Doc1DDroitInscriptionLine:
+    """Ligne par année d'études du document 1D (Doc1DDroitInscriptionLineCT).
+
+    ``nbEleves5ieme`` is the population counted at 5/10 of the unit,
+    ``mtDroitsInscription`` the enrolment fee. ``swAppPopD1D`` is the school's
+    approval of the population, ``swAppD1D`` the administration's.
+    ``mtDroitsInscriptionOccupationnel`` is no longer used (manual §3.1.3.4).
+    """
+    coAnnEtude: str
+    nbEleves5ieme: int
+    mtDroitsInscription: float
+    mtDroitsInscriptionOccupationnel: float
+    swAppPopD1D: bool
+    swAppD1D: bool
+    tsMaj: Optional[str] = None
+    teUserMaj: Optional[str] = None
+
+@dataclass
+class Doc1DDroitInscriptionList:
+    """Lignes du document 1D (Doc1DDroitInscriptionLstCT)."""
+    droitInscription: List[Doc1DDroitInscriptionLine] = field(default_factory=list)
+
+@dataclass
+class Doc1DDroitInscriptionLineSave:
+    """Ligne à modifier (Doc1DDroitInscriptionSaveLineCT).
+
+    ``nbEleves5ieme`` is writable until the population is approved,
+    ``mtDroitsInscription`` only after (error 1546 before).
+    """
+    coAnnEtude: str
+    nbEleves5ieme: Optional[int] = None
+    mtDroitsInscription: Optional[float] = None
+
+@dataclass
+class Doc1DDroitInscriptionListSave:
+    """Lignes à modifier (Doc1DDroitInscriptionSaveLstCT)."""
+    droitInscription: List[Doc1DDroitInscriptionLineSave] = field(default_factory=list)
+
+@dataclass
+class Doc1DDroitInscriptionLineAppr:
+    """Ligne à approuver (Doc1DDroitInscriptionApprLineCT): the population as read."""
+    coAnnEtude: str
+    nbEleves5ieme: int
+
+@dataclass
+class Doc1DDroitInscriptionListAppr:
+    """Lignes à approuver (Doc1DDroitInscriptionApprLstCT)."""
+    droitInscription: List[Doc1DDroitInscriptionLineAppr] = field(default_factory=list)
+
+    @classmethod
+    def from_document(cls, document: "FormationDocument1D") -> "Doc1DDroitInscriptionListAppr":
+        """The lines of a document just read, as the approval must send them back."""
+        lines = document.droitInscriptionListe.droitInscription if document.droitInscriptionListe else []
+        return cls([Doc1DDroitInscriptionLineAppr(line.coAnnEtude, line.nbEleves5ieme) for line in lines])
+
+@dataclass
+class FormationDocument1D:
+    """Document 1D: population at 5/10 and enrolment fees (FormationDocument1DCT)."""
+    id: OrganisationId
+    droitInscriptionListe: Optional[Doc1DDroitInscriptionList] = None
+
+# ---------------------------------------------------------------------------
 # Modèles Document 2
 # ---------------------------------------------------------------------------
 

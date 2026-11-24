@@ -94,6 +94,7 @@ WATCHED = [
     Watched("LISTE_FORMATIONS", "EPROM", "Formations Liste", ("01_formations_liste_v2.md",)),
     Watched("ORGANISATION", "EPROM", "Formation Organisation", ("02_formation_organisation_v8.md",)),
     Watched("DOCUMENT1", "EPROM", "Formation Population", ("03_formation_population_v1.md",)),
+    Watched("DOCUMENT1D", "EPROM", "Formation Droits Inscription", ("06_formation_droits_inscription_v1.md",)),
     Watched("DOCUMENT2", "EPROM", "Formation Périodes", ("04_formation_periodes_v1.md",)),
     Watched("DOCUMENT3", "EPROM", "Document 3", ("05_document3_v1.md",)),
     Watched("SEPS_RECHERCHE_ETUDIANTS", "SEPS", "Recherche Étudiants", ("09_seps_recherche_etudiants_v1.md", REFERENTIELS)),

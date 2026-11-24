@@ -25,6 +25,9 @@ from ..services import (
     lire_document_1,
     modifier_document_1,
     approuver_document_1,
+    lire_document_1d,
+    modifier_document_1d,
+    approuver_document_1d,
     lire_document_2,
     modifier_document_2,
     lire_document_3,
@@ -59,6 +62,17 @@ from ..services.models import (
     Doc1PopulationLineSave,
     Doc1PopulationListSave,
     FormationDocument1,
+)
+
+# Modèles - Document 1D (droits d'inscription)
+from ..services.models import (
+    Doc1DDroitInscriptionLine,
+    Doc1DDroitInscriptionList,
+    Doc1DDroitInscriptionLineSave,
+    Doc1DDroitInscriptionListSave,
+    Doc1DDroitInscriptionLineAppr,
+    Doc1DDroitInscriptionListAppr,
+    FormationDocument1D,
 )
 
 # Modèles — Document 2
@@ -114,6 +128,9 @@ __all__ = [
     "lire_document_1",
     "modifier_document_1",
     "approuver_document_1",
+    "lire_document_1d",
+    "modifier_document_1d",
+    "approuver_document_1d",
     "lire_document_2",
     "modifier_document_2",
     "lire_document_3",
@@ -139,6 +156,14 @@ __all__ = [
     "Doc1PopulationLineSave",
     "Doc1PopulationListSave",
     "FormationDocument1",
+    # Document 1D
+    "Doc1DDroitInscriptionLine",
+    "Doc1DDroitInscriptionList",
+    "Doc1DDroitInscriptionLineSave",
+    "Doc1DDroitInscriptionListSave",
+    "Doc1DDroitInscriptionLineAppr",
+    "Doc1DDroitInscriptionListAppr",
+    "FormationDocument1D",
     # Document 2
     "Doc2ActiviteEnseignementLine",
     "Doc2ActiviteEnseignementList",

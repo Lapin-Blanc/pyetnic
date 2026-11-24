@@ -39,7 +39,7 @@ class Document2Service:
             and 'document2' in result['body']['response']
         ):
             # Let signal_business_error surface the real ETNIC code + description.
-            return signal_business_error(result)
+            return signal_business_error(result, service=self.client_manager.service_name)
 
         doc_data = result['body']['response']['document2']
         if logger.isEnabledFor(logging.DEBUG):
@@ -123,8 +123,7 @@ class Document2Service:
 
         Returns ``None`` until the Doc 1 population has been validated: the
         Doc 2 does not exist before that, and the server refuses with error
-        20103 (tested on TQ, 2026-11-10). The code is not mapped to a specific
-        exception: a plain ``EtnicBusinessError`` under :func:`strict_errors`.
+        20103 (tested on TQ, 2026-11-10): ``EtnicDocumentNotAccessibleError``.
 
         At validation it appears as a skeleton: every branch of the dossier
         with its volume (``nbPeriodeBranche``), lines 91 to 99 included, every

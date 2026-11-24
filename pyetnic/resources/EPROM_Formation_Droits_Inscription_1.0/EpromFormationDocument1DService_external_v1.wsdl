@@ -1,0 +1,103 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:req="http://etnic.be/types/technical/requestId/v1" xmlns:tns="http://services-web.etnic.be/eprom/formation/document1D/v1" xmlns:eprom="http://services-web.etnic.be/eprom/formation/document1D/messages/v1" name="EPROMFormationDocument1DV1ExternalService" targetNamespace="http://services-web.etnic.be/eprom/formation/document1D/v1">
+  <wsdl:types>
+    <xs:schema>
+			<xs:import namespace="http://services-web.etnic.be/eprom/formation/document1D/messages/v1" schemaLocation="xsd/EpromFormationDocument1DMessages_external_v1.xsd"></xs:import>
+			<xs:import namespace="http://etnic.be/types/technical/requestId/v1" schemaLocation="xsd/requestId_v1.xsd"></xs:import>
+		</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="LireDocument1DRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:LireDocument1D">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="RequestIdHeader">
+    <wsdl:part name="requestId" element="req:requestId">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ApprouverDocument1DRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:ApprouverDocument1D">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="LireDocument1DReponseMessage">
+    <wsdl:part name="parameter" element="eprom:LireDocument1DReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ApprouverDocument1DReponseMessage">
+    <wsdl:part name="parameter" element="eprom:ApprouverDocument1DReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ModifierDocument1DReponseMessage">
+    <wsdl:part name="parameter" element="eprom:ModifierDocument1DReponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ModifierDocument1DRequeteMessage">
+    <wsdl:part name="parameter" element="eprom:ModifierDocument1D">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="EPROMFormationDocument1DExternalV1PortType">
+    <wsdl:operation name="LireDocument1D">
+      <wsdl:input message="tns:LireDocument1DRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:LireDocument1DReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ModifierDocument1D">
+      <wsdl:input message="tns:ModifierDocument1DRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:ModifierDocument1DReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ApprouverDocument1D">
+      <wsdl:input message="tns:ApprouverDocument1DRequeteMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:ApprouverDocument1DReponseMessage">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="EPROMFormationDocument1DExternalV1Binding" type="tns:EPROMFormationDocument1DExternalV1PortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"></soap:binding>
+    <wsdl:operation name="LireDocument1D">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/document1D/v1/LireDocument1D"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ModifierDocument1D">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/document1D/v1/ModifierDocument1D"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ApprouverDocument1D">
+      <soap:operation soapAction="http://services-web.etnic.be/eprom/formation/document1D/v1/ApprouverDocument1D"></soap:operation>
+      <wsdl:input>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="false">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:RequestIdHeader" part="requestId" use="literal" wsdl:required="true">
+        </soap:header>
+        <soap:body use="literal"></soap:body>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="service_eprom_formation_document1D_external_v1">
+    <wsdl:port name="EPROMFormationDocument1DExternalV1Port" binding="tns:EPROMFormationDocument1DExternalV1Binding">
+      <soap:address location="https://ws-tq.etnic.be/eprom/formation/document1D/v1"></soap:address>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

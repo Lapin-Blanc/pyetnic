@@ -86,10 +86,12 @@ class EtnicBusinessError(EtnicError):
 class EtnicDocumentNotAccessibleError(EtnicBusinessError):
     """A document is not yet accessible in the workflow.
 
-    Raised when accessing Doc 1 / Doc 2 / Doc 3 before the prerequisite
-    documents have been approved. Most notably, ETNIC error code 20102:
-    Doc 3 is reachable only once "Doc A" (the organisation itself) and
-    Doc 2 are approved.
+    Raised when accessing a document before the prerequisite documents have
+    been approved: 20101 for Documents 1 and 1D before "Doc A" (the
+    organisation itself) is approved, 20103 for Document 2 before the Doc 1
+    population is validated, 20102 for Document 3 before Doc A and Doc 2 are
+    approved. Also 1546, a Document 1D fee written before its population is
+    approved, and 30003 / 30006 (document status, PO step not active).
 
     This is a NORMAL workflow state, not a hard error — calling code may
     legitimately catch this exception to mean "not ready yet".
@@ -125,7 +127,9 @@ class EtnicAlreadyApprovedError(EtnicBusinessError):
 class EtnicConcurrencyError(EtnicBusinessError):
     """The record was modified by another user since it was read.
 
-    Optimistic-concurrency violation (code 00011) — re-read and retry.
+    Optimistic-concurrency violation (code 00011), and the approval of
+    Documents 1 and 1D sent with values that differ from the stored ones
+    (code 20104): re-read and retry.
     """
 
 
@@ -140,15 +144,26 @@ class EtnicConcurrencyError(EtnicBusinessError):
 # are intentionally left on the base class: they are not client-fixable.
 _CODE_TO_CLASS: dict[str, Type[EtnicBusinessError]] = {
     "00009": EtnicNotFoundError,
-    # Workflow / document not accessible
+    # Workflow / document not accessible: Doc A not approved (Documents 1 and
+    # 1D), Doc 1 population not validated (Document 2), Doc A and Doc 2 not
+    # approved (Document 3)
+    "20101": EtnicDocumentNotAccessibleError,
+    "20103": EtnicDocumentNotAccessibleError,
     "20102": EtnicDocumentNotAccessibleError,
     "30003": EtnicDocumentNotAccessibleError,
     "30006": EtnicDocumentNotAccessibleError,
-    # Already approved by the administration
+    # Not yet approved: Doc 1D fees written before the population is approved
+    # (20112 on the wire, tested on TQ 2026-11-24; 1546 in the manual)
+    "20112": EtnicDocumentNotAccessibleError,
+    "1546": EtnicDocumentNotAccessibleError,
+    # Already approved (by the school for 1545, by the administration for 1530).
+    # 1545 means something else for Document 2: see _SERVICE_CODE_TO_CLASS.
     "1530": EtnicAlreadyApprovedError,
     "1545": EtnicAlreadyApprovedError,
-    # Optimistic-concurrency violation
+    # Optimistic-concurrency violation; 20104: the values sent to an approval
+    # (Documents 1 and 1D) differ from the stored ones, reload and retry
     "00011": EtnicConcurrencyError,
+    "20104": EtnicConcurrencyError,
     # Input validation — Organisation (30xxx)
     "30001": EtnicValidationError,
     "30002": EtnicValidationError,
@@ -201,13 +216,31 @@ _CODE_RANGES: list[Tuple[int, int, Type[EtnicBusinessError]]] = [
 ]
 
 
-def map_etnic_error_code_to_class(code: Optional[str]) -> Type[EtnicBusinessError]:
+# Codes whose meaning, and so class, depends on the service, keyed by the
+# ``Config.SERVICES`` name. They win over _CODE_TO_CLASS for that service only.
+# Source: the error tables of specs 03 to 06.
+_SERVICE_CODE_TO_CLASS: dict[str, dict[str, Type[EtnicBusinessError]]] = {
+    # Document 2: "Vous ne pouvez pas créer une 5ième intervention extérieure".
+    "DOCUMENT2": {"1545": EtnicValidationError},
+}
+
+
+def map_etnic_error_code_to_class(
+    code: Optional[str], service: Optional[str] = None
+) -> Type[EtnicBusinessError]:
     """Map a known ETNIC error code to its specialized exception class.
+
+    Some codes mean different things in different services (``1545`` is
+    "already approved" for Documents 1 and 1D, "fifth external intervention"
+    for Document 2): pass the ``Config.SERVICES`` name of the service that
+    answered as ``service`` to get the class that matches its meaning.
 
     Returns :class:`EtnicBusinessError` for unknown or not-client-fixable codes.
     """
     if code is None:
         return EtnicBusinessError
+    if service is not None and code in _SERVICE_CODE_TO_CLASS.get(service, {}):
+        return _SERVICE_CODE_TO_CLASS[service][code]
     if code in _CODE_TO_CLASS:
         return _CODE_TO_CLASS[code]
     try:
@@ -278,6 +311,7 @@ def signal_business_error(
     description: Optional[str] = None,
     request_id: Optional[str] = None,
     error_class: Optional[Type[EtnicBusinessError]] = None,
+    service: Optional[str] = None,
 ) -> None:
     """Raise a typed business error if strict mode is on, else return ``None``.
 
@@ -302,6 +336,8 @@ def signal_business_error(
         request_id: Request ID for traceability.
         error_class: Specific exception class to raise. Defaults to the
             class returned by :func:`map_etnic_error_code_to_class`.
+        service: ``Config.SERVICES`` name of the service that answered, for
+            the codes whose meaning depends on the service.
 
     Returns:
         ``None`` — but only in default mode. In strict mode, this raises.
@@ -318,7 +354,7 @@ def signal_business_error(
         description = description if description is not None else ex_desc
         request_id = request_id if request_id is not None else ex_rid
 
-    cls = error_class or map_etnic_error_code_to_class(code)
+    cls = error_class or map_etnic_error_code_to_class(code, service)
     if message is None:
         if code is not None:
             # Surface the real ETNIC code + description instead of a generic

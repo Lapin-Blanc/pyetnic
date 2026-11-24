@@ -1,0 +1,21 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:etab="http://enseignement.cfwb.be/types/etablissement/v1" xmlns:ann="http://enseignement.cfwb.be/types/AnneeScolaire/v1" xmlns:tns="http://enseignement.cfwb.be/types/organisation/v1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/organisation/v1" version="2.0">
+<xs:import namespace="http://enseignement.cfwb.be/types/AnneeScolaire/v1" schemaLocation="AnneeScolaire_v1.xsd"></xs:import>
+<xs:import namespace="http://enseignement.cfwb.be/types/etablissement/v1" schemaLocation="Etablissement_v1.xsd"></xs:import>
+<xs:complexType name="OrganisationReqIdCT">
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="numOrganisation" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="OrganisationResIdCT">
+<xs:sequence>
+<xs:element name="anneeScolaire" type="ann:AnneeScolaireST"></xs:element>
+<xs:element name="etabId" type="etab:EtabIdST"></xs:element>
+<xs:element minOccurs="0" name="implId" type="etab:ImplIdST"></xs:element>
+<xs:element name="numAdmFormation" type="xs:int"></xs:element>
+<xs:element name="numOrganisation" type="xs:int"></xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

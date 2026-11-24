@@ -26,6 +26,28 @@ that supports `bN` pre-releases).
   of `creer_organisation` (a unit given only for the BES "assistant en soins infirmiers",
   from school year 2026-2027); `TypeInterventionExterieure.BES` (code `G`, new in v8);
   errors 20042 and 30010 routed to `EtnicValidationError`.
+- **Document 1D service, "droits d'inscription"** (#33): `lire_document_1d`,
+  `modifier_document_1d` and `approuver_document_1d` in `pyetnic.eprom`, with
+  `FormationDocument1D` and the `Doc1DDroitInscription*` read, save and approval models;
+  `Doc1DDroitInscriptionListAppr.from_document` builds the approval from a read. Its
+  contract comes from the catalogue archive. Its life cycle was tested on TQ: the fee is
+  refused before the population is approved (error 20112), an approval with other values
+  is refused (20104), and the reading is refused before the Doc A is approved (20101,
+  production).
+- **Error routing per service**: `map_etnic_error_code_to_class(code, service=None)`
+  and `signal_business_error(..., service=None)` take the `Config.SERVICES` name of the
+  service that answered, for codes whose meaning depends on it.
+
+### Fixed
+
+- **Error 1545 from Document 2** ("you cannot create a fifth external intervention") is an
+  `EtnicValidationError`; it was read as `EtnicAlreadyApprovedError`, its meaning in
+  Documents 1 and 1D.
+- **Workflow refusals are typed**: 20101 (Doc A not approved, Documents 1 and 1D), 20103
+  (Doc 1 population not validated, Document 2) and 20112 / 1546 (Document 1D fee before the
+  population is approved) raise `EtnicDocumentNotAccessibleError`, like 20102; 20104 (an
+  approval with values that differ from the stored ones) raises `EtnicConcurrencyError`.
+  They raised the base `EtnicBusinessError`, which they still derive from.
 
 ### Changed
 

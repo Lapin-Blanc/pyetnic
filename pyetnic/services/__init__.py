@@ -12,6 +12,7 @@ from .formations_liste import FormationsListeService
 from .organisation import OrganisationService
 from .models import OrganisationApercu
 from .document1 import Document1Service
+from .document1d import Document1DService
 from .document2 import Document2Service
 from .document3 import Document3Service
 from .seps import RechercheEtudiantsService
@@ -54,6 +55,11 @@ lire_document_1 = document1_service.lire_document_1
 modifier_document_1 = document1_service.modifier_document_1
 approuver_document_1 = document1_service.approuver_document_1
 
+document1d_service = Document1DService()
+lire_document_1d = document1d_service.lire_document_1d
+modifier_document_1d = document1d_service.modifier_document_1d
+approuver_document_1d = document1d_service.approuver_document_1d
+
 # instanciation du service SEPS
 seps_service = RechercheEtudiantsService()
 # Exposition des méthodes du service
@@ -81,6 +87,7 @@ __all__ = [
     'OrganisationService',
     'OrganisationApercu',
     'Document1Service',
+    'Document1DService',
     'Document2Service',
     'Document3Service',
     'lister_formations_organisables',
@@ -92,6 +99,9 @@ __all__ = [
     'lire_document_1',
     'modifier_document_1',
     'approuver_document_1',
+    'lire_document_1d',
+    'modifier_document_1d',
+    'approuver_document_1d',
     'lire_document_2',
     'modifier_document_2',
     'lire_document_3',
