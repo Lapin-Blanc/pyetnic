@@ -685,3 +685,23 @@ class InscriptionResult(SepsEcritureResult):
     def plus_de_4_ue(self) -> bool:
         """Créée, mais l'étudiant est inscrit dans plus de 4 UE (code 30051)."""
         return self.a_le_code("30051")
+
+
+# ---------------------------------------------------------------------------
+# Notifications SEPS
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SepsNotification:
+    """Changement de signalétique d'un étudiant (NotificationType).
+
+    ``code`` : 02 sexe, 04 nom / prénom, 05 adresse, 06 nationalité, 07 NISS,
+    08 statut (voir :class:`~pyetnic.nomenclatures.CodeNotification`). Le code 08
+    arrive sans ``description`` : le contrat n'en prévoit pas pour lui (observé en
+    production le 2026-11-24).
+    """
+    id: Optional[int] = None
+    cfNum: Optional[str] = None
+    date: Optional[str] = None                            # AAAA-MM-JJ
+    code: Optional[str] = None
+    description: Optional[str] = None

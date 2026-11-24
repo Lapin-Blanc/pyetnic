@@ -225,6 +225,12 @@ class Config(metaclass=_ConfigMeta):
                 binding_name="{http://ws.etnic.be/seps/rechercheInscriptions/v1}SEPSRechercheInscriptionsV1ExternalBinding",
                 auth_type="x509_pfx",
             ),
+            "SEPS_NOTIFICATIONS": ServiceConfig(
+                endpoint=f"https://ws{'-tq' if env == 'dev' else ''}.etnic.be/seps/notifications/v1",
+                wsdl_path="SEPS_Notifications_1.0.8/SEPSNotificationsService_external_v1.wsdl",
+                binding_name="{http://ws.etnic.be/seps/notifications/v1}SEPSNotificationsV1ExternalBinding",
+                auth_type="x509_pfx",
+            ),
         }
 
     @classmethod

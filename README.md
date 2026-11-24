@@ -324,6 +324,16 @@ print(resultat.inscription.ue.label, resultat.code, resultat.plus_de_4_ue)
 resultat = modifier_inscription(inscription_input_data=data)
 ```
 
+### SEPS - Notifications
+
+```python
+from pyetnic.seps import lire_notifications, lire_etudiant, CodeNotification
+
+# Changements de signalétique des étudiants de l'établissement depuis une date
+for n in lire_notifications(1234, "2026-10-01"):
+    print(n.date, n.cfNum, CodeNotification(n.code).name)  # puis relire : lire_etudiant(n.cfNum)
+```
+
 ---
 
 ## Workflow métier

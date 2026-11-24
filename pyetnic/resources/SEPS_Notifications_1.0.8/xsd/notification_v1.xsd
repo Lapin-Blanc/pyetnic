@@ -1,0 +1,31 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://enseignement.cfwb.be/types/seps/notification/v1" version="1.0" xmlns:cfNum="http://enseignement.cfwb.be/types/seps/cfNum/v1" xmlns:tns="http://enseignement.cfwb.be/types/seps/notification/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:import namespace="http://enseignement.cfwb.be/types/seps/cfNum/v1" schemaLocation="cfNum_v1.xsd"/>
+
+	<xs:complexType name="NotificationType">
+		<xs:sequence>
+			<xs:element name="id" type="xs:unsignedLong"/>
+			<xs:element name="cfNum" type="cfNum:cfNumType"/>
+			<xs:element name="date" type="xs:date"/>
+			<xs:element name="code" type="tns:NotificationCodeType"/>
+			<xs:element minOccurs="0" name="description" type="tns:NotificationDescriptionType"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:simpleType name="NotificationCodeType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="\d{2}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="NotificationDescriptionType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="MODIF ETUDIANT:CHANGEMENT SEXE"/>
+			<xs:enumeration value="MODIF ETUDIANT:CHANGEMENT NOM/PRENOM"/>
+			<xs:enumeration value="MODIF ETUDIANT:CHANGEMENT ADRESSE"/>
+			<xs:enumeration value="MODIF ETUDIANT:CHANGEMENT NATIONALITE"/>
+			<xs:enumeration value="MODIF ETUDIANT:CHANGEMENT NISS"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+</xs:schema>

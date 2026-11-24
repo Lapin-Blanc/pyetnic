@@ -11,6 +11,12 @@ that supports `bN` pre-releases).
 
 ### Added
 
+- **SEPS Notifications service** (#23): `pyetnic.seps.lire_notifications(etab_id, date_debut)`
+  returns `SepsNotification` (`id`, `cfNum`, `date`, `code`, `description`), the identity
+  changes of an establishment's students since a date; `CodeNotification` names the codes
+  (02, 04, 05, 06, 07 and 08, new in manual 2.3). Its live contract is embedded and refreshed
+  by `tools/refresh_seps_contracts.py`. Authentication is X509: production refuses the
+  UsernameToken the catalogue announces (2026-11-24).
 - **SEPS models follow the live production contract** (#22). Read: `Inscription.audit`
   (`SepsAudit`: `dateCreation`, `utilisateurCreation`, `dateModification`,
   `utilisateurModification`), `Etudiant.bisCreated`, `SepsSpecificite.regulier3`, `montant`

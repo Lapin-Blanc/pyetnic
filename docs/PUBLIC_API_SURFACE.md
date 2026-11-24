@@ -184,6 +184,14 @@ The following functions are **exported but not in production use**. They may be 
 | `modifier_inscription` | Never used in production. |
 | `rechercher_inscriptions` | Never used in production. Even though it's a read operation, it's classified construction because no test harness or production caller exists. |
 
+### Construction — Notifications (#23)
+
+| Symbol | Notes |
+|---|---|
+| `lire_notifications` | `lireNotifications`; X509 like the other SEPS services |
+| `SepsNotification` | `id`, `cfNum`, `date`, `code`, `description` (absent for code 08) |
+| `CodeNotification` | 02, 04, 05, 06, 07, 08 (manual 2.3; the contract only declares two digits) |
+
 ### Construction — Dataclasses (write)
 
 | Symbol | Notes |
