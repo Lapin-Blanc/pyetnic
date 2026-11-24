@@ -9,6 +9,12 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+## [0.2.0b1] - 2026-11-24
+
+The SEPS module follows the live production contracts. **Upgrading from 0.1.0b2:**
+the four SEPS writers return a result object instead of the bare `Etudiant` /
+`Inscription`, which is now in `.etudiant` / `.inscription` (see *Changed*).
+
 ### Added
 
 - **SEPS Notifications service** (#23): `pyetnic.seps.lire_notifications(etab_id, date_debut)`
@@ -265,6 +271,7 @@ auto-upgraded, so the refactored library can be beta-tested without disruption.
 - **The flat top-level namespace** (`pyetnic.lire_organisation`, …) — no longer
   documented. Import from `pyetnic.eprom` / `pyetnic.seps` instead.
 
-[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b2...HEAD
+[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.2.0b1...HEAD
+[0.2.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b2...v0.2.0b1
 [0.1.0b2]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b1...v0.1.0b2
 [0.1.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.0.12...v0.1.0b1
