@@ -9,6 +9,27 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+## [0.3.0b1] - 2026-11-24
+
+The EPROM side catches up with SEPS: Formation Organisation v8, the Document 1D
+service, typed errors raised by default, and specs reviewed against the latest manuals.
+
+**Upgrading from 0.2.0b1** (three breaking changes):
+
+1. **EPROM refusals raise.** Readers and writers raise the typed `EtnicBusinessError`
+   subclass of the code instead of returning `None` (`FormationsListeResult(success=False)`
+   for `lister_formations*`, `False` for `supprimer_organisation`). Catch
+   `EtnicDocumentNotAccessibleError` where a document may not be reachable yet (20101,
+   20102, 20103), `EtnicBusinessError` for the rest. While migrating, code that still tests
+   for `None` can run inside `permissive_errors()`, deprecated and removed in 1.0.
+2. **`approuver_document_1` needs the population**:
+   `approuver_document_1(org_id, Doc1PopulationListSave.from_document(lire_document_1(org_id)))`.
+   A call without it never succeeded (error 20104).
+3. **New endpoints.** Every EPROM service is called on `ws.etnic.be` (`ws-tq.etnic.be` on
+   TQ), port 443, instead of `services-web(.tq).etnic.be:11443`; a firewall that only
+   allowed the old hosts must allow the gateway. Organisation is v8: same functions,
+   `Organisation` gains `BESAeSI`.
+
 ### Added
 
 - **Contract watch for every service** (#31): `tools/refresh_contracts.py` replaces
@@ -43,6 +64,64 @@ that supports `bN` pre-releases).
 - **Error routing per service**: `map_etnic_error_code_to_class(code, service=None)`
   and `signal_business_error(..., service=None)` take the `Config.SERVICES` name of the
   service that answered, for codes whose meaning depends on it.
+- **Every model mirroring an XSD type is checked against it** (`tests/unit/test_models_contract.py`):
+  element names, simple types and optional elements, for the EPROM and SEPS models, with the
+  deliberate differences listed.
+
+### Changed
+
+- **EPROM services raise on a server refusal by default** (#35, breaking):
+  `Config.RAISE_ON_ERROR` is true by default, as SEPS always behaved. A refusal raises the
+  typed `EtnicBusinessError` subclass of its code, `lister_formations*` raise instead of
+  returning `FormationsListeResult(success=False)` (a transport failure there raises
+  `EtnicTransportError`), and `supprimer_organisation` raises instead of returning `False`.
+  The pre-0.3.0 behaviour stays available, **deprecated**, inside `permissive_errors()` (new,
+  exported from `pyetnic` and `pyetnic.eprom`) or with `Config.RAISE_ON_ERROR = False`; both
+  emit a `DeprecationWarning` and go in 1.0. `strict_errors()` keeps working.
+- **`approuver_document_1` requires `population_liste`** (#34, breaking): the server
+  compares it with the stored population and refused every call without it (error
+  20104). A call without it now raises `TypeError` before reaching the server. Pass
+  `Doc1PopulationListSave.from_document(lire_document_1(org_id))`.
+- **Formation Organisation v8 replaces v7** (#32): the embedded contract, endpoint and
+  binding are v8's; v7 is no longer embedded. The functions keep their signatures and
+  `Organisation` gains one optional field, last.
+- **Every EPROM service is called on the ETNIC gateway** (#32), at the address the SOA
+  catalogue announces: `ws.etnic.be` / `ws-tq.etnic.be` instead of
+  `services-web(.tq).etnic.be:11443` for Formations Liste and Documents 1 to 3. Reads
+  checked on TQ and in production on 2026-11-24.
+- **TLS certificates are verified on TQ too** (#32): `Config.get_verify_ssl()` is always
+  true; the gateway's certificates chain to a public CA in both environments.
+- **`modifier_organisation` documents what the server does with an omitted field**: it
+  resets it (a flag to `False`) instead of keeping it (tested on TQ, 2026-11-24). Send the
+  organisation as read, changes applied.
+- **EPROM specs 01 to 06 reviewed** (#36, docs): every statement is sourced (manual and
+  page, contract, dated production or TQ observation, or marked unknown); spec 02 follows
+  Organisation v8 (manual rev 6.0), spec 04 the Périodes manual rev 1.4 (intervention type
+  `G` "BES" with sub-type `AI`, `J` with `OA`, error 20041), specs 01, 03, 05 and 06 their
+  current revision; the manuals' contradictions with the contracts are listed; the
+  "Mapping pyetnic" sections describe the current API; regulatory wording is removed. The
+  EPROM part of `specs/00_REGISTRE.md` follows (error routing table, gateway endpoints,
+  SOAP 1.1 only).
+- **Integration tests always run on TQ** (`tests/integration/conftest.py`), whatever
+  `.env` says: several of them write.
+- **The version has a single source** (#37): `pyproject.toml` reads `pyetnic.__version__`
+  (`dynamic`), and the publish workflow checks the tag against it.
+- **Packaging** (#37): `CHANGELOG.md` is in the sdist, which carries only the contract files
+  of `pyetnic/resources` (a stray local file can no longer slip in) and no bytecode; the
+  GitHub Actions run on Node 24 (`actions/checkout@v7`, `actions/setup-python@v7`).
+
+### Deprecated
+
+- **The permissive error mode** (#35): `permissive_errors()` and
+  `Config.RAISE_ON_ERROR = False`, which give back the pre-0.3.0 `None` contract, emit a
+  `DeprecationWarning` and will be removed in 1.0.
+
+### Removed
+
+- **The Formation Organisation v7 contract** (#32): v8 replaces it; the v7 manual stays in
+  `documentation/` for the specs' history.
+- **`tools/refresh_seps_contracts.py`** (#31): replaced by `tools/refresh_contracts.py`,
+  which covers every service.
 
 ### Fixed
 
@@ -70,51 +149,6 @@ that supports `bN` pre-releases).
   return an empty list instead of raising `AttributeError`.
 - **Error 20041 from Document 2** (an intervention type without the sub-type it imposes,
   new in the Périodes manual rev 1.4) raises `EtnicValidationError`.
-- **Every model mirroring an XSD type is checked against it** (`tests/unit/test_models_contract.py`):
-  element names, simple types and optional elements, for the EPROM and SEPS models, with the
-  deliberate differences listed.
-
-### Changed
-
-- **The version has a single source** (#37): `pyproject.toml` reads `pyetnic.__version__`
-  (`dynamic`), and the publish workflow checks the tag against it.
-- **Packaging** (#37): `CHANGELOG.md` is in the sdist, which carries only the contract files
-  of `pyetnic/resources` (a stray local file can no longer slip in) and no bytecode; the
-  GitHub Actions run on Node 24 (`actions/checkout@v7`, `actions/setup-python@v7`).
-- **EPROM specs 01 to 06 reviewed** (#36, docs): every statement is sourced (manual and
-  page, contract, dated production or TQ observation, or marked unknown); spec 02 follows
-  Organisation v8 (manual rev 6.0), spec 04 the Périodes manual rev 1.4 (intervention type
-  `G` "BES" with sub-type `AI`, `J` with `OA`, error 20041), specs 01, 03, 05 and 06 their
-  current revision; the manuals' contradictions with the contracts are listed; the
-  "Mapping pyetnic" sections describe the current API; regulatory wording is removed. The
-  EPROM part of `specs/00_REGISTRE.md` follows (error routing table, gateway endpoints,
-  SOAP 1.1 only).
-- **EPROM services raise on a server refusal by default** (#35, breaking):
-  `Config.RAISE_ON_ERROR` is true by default, as SEPS always behaved. A refusal raises the
-  typed `EtnicBusinessError` subclass of its code, `lister_formations*` raise instead of
-  returning `FormationsListeResult(success=False)` (a transport failure there raises
-  `EtnicTransportError`), and `supprimer_organisation` raises instead of returning `False`.
-  The pre-0.3.0 behaviour stays available, **deprecated**, inside `permissive_errors()` (new,
-  exported from `pyetnic` and `pyetnic.eprom`) or with `Config.RAISE_ON_ERROR = False`; both
-  emit a `DeprecationWarning` and go in 1.0. `strict_errors()` keeps working.
-- **`approuver_document_1` requires `population_liste`** (#34, breaking): the server
-  compares it with the stored population and refused every call without it (error
-  20104). A call without it now raises `TypeError` before reaching the server. Pass
-  `Doc1PopulationListSave.from_document(lire_document_1(org_id))`.
-- **Formation Organisation v8 replaces v7** (#32): the embedded contract, endpoint and
-  binding are v8's; v7 is no longer embedded. The functions keep their signatures and
-  `Organisation` gains one optional field, last.
-- **Every EPROM service is called on the ETNIC gateway** (#32), at the address the SOA
-  catalogue announces: `ws.etnic.be` / `ws-tq.etnic.be` instead of
-  `services-web(.tq).etnic.be:11443` for Formations Liste and Documents 1 to 3. Reads
-  checked on TQ and in production on 2026-11-24.
-- **TLS certificates are verified on TQ too** (#32): `Config.get_verify_ssl()` is always
-  true; the gateway's certificates chain to a public CA in both environments.
-- **`modifier_organisation` documents what the server does with an omitted field**: it
-  resets it (a flag to `False`) instead of keeping it (tested on TQ, 2026-11-24). Send the
-  organisation as read, changes applied.
-- **Integration tests always run on TQ** (`tests/integration/conftest.py`), whatever
-  `.env` says: several of them write.
 
 ## [0.2.0b1] - 2026-11-24
 
@@ -378,7 +412,8 @@ auto-upgraded, so the refactored library can be beta-tested without disruption.
 - **The flat top-level namespace** (`pyetnic.lire_organisation`, …) — no longer
   documented. Import from `pyetnic.eprom` / `pyetnic.seps` instead.
 
-[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.2.0b1...HEAD
+[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b1...HEAD
+[0.3.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.2.0b1...v0.3.0b1
 [0.2.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b2...v0.2.0b1
 [0.1.0b2]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b1...v0.1.0b2
 [0.1.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.0.12...v0.1.0b1
