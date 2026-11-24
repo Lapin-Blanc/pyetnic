@@ -5,6 +5,7 @@ import logging
 import pytest
 
 from pyetnic.config import Config
+from pyetnic.exceptions import EtnicAlreadyApprovedError, EtnicDocumentNotAccessibleError
 from pyetnic.services.document1 import Document1Service
 from pyetnic.services.models import (
     Doc1PopulationLineSave,
@@ -35,9 +36,9 @@ def test_lire_document1_reel():
 
     org_apercu = formations_avec_org[0].organisations[0]
     svc = Document1Service()
-    doc = svc.lire_document_1(org_apercu.id)
-
-    if doc is None:
+    try:
+        doc = svc.lire_document_1(org_apercu.id)
+    except EtnicDocumentNotAccessibleError:
         pytest.skip("Document 1 non accessible pour cette organisation (statut insuffisant ?)")
 
     assert isinstance(doc, FormationDocument1)
@@ -60,8 +61,9 @@ def test_modifier_document1_reel():
 
     org_apercu = formations_avec_org[0].organisations[0]
     svc = Document1Service()
-    doc_original = svc.lire_document_1(org_apercu.id)
-    if doc_original is None:
+    try:
+        doc_original = svc.lire_document_1(org_apercu.id)
+    except EtnicDocumentNotAccessibleError:
         pytest.skip("Document 1 non accessible pour cette organisation (statut insuffisant ?)")
 
     if not (doc_original.populationListe and doc_original.populationListe.population):
@@ -71,19 +73,20 @@ def test_modifier_document1_reel():
     nb_eleve_original = premiere_pop.nbEleveA
     nb_eleve_modifie = nb_eleve_original + 1
 
+    liste_save = Doc1PopulationListSave(
+        population=[
+            Doc1PopulationLineSave(
+                coAnnEtude=premiere_pop.coAnnEtude,
+                nbEleveA=nb_eleve_modifie,
+            )
+        ]
+    )
     try:
-        liste_save = Doc1PopulationListSave(
-            population=[
-                Doc1PopulationLineSave(
-                    coAnnEtude=premiere_pop.coAnnEtude,
-                    nbEleveA=nb_eleve_modifie,
-                )
-            ]
-        )
-        doc_modifie = svc.modifier_document_1(org_apercu.id, population_liste=liste_save)
-        if doc_modifie is None:
-            pytest.skip("Document 1 non modifiable pour cette organisation (statut insuffisant ?)")
+        svc.modifier_document_1(org_apercu.id, population_liste=liste_save)
+    except (EtnicAlreadyApprovedError, EtnicDocumentNotAccessibleError):
+        pytest.skip("Document 1 non modifiable pour cette organisation (déjà approuvé ?)")
 
+    try:
         doc_relu = svc.lire_document_1(org_apercu.id)
         assert doc_relu is not None
         pop_relue = doc_relu.populationListe.population[0]
@@ -99,8 +102,5 @@ def test_modifier_document1_reel():
                 )
             ]
         )
-        doc_restaure = svc.modifier_document_1(org_apercu.id, population_liste=liste_restore)
-        if doc_restaure is None:
-            logger.error(f"Échec de la restauration de nbEleveA à {nb_eleve_original}")
-        else:
-            logger.info(f"Valeur originale restaurée : nbEleveA = {nb_eleve_original}")
+        svc.modifier_document_1(org_apercu.id, population_liste=liste_restore)
+        logger.info("Valeur originale restaurée : nbEleveA = %s", nb_eleve_original)

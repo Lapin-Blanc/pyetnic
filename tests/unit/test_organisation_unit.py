@@ -5,8 +5,10 @@ from datetime import date
 
 import pytest
 
-from pyetnic.services.organisation import OrganisationService
+from pyetnic.error_mode import permissive_errors
+from pyetnic.exceptions import EtnicBusinessError
 from pyetnic.services.models import Organisation, OrganisationId
+from pyetnic.services.organisation import OrganisationService
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +91,10 @@ def test_lire_organisation_mock_reponse_vide(service, monkeypatch):
         lambda *a, **kw: {"body": {"success": True, "response": {}}},
     )
 
-    assert service.lire_organisation(org_id) is None
+    with pytest.raises(EtnicBusinessError):
+        service.lire_organisation(org_id)
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        assert service.lire_organisation(org_id) is None
 
 
 def test_creer_organisation_mock(service, monkeypatch):
@@ -246,7 +251,10 @@ def test_supprimer_organisation_mock_echec(service, monkeypatch):
         lambda *a, **kw: {"body": {"success": False}},
     )
 
-    assert service.supprimer_organisation(org_id) is False
+    with pytest.raises(EtnicBusinessError):
+        service.supprimer_organisation(org_id)
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        assert service.supprimer_organisation(org_id) is False
 
 
 # ---------------------------------------------------------------------------

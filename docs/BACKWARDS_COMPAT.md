@@ -71,18 +71,17 @@ When we want to change a stable symbol, the process is:
 4. **Wait at least one minor version** before removing the old behavior.
 5. **Remove in the next major version** (e.g. deprecated in 0.2.0, removed in 1.0.0).
 
-Example: typed errors. Readers and writers return `None` when the server refuses a call
-(the old behaviour). Callers opt in to typed exceptions, without any signature change:
+Example: typed errors. Until 0.2, readers and writers returned `None` when the server refused
+a call, and callers opted in to typed exceptions with `strict_errors()`. In 0.3.0 the default
+switched to raising (#35), a breaking change announced in the CHANGELOG with its migration
+path. The old behaviour stays available, deprecated, until 1.0:
 
 ```python
-from pyetnic.eprom import strict_errors, lire_organisation
+from pyetnic.eprom import permissive_errors, lire_organisation
 
-with strict_errors():          # or Config.RAISE_ON_ERROR = True
-    org = lire_organisation(org_id)   # raises EtnicBusinessError subclasses
+with permissive_errors():             # DeprecationWarning; or Config.RAISE_ON_ERROR = False
+    org = lire_organisation(org_id)   # None on a refusal, as before 0.3.0
 ```
-
-Callers who do nothing keep the old behaviour until the default switches, which is itself a
-breaking change for a later version.
 
 ---
 

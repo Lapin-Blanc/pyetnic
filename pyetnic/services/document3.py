@@ -90,8 +90,7 @@ class Document3Service:
         """Read Doc 3 (teacher attributions).
 
         Not reachable until "Doc A" (the organisation) and Doc 2 are approved:
-        error 20102, ``None`` by default, ``EtnicDocumentNotAccessibleError``
-        under :func:`strict_errors`.
+        error 20102, ``EtnicDocumentNotAccessibleError``.
 
         A Doc 3 that is reachable but was never written reads as a skeleton:
         one line per branch, ``coNumAttribution`` 1, empty staff number and

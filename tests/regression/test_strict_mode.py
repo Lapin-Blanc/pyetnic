@@ -1,22 +1,21 @@
-"""Regression tests for strict error mode (opt-in raise-on-error).
+"""Regression tests for the error mode of the EPROM services.
 
-Default-mode behavior is covered by the existing regression tests
-(``test_public_api_eprom.py``). This file adds tests for the new opt-in
-strict mode:
-
-- ``Config.RAISE_ON_ERROR`` defaults to ``False``.
-- Setting it to ``True`` (directly or via ``strict_errors()``) makes EPROM
-  services raise typed exceptions instead of returning ``None`` /
-  ``FormationsListeResult(success=False)``.
+- Since 0.3.0 (#35) ``Config.RAISE_ON_ERROR`` defaults to ``True``: EPROM
+  services raise typed exceptions on a server refusal.
+- ``permissive_errors()`` (or ``Config.RAISE_ON_ERROR = False``) restores the
+  pre-0.3.0 contract, ``None`` / ``FormationsListeResult(success=False)``, and
+  warns that it is deprecated.
+- ``strict_errors()`` keeps working and forces raising inside a permissive block.
 - The flag is backed by a ``ContextVar``: each thread / asyncio task sees
   its own value.
 """
 
 import threading
+import warnings
 
 import pytest
 
-from pyetnic import Config, strict_errors
+from pyetnic import Config, permissive_errors, strict_errors
 from pyetnic.eprom import (
     EtnicAlreadyApprovedError,
     EtnicBusinessError,
@@ -34,7 +33,6 @@ from pyetnic.eprom import (
     supprimer_organisation,
 )
 from pyetnic.exceptions import map_etnic_error_code_to_class
-
 
 # ---------------------------------------------------------------------------
 # Common sample
@@ -65,32 +63,58 @@ def _error_response(code: str, description: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Default mode: legacy behavior must be preserved
+# Default mode: raise (since 0.3.0)
 # ---------------------------------------------------------------------------
 
 
-def test_default_mode_raise_on_error_is_false():
-    """The default value of Config.RAISE_ON_ERROR must remain False."""
+def test_default_mode_raise_on_error_is_true():
     Config._reset()
-    assert Config.RAISE_ON_ERROR is False
+    assert Config.RAISE_ON_ERROR is True
 
 
-def test_default_mode_lire_organisation_returns_none(mock_soap_call):
-    """In default mode, an empty response still returns None (legacy)."""
+def test_default_mode_lire_organisation_raises(mock_soap_call):
     mock_soap_call.return_value = _empty_response()
-    assert lire_organisation(SAMPLE_ORG_ID) is None
+    with pytest.raises(EtnicBusinessError):
+        lire_organisation(SAMPLE_ORG_ID)
 
 
-def test_default_mode_error_response_returns_none(mock_soap_call):
-    """In default mode, an error response still returns None (legacy)."""
+def test_default_mode_error_response_raises_typed(mock_soap_call):
     mock_soap_call.return_value = _error_response("20102", "Doc non accessible")
-    assert lire_document_3(SAMPLE_ORG_ID) is None
+    with pytest.raises(EtnicDocumentNotAccessibleError):
+        lire_document_3(SAMPLE_ORG_ID)
 
 
-def test_default_mode_supprimer_returns_false_on_failure(mock_soap_call):
-    """In default mode, supprimer_organisation returns False on failure."""
+def test_default_mode_supprimer_raises_on_failure(mock_soap_call):
     mock_soap_call.return_value = _error_response("00009", "Organisation inconnue")
-    assert supprimer_organisation(SAMPLE_ORG_ID) is False
+    with pytest.raises(EtnicNotFoundError):
+        supprimer_organisation(SAMPLE_ORG_ID)
+
+
+# ---------------------------------------------------------------------------
+# Permissive mode (deprecated): the pre-0.3.0 contract
+# ---------------------------------------------------------------------------
+
+
+def test_permissive_mode_returns_none_and_warns(mock_soap_call):
+    mock_soap_call.return_value = _error_response("20102", "Doc non accessible")
+    with pytest.warns(DeprecationWarning, match="removed in 1.0"):
+        with permissive_errors():
+            assert lire_document_3(SAMPLE_ORG_ID) is None
+            mock_soap_call.return_value = _empty_response()
+            assert lire_organisation(SAMPLE_ORG_ID) is None
+            mock_soap_call.return_value = _error_response("00009", "Organisation inconnue")
+            assert supprimer_organisation(SAMPLE_ORG_ID) is False
+    assert Config.RAISE_ON_ERROR is True
+
+
+def test_permissive_mode_via_config_flag_warns(mock_soap_call):
+    mock_soap_call.return_value = _empty_response()
+    try:
+        with pytest.warns(DeprecationWarning):
+            Config.RAISE_ON_ERROR = False
+        assert lire_organisation(SAMPLE_ORG_ID) is None
+    finally:
+        Config._reset()
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +130,7 @@ def test_strict_mode_via_config_flag(mock_soap_call):
         with pytest.raises(EtnicBusinessError):
             lire_organisation(SAMPLE_ORG_ID)
     finally:
-        Config.RAISE_ON_ERROR = False
+        Config._reset()
 
 
 # ---------------------------------------------------------------------------
@@ -122,39 +146,36 @@ def test_strict_mode_via_context_manager(mock_soap_call):
             lire_organisation(SAMPLE_ORG_ID)
 
 
-def test_strict_mode_context_manager_restores_previous_value(mock_soap_call):
-    """After exiting the context, the flag returns to its previous value."""
+def test_strict_mode_inside_permissive_block_restores_it(mock_soap_call):
+    """strict_errors() forces raising, then gives the permissive mode back."""
     mock_soap_call.return_value = _empty_response()
 
-    assert Config.RAISE_ON_ERROR is False
-    with strict_errors():
-        assert Config.RAISE_ON_ERROR is True
-    assert Config.RAISE_ON_ERROR is False
-
-    # And legacy behavior resumes outside the block
-    assert lire_organisation(SAMPLE_ORG_ID) is None
-
-
-def test_strict_mode_context_manager_restores_on_exception(mock_soap_call):
-    """The flag is restored even if an exception is raised inside."""
-    mock_soap_call.return_value = _empty_response()
-
-    with pytest.raises(EtnicBusinessError):
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        assert Config.RAISE_ON_ERROR is False
         with strict_errors():
-            lire_organisation(SAMPLE_ORG_ID)
+            assert Config.RAISE_ON_ERROR is True
+            with pytest.raises(EtnicBusinessError):
+                lire_organisation(SAMPLE_ORG_ID)
+        assert Config.RAISE_ON_ERROR is False
+        assert lire_organisation(SAMPLE_ORG_ID) is None
+    assert Config.RAISE_ON_ERROR is True
 
-    assert Config.RAISE_ON_ERROR is False
+
+def test_permissive_mode_restored_on_exception(mock_soap_call):
+    """The flag is restored even if an exception leaves the block."""
+    with pytest.warns(DeprecationWarning), pytest.raises(RuntimeError):
+        with permissive_errors():
+            raise RuntimeError("boom")
+    assert Config.RAISE_ON_ERROR is True
 
 
 def test_strict_mode_context_manager_nested_preserves_outer():
-    """Nesting strict_errors() restores the outer value, not False."""
-    Config.RAISE_ON_ERROR = True
-    try:
+    """Nesting strict_errors() keeps the outer value."""
+    with strict_errors():
         with strict_errors():
             assert Config.RAISE_ON_ERROR is True
         assert Config.RAISE_ON_ERROR is True
-    finally:
-        Config.RAISE_ON_ERROR = False
+    assert Config.RAISE_ON_ERROR is True
 
 
 # ---------------------------------------------------------------------------
@@ -360,8 +381,8 @@ def test_strict_mode_lister_formations_raises_on_error(mock_soap_call):
             lister_formations()
 
 
-def test_default_mode_lister_formations_returns_failure_result(mock_soap_call):
-    """Default mode keeps the FormationsListeResult(success=False) contract."""
+def test_permissive_mode_lister_formations_returns_failure_result(mock_soap_call):
+    """Permissive mode keeps the FormationsListeResult(success=False) contract."""
     mock_soap_call.return_value = {
         "body": {
             "success": False,
@@ -369,9 +390,22 @@ def test_default_mode_lister_formations_returns_failure_result(mock_soap_call):
             "messages": {"error": [{"code": "20102", "description": "refus"}]},
         }
     }
-    result = lister_formations()
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        result = lister_formations()
     assert result.success is False
     assert result.formations == []
+
+
+def test_default_mode_lister_formations_raises(mock_soap_call):
+    mock_soap_call.return_value = {
+        "body": {
+            "success": False,
+            "response": None,
+            "messages": {"error": [{"code": "20102", "description": "refus"}]},
+        }
+    }
+    with pytest.raises(EtnicDocumentNotAccessibleError):
+        lister_formations()
 
 
 # ---------------------------------------------------------------------------
@@ -399,13 +433,15 @@ def test_context_var_is_isolated_across_threads():
     a_done = threading.Event()
 
     def thread_a():
-        Config.RAISE_ON_ERROR = True
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            Config.RAISE_ON_ERROR = False
         results["a"] = Config.RAISE_ON_ERROR
         a_done.set()
 
     def thread_b():
         a_done.wait(timeout=2.0)
-        # Should see the default (False), not thread A's setting.
+        # Should see the default (True), not thread A's setting.
         results["b"] = Config.RAISE_ON_ERROR
         start_b.set()
 
@@ -416,5 +452,5 @@ def test_context_var_is_isolated_across_threads():
     t_a.join(timeout=2.0)
     t_b.join(timeout=2.0)
 
-    assert results["a"] is True
-    assert results["b"] is False
+    assert results["a"] is False
+    assert results["b"] is True

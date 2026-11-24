@@ -35,11 +35,11 @@ class FormationsListeService:
     ) -> FormationsListeResult:
         """List the formations the establishment may organise in a school year.
 
-        In the default permissive mode, a refused or failed call returns
-        ``FormationsListeResult(success=False, formations=[])``: iterating it
-        looks exactly like an empty catalogue. Check ``success`` (and
-        ``messages``), or call it under :func:`strict_errors` to get an
-        exception instead.
+        A refused call raises a typed ``EtnicBusinessError``, a failed one an
+        ``EtnicTransportError``. In the deprecated permissive mode
+        (:func:`permissive_errors`) both return
+        ``FormationsListeResult(success=False, formations=[])``, which iterates
+        like an empty catalogue: check ``success`` there.
         """
         try:
             request_data = {
@@ -63,7 +63,7 @@ class FormationsListeService:
             else:
                 if Config.RAISE_ON_ERROR:
                     code, description, request_id = extract_error_info(result)
-                    cls = map_etnic_error_code_to_class(code)
+                    cls = map_etnic_error_code_to_class(code, self.client_manager.service_name)
                     raise cls(
                         f"ListerFormationsOrganisables failed (code={code}, description={description})",
                         code=code,
@@ -86,11 +86,11 @@ class FormationsListeService:
         """List the organised formations with their organisations and statuses.
 
         The only service that returns the four document statuses of an
-        organisation. In the default permissive mode, a refused or failed call
-        returns ``FormationsListeResult(success=False, formations=[])``:
-        iterating it looks exactly like a year without any organisation. Check
-        ``success`` (and ``messages``), or call it under :func:`strict_errors`
-        to get an exception instead.
+        organisation. A refused call raises a typed ``EtnicBusinessError``, a
+        failed one an ``EtnicTransportError``. In the deprecated permissive
+        mode (:func:`permissive_errors`) both return
+        ``FormationsListeResult(success=False, formations=[])``, which iterates
+        like a year without any organisation: check ``success`` there.
         """
         logger.info("Appel de lister_formations")
         if annee_scolaire is None:
@@ -145,7 +145,7 @@ class FormationsListeService:
             else:
                 if Config.RAISE_ON_ERROR:
                     code, description, request_id = extract_error_info(result)
-                    cls = map_etnic_error_code_to_class(code)
+                    cls = map_etnic_error_code_to_class(code, self.client_manager.service_name)
                     raise cls(
                         f"ListerFormations failed (code={code}, description={description})",
                         code=code,

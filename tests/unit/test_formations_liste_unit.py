@@ -2,6 +2,7 @@
 
 import pytest
 
+from pyetnic.error_mode import permissive_errors
 from pyetnic.services.formations_liste import FormationsListeService
 from pyetnic.soap_client import SoapError
 
@@ -15,7 +16,8 @@ def test_lister_formations_wraps_soap_error(monkeypatch):
 
     monkeypatch.setattr(svc.client_manager, "call_service", mock_call_service)
 
-    result = svc.lister_formations()
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        result = svc.lister_formations()
 
     assert result.success is False
     assert result.formations == []
@@ -31,7 +33,8 @@ def test_lister_formations_organisables_wraps_soap_error(monkeypatch):
 
     monkeypatch.setattr(svc.client_manager, "call_service", mock_call_service)
 
-    result = svc.lister_formations_organisables()
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        result = svc.lister_formations_organisables()
 
     assert result.success is False
     assert result.formations == []
@@ -77,7 +80,8 @@ def test_lister_formations_flattens_messages_block(monkeypatch):
     }
     monkeypatch.setattr(svc.client_manager, "call_service", lambda *a, **kw: mock_response)
 
-    result = svc.lister_formations()
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        result = svc.lister_formations()
 
     assert result.success is False
     assert result.messages == ["00009: Aucun enregistrement", "12345: Attention"]
@@ -95,7 +99,8 @@ def test_lister_formations_organisables_flattens_messages_block(monkeypatch):
     }
     monkeypatch.setattr(svc.client_manager, "call_service", lambda *a, **kw: mock_response)
 
-    result = svc.lister_formations_organisables()
+    with pytest.warns(DeprecationWarning), permissive_errors():
+        result = svc.lister_formations_organisables()
 
     assert result.success is False
     assert result.messages == ["30001: Établissement incorrect"]
@@ -125,3 +130,25 @@ def test_lister_formations_mock_response(monkeypatch):
     assert result.formations[0].numAdmFormation == 1
     assert result.formations[0].libelleFormation == "Test Formation"
     assert result.formations[0].codeFormation == "TEST001"
+
+
+def test_lister_formations_raises_by_default_on_transport_error(monkeypatch):
+    """Since 0.3.0 a transport failure propagates as EtnicTransportError (SoapError)."""
+    svc = FormationsListeService()
+
+    def mock_call_service(*args, **kwargs):
+        raise SoapError("Test transport error")
+
+    monkeypatch.setattr(svc.client_manager, "call_service", mock_call_service)
+    with pytest.raises(SoapError, match="Test transport error"):
+        svc.lister_formations()
+
+
+def test_lister_formations_raises_typed_by_default_on_refusal(monkeypatch):
+    from pyetnic.exceptions import EtnicNotFoundError
+
+    svc = FormationsListeService()
+    response = {"body": {"success": False, "messages": {"error": [{"code": "00009", "description": "Aucun"}]}}}
+    monkeypatch.setattr(svc.client_manager, "call_service", lambda *a, **kw: response)
+    with pytest.raises(EtnicNotFoundError):
+        svc.lister_formations()

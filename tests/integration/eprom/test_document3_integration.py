@@ -5,6 +5,7 @@ import logging
 import pytest
 
 from pyetnic.config import Config
+from pyetnic.exceptions import EtnicDocumentNotAccessibleError
 from pyetnic.services import lister_formations
 from pyetnic.services.document3 import Document3Service
 from pyetnic.services.models import (
@@ -37,9 +38,10 @@ def _find_accessible_doc3():
         formations = lister_formations(annee_scolaire=annee, etab_id=_etab_id())
         for f in formations.formations:
             for o in f.organisations:
-                doc = svc.lire_document_3(o.id)
-                if doc is None:
-                    continue
+                try:
+                    doc = svc.lire_document_3(o.id)
+                except EtnicDocumentNotAccessibleError:
+                    continue  # 20102: Doc A and Doc 2 not approved yet
                 for act in (doc.activiteListe.activite if doc.activiteListe else []):
                     enseignants = act.enseignantListe.enseignant if act.enseignantListe else []
                     if any(e.noMatEns for e in enseignants):

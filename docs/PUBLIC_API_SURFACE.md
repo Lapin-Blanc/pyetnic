@@ -269,7 +269,8 @@ The four SEPS writers return these. A refusal raises a `SepsEtnicError` instead:
 | `Config.SEPS_PFX_PASSWORD` | Attribute |
 | `Config.load_from_dotenv()` | Method |
 | `Config.validate()` | Method |
-| `Config.get_verify_ssl()` | Method |
+| `Config.get_verify_ssl()` | Method (always true since 0.3.0) |
+| `Config.RAISE_ON_ERROR` | Attribute, a `ContextVar`: true by default since 0.3.0; setting it false is deprecated (removed in 1.0) |
 
 ### Stable — Environment variables
 
@@ -296,6 +297,8 @@ The four SEPS writers return these. A refusal raises a `SepsEtnicError` instead:
 | `pyetnic.seps` | Namespace |
 | `pyetnic.Config` | Re-exported |
 | `pyetnic.__version__` | Version string |
+| `strict_errors` | Context manager, also in `pyetnic.eprom`: raise inside the block (the default since 0.3.0) |
+| `permissive_errors` | Context manager, also in `pyetnic.eprom`, new in 0.3.0 and **deprecated**: `None` instead of an exception inside the block; removed in 1.0 |
 
 ---
 

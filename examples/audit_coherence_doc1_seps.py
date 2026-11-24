@@ -84,8 +84,7 @@ def _doc1_headcount(org_id: object) -> int | None:
     (the organisation is then skipped rather than reported as a false 0).
     """
     try:
-        with eprom.strict_errors():
-            doc1 = eprom.lire_document_1(org_id)
+        doc1 = eprom.lire_document_1(org_id)
     except eprom.EtnicError:
         return None
     if not doc1 or not doc1.populationListe or not doc1.populationListe.population:

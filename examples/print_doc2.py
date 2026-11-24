@@ -1,7 +1,7 @@
 import logging
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
-from pyetnic.eprom import OrganisationId, lire_document_2
+from pyetnic.eprom import EtnicDocumentNotAccessibleError, OrganisationId, lire_document_2
 from pyetnic.config import Config
 from datetime import datetime, timedelta
 
@@ -11,7 +11,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 def generate_excel(orga_id):
-    doc2 = lire_document_2(orga_id)
+    try:
+        doc2 = lire_document_2(orga_id)
+    except EtnicDocumentNotAccessibleError as exc:
+        logger.warning("Document 2 pas encore accessible : %s", exc)
+        return
     
     if not doc2 or not doc2.activiteEnseignementDetail or not doc2.activiteEnseignementDetail.activiteEnseignementListe:
         logger.warning("Aucune activité d'enseignement trouvée dans le document 2")

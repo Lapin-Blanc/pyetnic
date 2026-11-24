@@ -11,7 +11,7 @@ from ..exceptions import (
     EtnicAlreadyApprovedError,
     EtnicConcurrencyError,
 )
-from ..error_mode import strict_errors
+from ..error_mode import permissive_errors, strict_errors
 from ..soap_client import SoapError  # legacy alias for EtnicTransportError
 
 # Fonctions de service — singletons gérés dans services/
@@ -119,6 +119,7 @@ __all__ = [
     "EtnicConcurrencyError",
     "SoapError",
     "strict_errors",
+    "permissive_errors",
     # Fonctions
     "lister_formations",
     "lister_formations_organisables",

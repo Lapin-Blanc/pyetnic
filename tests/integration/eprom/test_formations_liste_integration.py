@@ -6,6 +6,7 @@ from datetime import date
 import pytest
 
 from pyetnic.config import Config
+from pyetnic.exceptions import EtnicBusinessError, EtnicValidationError
 from pyetnic.services.formations_liste import FormationsListeService
 from pyetnic.services.models import Formation, OrganisationApercu
 
@@ -78,9 +79,9 @@ def test_validation_donnees_formations(formations_liste_service):
 
 
 def test_lister_formations_cas_limites(formations_liste_service):
-    result_future = formations_liste_service.lister_formations(annee_scolaire="2030-2031")
-    assert result_future.success is False
-    assert len(result_future.formations) == 0
+    # A school year the server does not know: 30007 "Paramètre anneeScolaire incorrect" (TQ, 2026-11-24)
+    with pytest.raises(EtnicValidationError):
+        formations_liste_service.lister_formations(annee_scolaire="2030-2031")
 
-    result_invalid_etab = formations_liste_service.lister_formations(etab_id=99999)
-    assert result_invalid_etab.success is False
+    with pytest.raises(EtnicBusinessError):
+        formations_liste_service.lister_formations(etab_id=99999)

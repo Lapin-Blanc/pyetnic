@@ -5,6 +5,7 @@ import logging
 import pytest
 
 from pyetnic.config import Config
+from pyetnic.exceptions import EtnicAlreadyApprovedError, EtnicDocumentNotAccessibleError
 from pyetnic.services.document2 import Document2Service
 from pyetnic.services.models import (
     Doc2ActiviteEnseignementLineSave,
@@ -35,9 +36,9 @@ def test_lire_document2_reel():
 
     org_apercu = formations_avec_org[0].organisations[0]
     svc = Document2Service()
-    doc = svc.lire_document_2(org_apercu.id)
-
-    if doc is None:
+    try:
+        doc = svc.lire_document_2(org_apercu.id)
+    except EtnicDocumentNotAccessibleError:
         pytest.skip("Document 2 non accessible pour cette organisation (statut insuffisant ?)")
 
     assert isinstance(doc, FormationDocument2)
@@ -60,8 +61,9 @@ def test_modifier_document2_reel():
 
     org_apercu = formations_avec_org[0].organisations[0]
     svc = Document2Service()
-    doc_original = svc.lire_document_2(org_apercu.id)
-    if doc_original is None:
+    try:
+        doc_original = svc.lire_document_2(org_apercu.id)
+    except EtnicDocumentNotAccessibleError:
         pytest.skip("Document 2 non accessible pour cette organisation (statut insuffisant ?)")
 
     if not (
@@ -75,19 +77,20 @@ def test_modifier_document2_reel():
     nb_eleve_original = premiere_activite.nbEleveC1
     nb_eleve_modifie = nb_eleve_original + 1
 
+    liste_save = Doc2ActiviteEnseignementListSave(
+        activiteEnseignement=[
+            Doc2ActiviteEnseignementLineSave(
+                coNumBranche=premiere_activite.coNumBranche,
+                nbEleveC1=nb_eleve_modifie,
+            )
+        ]
+    )
     try:
-        liste_save = Doc2ActiviteEnseignementListSave(
-            activiteEnseignement=[
-                Doc2ActiviteEnseignementLineSave(
-                    coNumBranche=premiere_activite.coNumBranche,
-                    nbEleveC1=nb_eleve_modifie,
-                )
-            ]
-        )
-        doc_modifie = svc.modifier_document_2(org_apercu.id, activite_enseignement_liste=liste_save)
-        if doc_modifie is None:
-            pytest.skip("Document 2 non modifiable pour cette organisation (statut insuffisant ?)")
+        svc.modifier_document_2(org_apercu.id, activite_enseignement_liste=liste_save)
+    except (EtnicAlreadyApprovedError, EtnicDocumentNotAccessibleError):
+        pytest.skip("Document 2 non modifiable pour cette organisation (déjà approuvé ?)")
 
+    try:
         doc_relu = svc.lire_document_2(org_apercu.id)
         assert doc_relu is not None
         ligne_relue = doc_relu.activiteEnseignementDetail.activiteEnseignementListe.activiteEnseignement[0]
@@ -103,8 +106,5 @@ def test_modifier_document2_reel():
                 )
             ]
         )
-        doc_restaure = svc.modifier_document_2(org_apercu.id, activite_enseignement_liste=liste_restore)
-        if doc_restaure is None:
-            logger.error(f"Échec de la restauration de nbEleveC1 à {nb_eleve_original}")
-        else:
-            logger.info(f"Valeur originale restaurée : nbEleveC1 = {nb_eleve_original}")
+        svc.modifier_document_2(org_apercu.id, activite_enseignement_liste=liste_restore)
+        logger.info("Valeur originale restaurée : nbEleveC1 = %s", nb_eleve_original)
