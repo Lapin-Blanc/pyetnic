@@ -35,6 +35,7 @@ SERVICES = {
     "SEPS_Enregistrer_Inscription_2.1": "enregistrerInscription",
     "SEPS_Recherche_Etudiants_2.1": "rechercheEtudiants",
     "SEPS_Recherche_Inscriptions_2.1": "rechercheInscriptions",
+    "SEPS_Notifications_1.0.8": "notifications",
 }
 
 SCHEMA_LOCATION = re.compile(rb'schemaLocation="([^"]+)"')
@@ -128,7 +129,8 @@ def refresh(env: str, check: bool) -> bool:
         for document in live.values():
             path = by_namespace[document.namespace]
             new = localise(document, live, by_namespace, folder, path)
-            old = path.read_bytes()
+            # Compare without line endings: git may check the files out as CRLF.
+            old = path.read_bytes().replace(b"\r\n", b"\n")
             if new == old:
                 print(f"  unchanged  {path.relative_to(folder).as_posix()}")
                 continue

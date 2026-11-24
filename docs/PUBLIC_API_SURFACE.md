@@ -196,6 +196,14 @@ The following functions are **exported but not in production use**. They may be 
 | `enregistrer_inscription` | Never used in production. |
 | `modifier_inscription` | Never used in production. |
 
+### Construction — Notifications (#23)
+
+| Symbol | Notes |
+|---|---|
+| `lire_notifications` | `lireNotifications`; X509 like the other SEPS services |
+| `SepsNotification` | `id`, `cfNum`, `date`, `code`, `description` (absent for code 08) |
+| `CodeNotification` | 02, 04, 05, 06, 07, 08 (manual 2.3; the contract only declares two digits) |
+
 ### Construction — Dataclasses (write)
 
 | Symbol | Notes |
@@ -219,6 +227,12 @@ The four SEPS writers return these. A refusal raises a `SepsEtnicError` instead:
 | `EnregistrerEtudiantResult` | `etudiant`, `bis_cree`, `cree` (201), `fusionne` (200) |
 | `ModifierEtudiantResult` | `etudiant` |
 | `InscriptionResult` | `inscription`, `plus_de_4_ue` (30051); returned by `enregistrer_inscription` and `modifier_inscription` |
+
+### Construction - Dataclasses (inscription read, #22)
+
+| Symbol | Notes |
+|---|---|
+| `SepsAudit` | `Inscription.audit`: creation and modification date and user kept by the server. Read in production (2026-11-24), no production caller yet |
 
 ---
 

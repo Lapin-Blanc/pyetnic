@@ -1,0 +1,27 @@
+<!-- Project: be.etnic.esb.resources:technical:1.5.6 --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://etnic.be/types/technical/ResponseStatus/v3" version="3.0" xmlns:tns="http://etnic.be/types/technical/ResponseStatus/v3" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:element name="success" type="xsd:boolean"/>
+    <xsd:element name="messages">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element maxOccurs="unbounded" minOccurs="0" name="error" type="tns:MessageType"/>
+                <xsd:element maxOccurs="unbounded" minOccurs="0" name="warning" type="tns:MessageType"/>
+                <xsd:element maxOccurs="unbounded" minOccurs="0" name="info" type="tns:MessageType"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="MessageType">
+        <xsd:sequence>
+            <xsd:element name="code">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:maxLength value="10"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element minOccurs="0" name="description" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="zone" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

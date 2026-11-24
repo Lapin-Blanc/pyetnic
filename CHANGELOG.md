@@ -11,6 +11,21 @@ that supports `bN` pre-releases).
 
 ### Added
 
+- **SEPS Notifications service** (#23): `pyetnic.seps.lire_notifications(etab_id, date_debut)`
+  returns `SepsNotification` (`id`, `cfNum`, `date`, `code`, `description`), the identity
+  changes of an establishment's students since a date; `CodeNotification` names the codes
+  (02, 04, 05, 06, 07 and 08, new in manual 2.3). Its live contract is embedded and refreshed
+  by `tools/refresh_seps_contracts.py`. Authentication is X509: production refuses the
+  UsernameToken the catalogue announces (2026-11-24).
+- **SEPS models follow the live production contract** (#22). Read: `Inscription.audit`
+  (`SepsAudit`: `dateCreation`, `utilisateurCreation`, `dateModification`,
+  `utilisateurModification`), `Etudiant.bisCreated`, `SepsSpecificite.regulier3`, `montant`
+  on `SepsDroitInscription` and `SepsDroitInscriptionSpecifique`, and on `SepsSanction`
+  `pourcentageAttribue`, `codeSectionFlag`, `codeSection`, `point`, `ajournement1Session`.
+  Write: `SepsSpecificiteSave.regulier3` (production `enregistrerInscription` only),
+  `InscriptionInputSave.fse`, and the same fee and sanction fields. Enums:
+  `CodeAdmission.AUCUN`, `ValorisationAcquis.C50`, `MotifExemptionSpec.C50`; every SEPS enum
+  is now checked against the embedded XSD.
 - **SEPS write results** (#21), exported from `pyetnic.seps`: `SepsMessage`,
   `SepsEcritureResult`, `EnregistrerEtudiantResult` (`cree` for 201, `fusionne` for 200,
   `bis_cree`), `ModifierEtudiantResult`, `InscriptionResult` (`plus_de_4_ue` for 30051).
@@ -27,6 +42,7 @@ that supports `bN` pre-releases).
 
 ### Changed
 
+- **`SepsSanction.codeSanction` is optional** (#22), as in the live contract.
 - **SEPS specs rebuilt from the June 2026 manuals, the live contracts and production
   facts** (#24, docs only): specs 09 to 15 and the SEPS part of `specs/00_REGISTRE.md`
   now follow the user manuals Enregistrer Étudiants 2.3, Enregistrer and Recherche

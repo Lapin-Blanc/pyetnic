@@ -17,6 +17,7 @@ from .document3 import Document3Service
 from .seps import RechercheEtudiantsService
 from .enregistrer_etudiant import EnregistrerEtudiantService
 from .inscriptions import InscriptionsService
+from .notifications import NotificationsService
 from ..nomenclatures import TYPES_INTERVENTION_EXTERIEURE
 
 # Importation et exposition des fonctions pour la liste des formations
@@ -72,6 +73,9 @@ rechercher_inscriptions = inscriptions_service.rechercher_inscriptions
 enregistrer_inscription = inscriptions_service.enregistrer_inscription
 modifier_inscription = inscriptions_service.modifier_inscription
 
+notifications_service = NotificationsService()
+lire_notifications = notifications_service.lire_notifications
+
 __all__ = [
     'FormationsListeService',
     'OrganisationService',
@@ -102,5 +106,6 @@ __all__ = [
     'rechercher_inscriptions',
     'enregistrer_inscription',
     'modifier_inscription',
+    'lire_notifications',
     'TYPES_INTERVENTION_EXTERIEURE',
 ]

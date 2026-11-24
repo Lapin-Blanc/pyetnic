@@ -1,0 +1,34 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://ws.etnic.be/seps/notifications/messages/v1" version="1.0" xmlns:ext="http://etnic.be/types/technical/external/v1" xmlns:noti="http://enseignement.cfwb.be/types/seps/notification/v1" xmlns:tns="http://ws.etnic.be/seps/notifications/messages/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:import namespace="http://enseignement.cfwb.be/types/seps/notification/v1" schemaLocation="notification_v1.xsd"/>
+	<xs:import namespace="http://etnic.be/types/technical/external/v1" schemaLocation="external_v1.xsd"/>
+	
+	
+	<xs:element name="lireNotifications" type="tns:LireNotificationsRequeteType"/>
+	<xs:element name="lireNotificationsReponse" type="tns:LireNotificationsReponseType"/>
+
+	<xs:complexType name="LireNotificationsRequeteType">
+		<xs:sequence>
+			<xs:element name="etabId" type="xs:string"/>
+			<xs:element name="dateDebut" type="xs:date"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="LireNotificationsReponseType">
+		<xs:complexContent>
+			<xs:extension base="ext:AbstractExternalResponseType">
+				<xs:sequence>
+					<xs:element minOccurs="0" name="response">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element maxOccurs="unbounded" minOccurs="0" name="notification" type="noti:NotificationType"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+
+</xs:schema>

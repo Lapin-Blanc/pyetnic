@@ -76,7 +76,7 @@ class TestCodeAdmission:
 
     def test_xsd_values_present(self):
         values = {m.value for m in CodeAdmission}
-        assert values == {"REUSSITE", "TITREBEL", "TITREETR", "AUTRE"}
+        assert values == {"REUSSITE", "TITREBEL", "TITREETR", "AUTRE", "AUCUN"}
 
     def test_string_comparison(self):
         assert CodeAdmission.TITRE_BELGE == "TITREBEL"
@@ -120,7 +120,7 @@ _INSCRIPTION_ENUM_XSD_VALUES = [
     (Indicateur, {"O", "N"}),
     (IndicateurX, {"O", "N", "X"}),
     (MotifExemption, {"C01", "C02", "C03", "C04", "C05", "C06", "C07"}),
-    (MotifExemptionSpec, {f"C{n:02d}" for n in range(1, 14)}),
+    (MotifExemptionSpec, {f"C{n:02d}" for n in range(1, 14)} | {"C50"}),
     (TypeEnseignement, {"PRI", "SIPE", "SSPE", "SIPS", "SSPS", "SCPE", "SLPE", "SCPS", "SLPS"}),
     (TitreDelivre, {
         "CEB", "CE1D", "CESI", "CE2D", "CQ4", "CESSG", "CESST", "CESSQ", "CESSP",
@@ -128,7 +128,7 @@ _INSCRIPTION_ENUM_XSD_VALUES = [
         "CQSUP", "CQINF", "MASTSPE", "DOC", "BACHSPE",
     }),
     (Equivalence, {"C01", "C02", "C03", "C04"}),
-    (ValorisationAcquis, {"C01", "C02", "C03", "C04", "C10", "C20", "C30", "C40"}),
+    (ValorisationAcquis, {"C01", "C02", "C03", "C04", "C10", "C20", "C30", "C40", "C50"}),
     (ValorisationAcquisSanction, {"C00", "C01", "C02", "C03", "C04", "C05"}),
     (StatutFinFormation, {"C01", "C02", "C03", "C04", "C05", "C06"}),
     (CodeNiveau, {"SI", "SS", "SC", "SL"}),
@@ -199,3 +199,47 @@ class TestLegacyConstant:
     def test_importable_from_eprom_namespace(self):
         from pyetnic.eprom import TYPES_INTERVENTION_EXTERIEURE as exported
         assert exported == TYPES_INTERVENTION_EXTERIEURE
+
+
+# ---------------------------------------------------------------------------
+# Every SEPS enum equals its enumeration in the embedded (live) inscription XSD
+# ---------------------------------------------------------------------------
+
+_XSD_TYPE_OF_ENUM = [
+    (CodeStatut, "CodeStatutType"),
+    (DureeInoccupation, "DureeInoccupationType"),
+    (SituationMenage, "SituationMenageType"),
+    (MotifExemption, "MotifExemptionType"),
+    (MotifExemptionSpec, "MotifExemptionSpecType"),
+    (CodeAdmission, "CodeAdmissionType"),
+    (TypeEnseignement, "TypeEnseignementType"),
+    (TitreDelivre, "TitreDelivreType"),
+    (Equivalence, "EquivalenceType"),
+    (ValorisationAcquis, "ValorisationAcquisType"),
+    (CodeSanction, "CodeSanctionType"),
+    (ValorisationAcquisSanction, "ValorisationAcquisSanctionType"),
+    (MotifAbandon, "MotifAbandonType"),
+    (StatutFinFormation, "StatutFinFormationType"),
+    (CodeNiveau, "CodeNiveauType"),
+    (Indicateur, "IndicateurType"),
+    (IndicateurX, "IndicateurXType"),
+]
+
+
+def _xsd_enumerations() -> dict:
+    from xml.etree import ElementTree as ET
+
+    from pyetnic.soap_client import get_wsdl_path
+
+    path = get_wsdl_path("pyetnic.resources", "SEPS_Enregistrer_Inscription_2.1/xsd/inscription_v1.xsd")
+    xs = "{http://www.w3.org/2001/XMLSchema}"
+    return {
+        st.get("name"): {e.get("value") for e in st.iter(xs + "enumeration")}
+        for st in ET.parse(path).getroot().findall(xs + "simpleType")
+    }
+
+
+@pytest.mark.parametrize("enum_cls, xsd_type", _XSD_TYPE_OF_ENUM, ids=lambda x: getattr(x, "__name__", x))
+def test_enum_matches_embedded_xsd(enum_cls, xsd_type):
+    """A contract refresh that adds or removes a code fails here (#22)."""
+    assert {m.value for m in enum_cls} == _xsd_enumerations()[xsd_type]

@@ -9,7 +9,7 @@ from .models import (
     Inscription, SepsUE, SepsLieuCours, SepsSpecificite,
     SepsDroitInscription, SepsExempteDroitInscription,
     SepsDroitInscriptionSpecifique, SepsExempteDroitInscriptionSpec,
-    SepsAdmission, SepsSanction,
+    SepsAdmission, SepsSanction, SepsAudit,
     InscriptionInputDataSave,
     InscriptionResult,
 )
@@ -56,6 +56,7 @@ class InscriptionsService:
         return SepsDroitInscription(
             indicateurDroitInscription=data.get("indicateurDroitInscription", ""),
             exempte=exempte,
+            montant=_str(data.get("montant")),
         )
 
     @staticmethod
@@ -72,6 +73,7 @@ class InscriptionsService:
         return SepsDroitInscriptionSpecifique(
             indicateurDroitInscriptionSpecifique=data.get("indicateurDroitInscriptionSpecifique", ""),
             exempte=exempte,
+            montant=_str(data.get("montant")),
         )
 
     @staticmethod
@@ -91,10 +93,26 @@ class InscriptionsService:
         if not data:
             return None
         return SepsSanction(
-            codeSanction=data.get("codeSanction", ""),
+            codeSanction=_str(data.get("codeSanction")),
             valorisationAcquisSanction=_str(data.get("valorisationAcquisSanction")),
             motifAbandon=_str(data.get("motifAbandon")),
             statutFinFormation=_str(data.get("statutFinFormation")),
+            pourcentageAttribue=_str(data.get("pourcentageAttribue")),
+            codeSectionFlag=data.get("codeSectionFlag"),
+            codeSection=_str(data.get("codeSection")),
+            point=_str(data.get("point")),
+            ajournement1Session=_str(data.get("ajournement1Session")),
+        )
+
+    @staticmethod
+    def _parse_audit(data: Optional[dict]) -> Optional[SepsAudit]:
+        if not data:
+            return None
+        return SepsAudit(
+            dateCreation=_str(data.get("dateCreation")),
+            utilisateurCreation=_str(data.get("utilisateurCreation")),
+            dateModification=_str(data.get("dateModification")),
+            utilisateurModification=_str(data.get("utilisateurModification")),
         )
 
     def _parse_specificite(self, data: Optional[dict]) -> Optional[SepsSpecificite]:
@@ -112,6 +130,7 @@ class InscriptionsService:
             difficulteAutre=_str(data.get("difficulteAutre")),
             admission=self._parse_admission(data.get("admission")),
             sanction=self._parse_sanction(data.get("sanction")),
+            regulier3=_str(data.get("regulier3")),
         )
 
     def _parse_inscription(self, data: dict) -> Inscription:
@@ -147,6 +166,7 @@ class InscriptionsService:
             statut=_str(data.get("statut")),
             ue=ue,
             specificite=self._parse_specificite(data.get("specificite")),
+            audit=self._parse_audit(data.get("audit")),
         )
 
     def _parse_inscription_response(self, result) -> InscriptionResult:

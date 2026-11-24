@@ -19,6 +19,7 @@ WSDLS = {
     "recherche_etudiants": "SEPS_Recherche_Etudiants_2.1/SEPSRechercheEtudiantsService_external_v1.wsdl",
     "enregistrer_inscription": "SEPS_Enregistrer_Inscription_2.1/SEPSEnregistrerInscriptionService_external_v1.wsdl",
     "recherche_inscriptions": "SEPS_Recherche_Inscriptions_2.1/SEPSRechercheInscriptionsService_external_v1.wsdl",
+    "notifications": "SEPS_Notifications_1.0.8/SEPSNotificationsService_external_v1.wsdl",
 }
 
 

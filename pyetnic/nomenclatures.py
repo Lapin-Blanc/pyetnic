@@ -69,6 +69,7 @@ class CodeAdmission(str, Enum):
     TITRE_BELGE = "TITREBEL"
     TITRE_ETRANGER = "TITREETR"
     AUTRE = "AUTRE"
+    AUCUN = "AUCUN"  # aucun titre requis (manuel Enregistrer Inscriptions 2.4)
 
 
 class CodeSanction(str, Enum):
@@ -200,6 +201,7 @@ class MotifExemptionSpec(str, Enum):
     - C11 Placé par le juge de la jeunesse
     - C12 Sous tutelle officieuse (Code civil)
     - C13 Visé par l'art. 42bis du décret du 30/06/1998
+    - C50 Séjour limité aux études
 
     Values pinned against XSD ``MotifExemptionSpecType``. ⚠️ Préfixe ``C0x``
     partagé avec :class:`MotifExemption` mais sémantique différente.
@@ -218,6 +220,7 @@ class MotifExemptionSpec(str, Enum):
     C11 = "C11"
     C12 = "C12"
     C13 = "C13"
+    C50 = "C50"
 
 
 class TypeEnseignement(str, Enum):
@@ -295,7 +298,8 @@ class ValorisationAcquis(str, Enum):
     Used in ``SepsAdmission.valorisationAcquis`` (obligatoire si
     ``codeAdmission == "AUTRE"``). C01-C04 valorisation formelle V1-V4 ;
     C10 VANFI Test/Épreuve ; C20 VANFI Dossier ; C30 Autres ; C40 Aucun titre
-    requis. Distinct de :class:`ValorisationAcquisSanction`. Pinned against
+    requis ; C50 Inconnu (uniquement pour les années scolaires antérieures à
+    2023). Distinct de :class:`ValorisationAcquisSanction`. Pinned against
     XSD ``ValorisationAcquisType``.
     """
 
@@ -307,6 +311,7 @@ class ValorisationAcquis(str, Enum):
     C20 = "C20"
     C30 = "C30"
     C40 = "C40"
+    C50 = "C50"
 
 
 class ValorisationAcquisSanction(str, Enum):
@@ -370,3 +375,19 @@ class CodeNiveau(str, Enum):
 # ---------------------------------------------------------------------------
 
 TYPES_INTERVENTION_EXTERIEURE: list = [member.value for member in TypeInterventionExterieure]
+
+
+class CodeNotification(str, Enum):
+    """Type de changement notifié par ``lire_notifications`` (NotificationCodeType).
+
+    Le contrat ne déclare que le motif ``[0-9]{2}`` ; les codes viennent du manuel
+    « Notifications 2.3 » (juin 2026), qui ajoute 08. Used in
+    ``SepsNotification.code``.
+    """
+
+    SEXE = "02"
+    NOM_PRENOM = "04"
+    ADRESSE = "05"
+    NATIONALITE = "06"
+    NISS = "07"
+    STATUT = "08"

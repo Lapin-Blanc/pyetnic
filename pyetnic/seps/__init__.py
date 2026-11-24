@@ -13,6 +13,7 @@ from ..services import (
     rechercher_inscriptions,
     enregistrer_inscription,
     modifier_inscription,
+    lire_notifications,
 )
 
 # Exceptions
@@ -52,6 +53,7 @@ from ..nomenclatures import (
     ValorisationAcquisSanction,
     StatutFinFormation,
     CodeNiveau,
+    CodeNotification,
 )
 
 # Modèles
@@ -83,6 +85,8 @@ from ..services.models import (
     SepsExempteDroitInscriptionSpec,
     SepsAdmission,
     SepsSanction,
+    SepsAudit,
+    SepsNotification,
     # Inscription (envoi)
     InscriptionInputDataSave,
     InscriptionInputSave,
@@ -131,6 +135,10 @@ __all__ = [
     "rechercher_inscriptions",
     "enregistrer_inscription",
     "modifier_inscription",
+    # Notifications
+    "lire_notifications",
+    "SepsNotification",
+    "CodeNotification",
     # Modèles inscription (lecture)
     "Inscription",
     "SepsUE",
@@ -142,6 +150,7 @@ __all__ = [
     "SepsExempteDroitInscriptionSpec",
     "SepsAdmission",
     "SepsSanction",
+    "SepsAudit",
     # Modèles inscription (envoi)
     "InscriptionInputDataSave",
     "InscriptionInputSave",
