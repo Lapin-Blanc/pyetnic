@@ -1,0 +1,81 @@
+name: Contract watch
+
+# Weekly comparison of the embedded ETNIC contracts with the live services and the
+# SOA catalogue (tools/refresh_contracts.py). A drift opens an issue labelled
+# `contract-watch`, or updates the open one; a clean run closes it. On a pull
+# request touching the tool, the check runs for its exit code only.
+
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tools/refresh_contracts.py"
+      - ".github/workflows/contract-watch.yml"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: contract-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install pyetnic
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Compare the contracts
+        id: check
+        run: |
+          set +e
+          python tools/refresh_contracts.py --check --report drift.md
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat drift.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report on the drift issue
+        if: github.event_name != 'pull_request' && steps.check.outputs.status != '2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS: ${{ steps.check.outputs.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create contract-watch --color c5def5 \
+            --description "Drift reported by the weekly contract watch" 2>/dev/null || true
+          number=$(gh issue list --label contract-watch --state open --json number --jq '.[0].number // empty')
+          today=$(date -u +%F)
+          if [ "$STATUS" = "1" ]; then
+            if [ -z "$number" ]; then
+              gh issue create --title "Contract watch: the ETNIC contracts drifted" \
+                --label contract-watch --body-file drift.md
+            elif [ "$(gh issue view "$number" --json body --jq .body)" != "$(cat drift.md)" ]; then
+              gh issue edit "$number" --body-file drift.md
+              gh issue comment "$number" --body "The report changed on $today: $RUN_URL"
+            fi
+          elif [ -n "$number" ]; then
+            gh issue comment "$number" --body "No drift on $today: $RUN_URL"
+            gh issue close "$number"
+          fi
+
+      - name: Fail when a source could not be read
+        if: steps.check.outputs.status == '2'
+        run: |
+          echo "::error::tools/refresh_contracts.py could not read a source (see the summary)"
+          exit 1

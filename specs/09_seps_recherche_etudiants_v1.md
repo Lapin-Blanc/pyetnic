@@ -3,7 +3,7 @@
 > Spécification technique et fonctionnelle complète
 > Sources :
 > - **Contrat** : WSDL + XSD servis par la production (`https://ws.etnic.be/seps/rechercheEtudiants/v1?wsdl`), embarqués dans `pyetnic/resources/SEPS_Recherche_Etudiants_2.1/` (relevé du 2026-11-24).
-> - **Manuel** : « Services Web SEPS - Manuel d'utilisation » **2.1.9** (18/01/2023), §3.4. C'est la seule source pour ce service : le lien du catalogue SOA vers le manuel « Recherche Étudiants » 2.3 renvoie une erreur 404 (constat de novembre 2026).
+> - **Manuel** : « Services Web SEPS - Manuel d'utilisation » **2.1.9** (18/01/2023), §3.4. C'est la seule source pour ce service : le lien du catalogue SOA vers le manuel « Recherche Étudiants » 2.3 (`ETNIC_Services_Web_SIEL_SEPS_RechercheEtudiants_v2.3_Manuel_d_utilisation_rev10.0.pdf`, rev 10.0) renvoie une erreur 404 (constat de novembre 2026, revérifié le 2026-11-24).
 > - Manuel « Enregistrer Étudiants » **2.3** (rev 10.0, 10/06/2026), §2 et §3.1, pour la plateforme et les types communs qu'il partage avec ce service.
 > - **Observations de production** (datées dans le texte).
 >

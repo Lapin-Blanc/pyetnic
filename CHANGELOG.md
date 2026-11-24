@@ -9,6 +9,19 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+### Added
+
+- **Contract watch for every service** (#31): `tools/refresh_contracts.py` replaces
+  `tools/refresh_seps_contracts.py`. It reads the services from `Config.SERVICES` and
+  compares, in canonical form, the embedded WSDL and XSD with the live gateway (whole
+  contract where the gateway serves the schemas, WSDL alone where it does not) and with
+  the SOA catalogue's contract archive; it also reports a next major version that is
+  live, the catalogue's version and endpoints when they differ from pyetnic's, a manual
+  revision that the matching spec does not name, and a catalogue service pyetnic does not
+  embed. Without `--check` it refreshes the files, creating a new service folder from
+  the catalogue archive. A weekly GitHub Actions workflow runs the check and opens, updates
+  or closes an issue labelled `contract-watch`.
+
 ## [0.2.0b1] - 2026-11-24
 
 The SEPS module follows the live production contracts. **Upgrading from 0.1.0b2:**

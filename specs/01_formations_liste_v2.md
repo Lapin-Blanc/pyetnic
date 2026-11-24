@@ -1,7 +1,7 @@
 # EPROM — Formations Liste v2.0
 
 > Spécification technique et fonctionnelle complète
-> Sources : WSDL `EpromFormationsListeService_external_v2.wsdl` + PDF Manuel d'utilisation rev2.0 (01-05-2023)
+> Sources : WSDL `EpromFormationsListeService_external_v2.wsdl` + PDF Manuel d'utilisation rev2.0 (01-05-2023, `ETNIC_EpromFormationsListe_v2.0.0_Manuel_d_utilisation_rev2.0.pdf`)
 > Date d'analyse : 2026-04-14
 
 ---

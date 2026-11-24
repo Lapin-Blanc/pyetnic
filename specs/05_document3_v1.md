@@ -1,7 +1,7 @@
 # EPROM — Formation Document 3 (Attributions) v1.0
 
 > Spécification technique et fonctionnelle complète
-> Sources : WSDL `EpromFormationDocument3Service_external_v1.wsdl` + PDF Manuel d'utilisation rev1.3 (01-05-2023, édité 10-05-2023, 22 pages)
+> Sources : WSDL `EpromFormationDocument3Service_external_v1.wsdl` + PDF Manuel d'utilisation rev1.3 (01-05-2023, édité 10-05-2023, 22 pages, `ETNIC_Services_Web_EPROM_Formation_Document3_1.0.0_Manuel_d_utilisation_rev1.3.pdf`)
 > Date d'analyse : 2026-06-02 (session 4)
 
 ---

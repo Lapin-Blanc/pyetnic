@@ -141,3 +141,8 @@ dmypy.json
 # The SEPS user manual shows an unmasked NISS in one of its examples: it stays
 # on the developer's disk, out of the public repository.
 /documentation/SIEL_SEPS_*.pdf
+
+# ETNIC manuals, contract archives and referentials: a new file enters only by
+# `git add -f`, after checking it for personal data (the Doc3 and SEPS manuals carry
+# a real matricule or NISS in their examples). Tracked manuals stay tracked.
+/documentation/*
