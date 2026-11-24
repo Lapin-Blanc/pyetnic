@@ -105,7 +105,8 @@ deferred to post-0.1.0.
 - **`OrganisationKey` split (D6)** — separate key/full types to make the `implId` rule
   type-enforced. Breaking change, deferred to 1.0.0.
 - **Pydantic migration** — deferred to post-0.1.0.
-- **SEPS/EPROM exception unification** — the SEPS (`SepsEtnicError`) and EPROM (`EtnicError`)
-  hierarchies remain separate for now.
+- **SEPS/EPROM error policy** — the hierarchies are joined (`SepsEtnicError` derives from
+  `EtnicBusinessError`, #20), but the policies differ: SEPS always raises, EPROM raises only
+  under `strict_errors()` until the 0.2.0 default switch.
 - **Default-mode switch to raise** — making strict mode the default is a 0.2.0 change, not
   scheduled in Sprints 1-4.

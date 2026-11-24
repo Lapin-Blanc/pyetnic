@@ -12,8 +12,11 @@ The hierarchy is designed so that:
   existing ``except SoapError`` code keeps working.
 
 SEPS exceptions (``SepsEtnicError`` and subclasses) live in
-``pyetnic.services.seps`` and are intentionally separate. They will be
-unified with this hierarchy in a future major version.
+``pyetnic.services.seps_errors`` and join this hierarchy: ``SepsEtnicError``
+derives from ``EtnicBusinessError``, and the SEPS validation and not-found
+errors also derive from ``EtnicValidationError`` and ``EtnicNotFoundError``.
+SEPS services always raise on a refusal: ``Config.RAISE_ON_ERROR`` does not
+apply to them.
 """
 
 from typing import Any, Optional, Tuple, Type

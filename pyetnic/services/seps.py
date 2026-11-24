@@ -1,124 +1,25 @@
 """Service SEPS — Recherche d'étudiants."""
 
-import re
 import logging
 from typing import List, Optional
 
-from ..soap_client import SoapClientManager, SoapError
+from ..soap_client import SoapClientManager, SoapError  # noqa: F401 (historical re-export)
 from ._helpers import _as_list
 from .models import Etudiant, EtudiantDetails, SepsAdresse, SepsLocalite, SepsNaissance, SepsDeces
+# The SEPS exceptions moved to seps_errors; they stay importable from here.
+from .seps_errors import (  # noqa: F401
+    NissMutationError,
+    SepsAuthError,
+    SepsEtnicError,
+    TropDeResultatsError,
+    check_seps_response,
+)
 
 logger = logging.getLogger(__name__)
 
-_NISS_RE = re.compile(r'[0-9]{6}-?[0-9]{3}-?[0-9]{2}')
-
-# Codes SEPS signifiant « aucun résultat » : ils NE doivent PAS lever
-# d'exception — le contrat « non trouvé » se traduit par None / [] côté
-# appelant (lireEtudiant : 30110 fin de traitement, 30115 warning).
+# Codes SEPS signifiant « aucun résultat » pour lireEtudiant et
+# rechercherEtudiants : ils ne lèvent pas, l'appelant rend None / [].
 _NOT_FOUND_CODES = frozenset({"30110", "30115"})
-
-
-class SepsEtnicError(Exception):
-    """Erreur retournée par le serveur ETNIC SEPS (success=False).
-
-    Tous les codes d'erreur SEPS héritent de cette classe, ce qui permet
-    de les intercepter globalement si besoin :
-
-        try:
-            etudiants = pyetnic.seps.rechercher_etudiants(nom="Dupont")
-        except SepsEtnicError as e:
-            print(e.code, e.description)
-    """
-
-    def __init__(self, code: str, description: str):
-        self.code = code
-        self.description = description
-        super().__init__(f"SEPS erreur {code}: {description}")
-
-
-class SepsAuthError(SepsEtnicError):
-    """Échec d'authentification SEPS (code 30550).
-
-    Indique un problème avec le certificat PFX : expiré, non enregistré,
-    ou mauvais mot de passe.
-    """
-
-
-class TropDeResultatsError(SepsEtnicError):
-    """Le serveur ETNIC a retourné trop de résultats (code 30501).
-
-    Affiner la recherche en ajoutant des critères supplémentaires
-    (prenom, date_naissance, sexe…).
-    """
-
-    def __init__(self):
-        super().__init__("30501", "Trop de résultats — affiner la recherche (prenom, date_naissance, sexe…)")
-
-
-class NissMutationError(SepsEtnicError):
-    """Le NISS fourni a été remplacé par un nouveau NISS (code ETNIC 30401).
-
-    Se produit quand un numéro BIS a été remplacé par un vrai numéro de
-    Registre National, ou lors d'autres fusions de dossiers à la BCSS.
-
-    Relancer la recherche avec ``nouveau_niss`` :
-
-        try:
-            etudiants = pyetnic.seps.rechercher_etudiants(niss="...")
-        except NissMutationError as e:
-            etudiants = pyetnic.seps.rechercher_etudiants(niss=e.nouveau_niss)
-    """
-
-    def __init__(self, ancien_niss: str, nouveau_niss: str):
-        self.ancien_niss = ancien_niss
-        self.nouveau_niss = nouveau_niss
-        super().__init__(
-            "30401",
-            f"NISS {ancien_niss!r} remplacé par {nouveau_niss!r} — "
-            "relancer la recherche avec nouveau_niss",
-        )
-
-
-def _check_seps_errors(result, *, ancien_niss: Optional[str] = None) -> None:
-    """Inspecte le bloc retour SEPS et lève une exception typée si success=False.
-
-    Partagé par tous les services SEPS Étudiant (recherche, lecture,
-    enregistrement, modification) pour éviter que les erreurs métier soient
-    avalées silencieusement (un simple ``return None`` masquerait un certificat
-    invalide, une mutation NISS, un doublon…).
-
-    Les codes « aucun résultat » (``_NOT_FOUND_CODES``) sont ignorés : la
-    méthode appelante renverra alors None / [] de façon intentionnelle.
-
-    Args:
-        result: La réponse SOAP désérialisée (dict avec clé ``body``).
-        ancien_niss: Le NISS de la requête, propagé dans ``NissMutationError``.
-
-    Raises:
-        NissMutationError: code 30401.
-        TropDeResultatsError: code 30501.
-        SepsAuthError: code 30550.
-        SepsEtnicError: tout autre code métier.
-    """
-    if not (result and result.get("body")):
-        return
-    body = result["body"]
-    if body.get("success", True):
-        return
-    errors = (body.get("messages") or {}).get("error") or []
-    for err in (errors if isinstance(errors, list) else [errors]):
-        code = str(err.get("code"))
-        if code in _NOT_FOUND_CODES:
-            continue
-        desc = err.get("description", "")
-        if code == "30401":
-            match = _NISS_RE.search(desc)
-            raise NissMutationError(ancien_niss or "", match.group(0) if match else "")
-        if code == "30501":
-            raise TropDeResultatsError()
-        if code == "30550":
-            raise SepsAuthError(code, desc)
-        raise SepsEtnicError(code, desc)
 
 
 class RechercheEtudiantsService:
@@ -201,7 +102,8 @@ class RechercheEtudiantsService:
         )
 
     def _parse_lire_etudiant_response(self, result) -> Optional[Etudiant]:
-        _check_seps_errors(result)
+        if check_seps_response(result, not_found=_NOT_FOUND_CODES):
+            return None
         if not (
             result
             and result.get("body")
@@ -212,7 +114,8 @@ class RechercheEtudiantsService:
         return self._parse_etudiant(result["body"]["response"]["etudiant"])
 
     def _parse_rechercher_etudiants_response(self, result, ancien_niss: Optional[str] = None) -> List[Etudiant]:
-        _check_seps_errors(result, ancien_niss=ancien_niss)
+        if check_seps_response(result, not_found=_NOT_FOUND_CODES, ancien_niss=ancien_niss):
+            return []
         if not (
             result
             and result.get("body")
@@ -235,7 +138,10 @@ class RechercheEtudiantsService:
             from_date: Date à partir de laquelle récupérer les données (optionnel, format YYYY-MM-DD)
 
         Returns:
-            Etudiant ou None si non trouvé.
+            Etudiant ou None si non trouvé (30110, 30115).
+
+        Raises:
+            SepsEtnicError: une sous-classe choisie par le code, pour tout autre refus.
         """
         kwargs = {"cfNum": cf_num}
         if from_date is not None:
@@ -272,6 +178,10 @@ class RechercheEtudiantsService:
 
         Raises:
             ValueError: Si ni niss ni nom n'est fourni.
+            NissMutationError: Le NISS a été remplacé (30401) : relancer avec
+                ``e.nouveau_niss``.
+            SepsEtnicError: une sous-classe choisie par le code, pour tout autre
+                refus ; « aucun étudiant » (30110, 30115) rend une liste vide.
         """
         if niss:
             kwargs = {"niss": niss}

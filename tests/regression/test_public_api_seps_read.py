@@ -258,3 +258,6 @@ def test_seps_exception_hierarchy():
     assert issubclass(NissMutationError, SepsEtnicError)
     assert issubclass(TropDeResultatsError, SepsEtnicError)
     assert issubclass(SepsEtnicError, Exception)
+    # Joined with the EPROM hierarchy (#20)
+    from pyetnic.exceptions import EtnicBusinessError
+    assert issubclass(SepsEtnicError, EtnicBusinessError)

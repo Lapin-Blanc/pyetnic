@@ -63,6 +63,13 @@ It is used by schools and school management software to interact programmaticall
 
 > NISS mutation (error code 30401) raises `NissMutationError(ancien_niss, nouveau_niss)` from `rechercher_etudiants`.
 
+> **Refusals (every SEPS operation).** `success=false` is a refusal whether its code comes as an
+> `error` or as a `warning`: production answered `enregistrerInscription` with only the warning
+> 30101 (2026-11-10). SEPS always raises a `SepsEtnicError` subclass chosen by the code (see the
+> error table); reads return `None` / `[]` on their "nothing found" codes (`lireEtudiant`,
+> `rechercherEtudiants`: 30110, 30115; `rechercherInscriptions`: 30102, 30103). A `success=false`
+> carrying only the info 200 or 201 is a success (the manual's `modifierEtudiant` example).
+
 **EnregistrerEtudiant (v1)**
 - `enregistrerEtudiant` → `enregistrer_etudiant(mode_enregistrement, etudiant_details?, double_flag?, create_bis_flag?)`
 - `modifierEtudiant` → `modifier_etudiant(cf_num, etudiant_details?)`
@@ -216,7 +223,17 @@ Organisation(OrganisationApercu) ← returned by lire_organisation() (FormationO
 | 20103 | `LireDocument2` before the Doc 1 population is validated. Server text: « Le "Doc 1" doit être approuvé pour pouvoir accéder au document suivant »; the school's validation (`swAppPopD1`) is enough, `swAppD1` may still be false (tested on TQ, 2026-11-10). Not mapped in `exceptions.py`: `None` in permissive mode, a plain `EtnicBusinessError` under `strict_errors()`. |
 | 20104 | Doc 1 approval refused: the population sent differs from the stored one, or none was sent. Send back the lines just read. |
 | 20108 | Doc 3: « Le numéro de matricule d'enseignement n°$1 est incorrect ». Also returned for a well-formed staff number when the teacher is not (yet) in the EPROM teacher referential, which is fed outside these services; the same payload passes once the referential is updated (observed in production: refused 2026-09-21, accepted 2026-09-22). A write refused with 20108 leaves nothing behind (observed twice on blank documents). |
+| 30100, 30101 | SEPS: no such UE (`SepsUeInconnueError`). 30101 came as a warning 18 minutes after the organisation was declared in EPROM (production, 2026-11-10): SEPS receives organisations with a delay. Inscriptions on organisations whose Doc A was not yet approved were accepted (production, 2026-09-30, approval 2026-10-23). |
+| 30011, 30120 | SEPS: no student for this CF / no person for this NISS at the national register (`SepsEtudiantInconnuError`). |
+| 30200 | SEPS: the student is already enrolled in this UE (`SepsInscriptionExisteError`). |
+| 30201 | SEPS: the student already exists (`SepsEtudiantExisteError`, the CF number from the description in `cf_num`). |
+| 30202, 30203, 30204 | SEPS: possible duplicates (`SepsDoublonsError`, the CF numbers in `cf_nums`, the NISS in `niss`). |
 | 30401 | NISS mutation — an old NISS has been replaced by a new one. Raised as `NissMutationError(ancien_niss, nouveau_niss)` from SEPS `rechercher_etudiants`. |
+| 30443 | SEPS: nothing to change (`SepsAucuneModificationError`), as an error or as an info. |
+| 30501, 30503 | SEPS: too many results (`TropDeResultatsError`). |
+| 30502 | SEPS: error calling the BCED (national register). `rechercherEtudiants` by name answers it, as an error, for a person found nowhere: « Une erreur s'est produite dans le processus, veuillez réessayer plus tard » (production, 2026-11-24, three requests). Raised as the base `SepsEtnicError`, not turned into an empty result: the code also covers real BCED failures. |
+| 30550 | SEPS: authentication (`SepsAuthError`). |
+| other SEPS 300xx | `SepsValidationError` for the manual's BAD_REQUEST codes, `SepsNotFoundError` for NOT_FOUND, the base `SepsEtnicError` otherwise. |
 | SECU-0104 | SEPS call in dev (`tq`) with a prod certificate — the prod X509 is not registered in the TQ environment. SEPS is prod-only. |
 
 TODO: expand this section as new error codes are encountered and handled.

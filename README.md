@@ -406,9 +406,9 @@ Config.RAISE_ON_ERROR = True
 Le flag est stocké dans un `ContextVar` : il est donc sûr en contexte multi-threads et asyncio (chaque thread/tâche voit sa propre valeur).
 
 Le comportement par défaut (retour de `None`) deviendra « lever » en version 0.2.0.
-Les services SEPS lèvent déjà des exceptions typées (`SepsEtnicError` et sous-classes) et ne sont pas affectés par ce flag.
+Les services SEPS lèvent toujours, sur tout refus (`success=false`), que le code arrive en erreur ou en avertissement ; ils ne sont pas affectés par ce flag.
 
-**Hiérarchie des exceptions EPROM :**
+**Hiérarchie des exceptions :**
 
 ```
 EtnicError
@@ -416,7 +416,20 @@ EtnicError
 └── EtnicBusinessError           # refus serveur (success=False)
     ├── EtnicDocumentNotAccessibleError  # code 20102
     ├── EtnicNotFoundError               # code 00009
-    └── EtnicValidationError             # entrée invalide
+    ├── EtnicValidationError             # entrée invalide
+    └── SepsEtnicError                   # tout refus SEPS
+        ├── SepsAuthError                # 30550
+        ├── TropDeResultatsError         # 30501, 30503
+        ├── NissMutationError            # 30401 (.ancien_niss, .nouveau_niss)
+        ├── SepsValidationError          # BAD_REQUEST (est aussi un EtnicValidationError)
+        ├── SepsNotFoundError            # NOT_FOUND (est aussi un EtnicNotFoundError)
+        │   ├── SepsUeInconnueError      # 30100, 30101
+        │   └── SepsEtudiantInconnuError # 30011, 30120
+        ├── SepsConflictError
+        │   ├── SepsInscriptionExisteError  # 30200
+        │   ├── SepsEtudiantExisteError     # 30201 (.cf_num)
+        │   └── SepsDoublonsError           # 30202 à 30204 (.cf_nums, .niss)
+        └── SepsAucuneModificationError  # 30443
 ```
 
 **Codes d'erreur ETNIC courants :**
@@ -441,6 +454,9 @@ EtnicError
 | `ImportError` sur `xmlsec` | Extra SEPS non installé | `pip install "pyetnic[seps]"` |
 | `TropDeResultatsError` | Critères de recherche trop larges | Ajouter `prenom`, `date_naissance`, `sexe` |
 | `NissMutationError` | Le NISS a été remplacé | Relancer avec `e.nouveau_niss` |
+| `SepsUeInconnueError` (30101) | SEPS ne connaît pas encore l'organisation : elle lui parvient avec un délai après sa déclaration dans EPROM | Réessayer plus tard |
+| `SepsEtudiantExisteError` | L'étudiant est déjà dans SEPS | Utiliser `e.cf_num` |
+| `SepsDoublonsError` | Plusieurs fiches pour la même identité | Examiner `e.cf_nums` (ou `e.niss`) |
 | `SepsEtnicError` | Erreur métier SEPS | Lire `e.code` et `e.description` |
 
 ---

@@ -12,9 +12,13 @@ from .models import (
     SepsAdmission, SepsSanction,
     InscriptionInputDataSave,
 )
-from .seps import SepsEtnicError, SepsAuthError
+from .seps_errors import check_seps_response
 
 logger = logging.getLogger(__name__)
+
+# rechercherInscriptions answers "no inscription found" with these codes
+# (30103 as a warning in production): an empty list, not an error.
+_RECHERCHE_NOT_FOUND_CODES = frozenset({"30102", "30103"})
 
 
 def _str(v) -> Optional[str]:
@@ -144,22 +148,8 @@ class InscriptionsService:
             specificite=self._parse_specificite(data.get("specificite")),
         )
 
-    def _check_errors(self, result) -> None:
-        """Lève une exception SEPS si success=False."""
-        if not (result and result.get("body")):
-            return
-        body = result["body"]
-        if not body.get("success", True):
-            errors = (body.get("messages") or {}).get("error") or []
-            for err in (errors if isinstance(errors, list) else [errors]):
-                code = str(err.get("code"))
-                desc = err.get("description", "")
-                if code == "30550":
-                    raise SepsAuthError(code, desc)
-                raise SepsEtnicError(code, desc)
-
     def _parse_inscription_response(self, result) -> Optional[Inscription]:
-        self._check_errors(result)
+        check_seps_response(result)
         if not (
             result
             and result.get("body")
@@ -170,7 +160,8 @@ class InscriptionsService:
         return self._parse_inscription(result["body"]["response"]["inscription"])
 
     def _parse_recherche_response(self, result) -> List[Inscription]:
-        self._check_errors(result)
+        if check_seps_response(result, not_found=_RECHERCHE_NOT_FOUND_CODES):
+            return []
         if not (
             result
             and result.get("body")
@@ -205,7 +196,13 @@ class InscriptionsService:
             no_organisation: Numéro d'organisation de l'UE.
 
         Returns:
-            Liste d'inscriptions correspondant aux critères.
+            Liste d'inscriptions correspondant aux critères ; vide quand le
+            serveur répond « aucune inscription » (30102, 30103).
+
+        Raises:
+            SepsEtnicError: une sous-classe choisie par le code, pour tout refus
+                (``success=false``), que le code arrive en erreur ou en
+                avertissement (``SepsUeInconnueError`` pour 30101, par exemple).
         """
         kwargs = {}
         if annee_scolaire is not None:
@@ -234,7 +231,12 @@ class InscriptionsService:
             inscription_input_data: Données de l'inscription à enregistrer.
 
         Returns:
-            L'inscription créée, ou None si non disponible.
+            L'inscription créée, telle que le serveur la renvoie.
+
+        Raises:
+            SepsEtnicError: une sous-classe choisie par le code, pour tout refus
+                (``success=false``), que le code arrive en erreur ou en
+                avertissement (``SepsUeInconnueError`` pour 30101, par exemple).
         """
         kwargs = {}
         if inscription_input_data is not None:
@@ -257,7 +259,12 @@ class InscriptionsService:
             inscription_input_data: Données de l'inscription à modifier.
 
         Returns:
-            L'inscription mise à jour, ou None si non disponible.
+            L'inscription mise à jour, telle que le serveur la renvoie.
+
+        Raises:
+            SepsEtnicError: une sous-classe choisie par le code, pour tout refus
+                (``success=false``), que le code arrive en erreur ou en
+                avertissement (``SepsUeInconnueError`` pour 30101, par exemple).
         """
         kwargs = {}
         if inscription_input_data is not None:

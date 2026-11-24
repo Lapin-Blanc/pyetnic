@@ -6,7 +6,8 @@ from typing import Optional
 from ..soap_client import SoapClientManager
 from ._helpers import to_soap_dict
 from .models import Etudiant, EtudiantDetailsSave
-from .seps import RechercheEtudiantsService, _check_seps_errors
+from .seps import RechercheEtudiantsService
+from .seps_errors import check_seps_response
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class EnregistrerEtudiantService:
     # ------------------------------------------------------------------
 
     def _parse_enregistrer_response(self, result) -> Optional[Etudiant]:
-        _check_seps_errors(result)
+        check_seps_response(result)
         if not (
             result
             and result.get("body")
@@ -44,7 +45,7 @@ class EnregistrerEtudiantService:
         return self._parse_etudiant(result["body"]["response"]["etudiant"])
 
     def _parse_modifier_response(self, result) -> Optional[Etudiant]:
-        _check_seps_errors(result)
+        check_seps_response(result)
         if not (
             result
             and result.get("body")
@@ -75,7 +76,12 @@ class EnregistrerEtudiantService:
             create_bis_flag: Créer un numéro BIS si l'étudiant n'a pas de NISS.
 
         Returns:
-            L'étudiant créé/trouvé, ou None si non trouvé.
+            L'étudiant créé (ou fusionné avec une fiche existante).
+
+        Raises:
+            SepsEtnicError: une sous-classe choisie par le code, pour tout refus
+                (``success=false``), que le code arrive en erreur ou en
+                avertissement (``SepsEtudiantExisteError`` pour 30201, avec ``cf_num``).
         """
         kwargs = {"modeEnregistrement": mode_enregistrement}
         if etudiant_details is not None:
@@ -104,7 +110,12 @@ class EnregistrerEtudiantService:
             etudiant_details: Nouvelles données de l'étudiant.
 
         Returns:
-            L'étudiant mis à jour, ou None en cas d'échec.
+            L'étudiant mis à jour.
+
+        Raises:
+            SepsEtnicError: une sous-classe choisie par le code, pour tout refus
+                (``success=false``), que le code arrive en erreur ou en
+                avertissement (``SepsAucuneModificationError`` pour 30443).
         """
         kwargs = {"cfNum": cf_num}
         if etudiant_details is not None:
