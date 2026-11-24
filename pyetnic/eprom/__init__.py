@@ -32,6 +32,7 @@ from ..services import (
     modifier_document_2,
     lire_document_3,
     modifier_document_3,
+    ajouter_attributions_document_3,
     TYPES_INTERVENTION_EXTERIEURE,
 )
 
@@ -135,6 +136,7 @@ __all__ = [
     "modifier_document_2",
     "lire_document_3",
     "modifier_document_3",
+    "ajouter_attributions_document_3",
     "TYPES_INTERVENTION_EXTERIEURE",
     # Nomenclatures
     "TypeInterventionExterieure",

@@ -195,3 +195,99 @@ def test_modifier_document3_mock(service, monkeypatch):
     ens = doc.activiteListe.activite[0].enseignantListe.enseignant[0]
     assert ens.nbPeriodesAttribuees == 6.0
     assert ens.coNumAttribution == 1
+
+
+# ---------------------------------------------------------------------------
+# ajouter_attributions_document_3: read, merge, write the touched branches
+# ---------------------------------------------------------------------------
+
+def _branche(num, annee, enseignants):
+    return {
+        "coNumBranche": num, "coCategorie": "A", "teNomBranche": f"Branche {num}", "noAnneeEtude": annee,
+        "nbPeriodesDoc8": 40, "nbPeriodesPrevuesDoc2": 40, "nbPeriodesReellesDoc2": 40,
+        "enseignantListe": {"enseignant": enseignants},
+    }
+
+
+def _enseignant(num, mat, periodes, statut="DEF", dispo=None):
+    return {"coNumAttribution": num, "noMatEns": mat, "teNomEns": None, "tePrenomEns": None, "teAbrEns": None,
+            "teEnseignant": None, "coDispo": dispo, "teStatut": statut, "nbPeriodesAttribuees": periodes,
+            "tsMaj": None, "teUserMaj": None}
+
+
+def _new(mat, periodes):
+    return Doc3EnseignantDetailSave(noMatEns=mat, teStatut="TEMP", nbPeriodesAttribuees=periodes)
+
+
+ORG = OrganisationId(anneeScolaire="2025-2026", etabId=1234, numAdmFormation=328, numOrganisation=1)
+
+
+@pytest.fixture
+def recorded(service, monkeypatch):
+    """Read answers the document given to it; the write is recorded and echoed."""
+    calls = []
+
+    def setup(activites):
+        def fake(method, **kwargs):
+            calls.append((method, kwargs))
+            return _mock_doc3_response(activites=activites)
+        monkeypatch.setattr(service.client_manager, "call_service", fake)
+        return calls
+    return setup
+
+
+def test_ajouter_keeps_the_existing_attributions_of_the_branch(service, recorded):
+    calls = recorded([
+        _branche(10, "1", [_enseignant(1, "111111", 10.0), _enseignant(2, "222222", 6.0, dispo="05")]),
+        _branche(20, "1", [_enseignant(1, "333333", 8.0)]),
+    ])
+
+    service.ajouter_attributions_document_3(ORG, Doc3ActiviteListeSave([
+        Doc3ActiviteDetailSave(10, "1", Doc3EnseignantListSave([_new("444444", 4.0)])),
+    ]))
+
+    assert [m for m, _ in calls] == ["LireDocument3", "ModifierDocument3"]
+    sent = calls[1][1]["activiteListe"]["activite"]
+    assert len(sent) == 1, "the untouched branch 20 is not sent"
+    assert sent[0]["coNumBranche"] == 10 and sent[0]["noAnneeEtude"] == "1"
+    assert sent[0]["enseignantListe"]["enseignant"] == [
+        {"coNumAttribution": 1, "noMatEns": "111111", "teStatut": "DEF", "nbPeriodesAttribuees": 10.0},
+        {"coNumAttribution": 2, "noMatEns": "222222", "coDispo": "05", "teStatut": "DEF", "nbPeriodesAttribuees": 6.0},
+        {"noMatEns": "444444", "teStatut": "TEMP", "nbPeriodesAttribuees": 4.0},
+    ]
+
+
+def test_ajouter_drops_the_placeholder_of_a_never_written_branch(service, recorded):
+    """A Doc 3 never written reads with one empty line per branch: it is not sent back."""
+    calls = recorded([_branche(10, "1", [_enseignant(1, None, 0.0, statut=None)])])
+
+    service.ajouter_attributions_document_3(ORG, Doc3ActiviteListeSave([
+        Doc3ActiviteDetailSave(10, "1", Doc3EnseignantListSave([_new("444444", 4.0)])),
+    ]))
+
+    assert calls[1][1]["activiteListe"]["activite"][0]["enseignantListe"]["enseignant"] == [
+        {"noMatEns": "444444", "teStatut": "TEMP", "nbPeriodesAttribuees": 4.0},
+    ]
+
+
+def test_ajouter_refuses_a_branch_the_document_does_not_have(service, recorded):
+    calls = recorded([_branche(10, "1", [])])
+
+    with pytest.raises(ValueError, match="coNumBranche=99"):
+        service.ajouter_attributions_document_3(ORG, Doc3ActiviteListeSave([
+            Doc3ActiviteDetailSave(99, "1", Doc3EnseignantListSave([_new("444444", 4.0)])),
+        ]))
+    assert [m for m, _ in calls] == ["LireDocument3"], "nothing is written"
+
+
+def test_ajouter_matches_the_year_of_study_too(service, recorded):
+    calls = recorded([_branche(10, "1", [_enseignant(1, "111111", 10.0)]), _branche(10, "2", [])])
+
+    service.ajouter_attributions_document_3(ORG, Doc3ActiviteListeSave([
+        Doc3ActiviteDetailSave(10, "2", Doc3EnseignantListSave([_new("444444", 4.0)])),
+    ]))
+
+    [branche] = calls[1][1]["activiteListe"]["activite"]
+    assert branche["noAnneeEtude"] == "2"
+    assert branche["enseignantListe"]["enseignant"] == [
+        {"noMatEns": "444444", "teStatut": "TEMP", "nbPeriodesAttribuees": 4.0}]

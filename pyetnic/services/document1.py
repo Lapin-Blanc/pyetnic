@@ -118,19 +118,31 @@ class Document1Service:
     def approuver_document_1(
         self,
         organisation_id: OrganisationId,
-        population_liste: Optional[Doc1PopulationListSave] = None,
+        population_liste: Doc1PopulationListSave,
     ) -> Optional[FormationDocument1]:
         """Validate the Doc 1 population (``swAppPopD1``, the "Validé" box).
 
-        Although the XSD makes ``population_liste`` optional, the server
-        compares it with what it stores and refuses with error 20104 when it
-        differs or is missing: pass back the lines just read with
-        :func:`lire_document_1`. The administration's own approval
-        (``swAppD1``) is out of the school's reach.
+        ``population_liste`` is required, although the XSD makes it optional:
+        the server compares it with what it stores and refuses with error
+        20104 (``EtnicConcurrencyError``) when it differs or is missing
+        (observed in production, 2026-09-18). Send back the lines just read::
+
+            doc = lire_document_1(org_id)
+            approuver_document_1(org_id, Doc1PopulationListSave.from_document(doc))
+
+        The administration's own approval (``swAppD1``) is out of the
+        school's reach.
         """
+        if population_liste is None:
+            raise TypeError(
+                "approuver_document_1() needs population_liste: the server refuses an "
+                "approval without the population (error 20104). Use "
+                "Doc1PopulationListSave.from_document(lire_document_1(organisation_id))."
+            )
         logger.info("Approbation du document 1 pour l'organisation : %s", organisation_id)
-        request_data: dict = {'id': organisation_request_id(organisation_id)}
-        if population_liste is not None:
-            request_data['populationListe'] = to_soap_dict(population_liste)
+        request_data: dict = {
+            'id': organisation_request_id(organisation_id),
+            'populationListe': to_soap_dict(population_liste),
+        }
         result = self.client_manager.call_service("ApprouverDocument1", **request_data)
         return self._parse_document1_response(result, organisation_id)

@@ -162,7 +162,25 @@ def test_approuver_document1_mock(service, monkeypatch):
         lambda *a, **kw: _mock_doc1_response(328, 1, [_mock_pop_line(approuve=True)]),
     )
 
-    doc = service.approuver_document_1(org_id)
+    doc = service.approuver_document_1(org_id, Doc1PopulationListSave([Doc1PopulationLineSave(coAnnEtude=1)]))
 
     assert isinstance(doc, FormationDocument1)
     assert doc.populationListe.population[0].swAppD1 is True
+
+
+def test_population_from_document_sends_back_the_population_as_read(service, monkeypatch):
+    """from_document keeps every writable field of every line read, in order."""
+    monkeypatch.setattr(service.client_manager, "call_service",
+                        lambda *a, **kw: _mock_doc1_response(328, 1, [_mock_pop_line(1, 10), _mock_pop_line(2, 4)]))
+    read = service.lire_document_1(OrganisationId("2023-2024", 1234, 328, 1))
+
+    population = Doc1PopulationListSave.from_document(read)
+
+    assert [p.coAnnEtude for p in population.population] == [1, 2]
+    first = population.population[0]
+    assert (first.nbEleveA, first.nbEleveDem, first.nbEleveTotHom, first.nbEleveTotFem) == (10, 1, 4, 6)
+
+
+def test_population_from_document_without_lines_is_empty():
+    empty = FormationDocument1(OrganisationId("2023-2024", 1234, 328, 1))
+    assert Doc1PopulationListSave.from_document(empty).population == []

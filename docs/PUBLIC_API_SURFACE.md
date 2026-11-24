@@ -29,7 +29,7 @@ A symbol is **construction** otherwise. Construction symbols are still exported 
 | `supprimer_organisation` | Used in production scripts |
 | `lire_document_1` | Used in production scripts |
 | `modifier_document_1` | Used in production scripts |
-| `approuver_document_1` | Used in production scripts |
+| `approuver_document_1` | Used in production scripts. `population_liste` required since 0.3.0 (#34): the server refused every call without it (20104) |
 | `lire_document_2` | Used in production scripts |
 | `modifier_document_2` | Used in production scripts |
 | `lire_document_3` | Used in production scripts |
@@ -73,6 +73,13 @@ A symbol is **construction** otherwise. Construction symbols are still exported 
 | `Doc3ActiviteDetailSave` | Constructed by callers |
 | `Doc3ActiviteListeSave` | Constructed by callers |
 | `FormationDocument3` | Returned by `lire_document_3`, `modifier_document_3` |
+
+### Construction - Writer helpers (#34)
+
+| Symbol | Notes |
+|---|---|
+| `ajouter_attributions_document_3` | Reads Doc 3, then writes the branches given with their current lines plus the new ones |
+| `Doc1PopulationListSave.from_document` | Classmethod: the population of a Doc 1 read, for `approuver_document_1` |
 
 ### Construction - Document 1D (droits d'inscription, #33)
 

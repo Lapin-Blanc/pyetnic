@@ -124,6 +124,20 @@ class Doc1PopulationListSave:
     """Liste de populations à sauvegarder (PopDocument1AnneeEtudeLstSaveCT)."""
     population: List[Doc1PopulationLineSave] = field(default_factory=list)
 
+    @classmethod
+    def from_document(cls, document: "FormationDocument1") -> "Doc1PopulationListSave":
+        """The population of a Doc 1 just read, as :func:`approuver_document_1` must send it back."""
+        lines = document.populationListe.population if document.populationListe else []
+        return cls([
+            Doc1PopulationLineSave(
+                coAnnEtude=p.coAnnEtude, nbEleveA=p.nbEleveA, nbEleveEhr=p.nbEleveEhr,
+                nbEleveB=p.nbEleveB, nbEleveDem=p.nbEleveDem, nbEleveMin=p.nbEleveMin,
+                nbEleveExm=p.nbEleveExm, nbElevePl=p.nbElevePl,
+                nbEleveTotHom=p.nbEleveTotHom, nbEleveTotFem=p.nbEleveTotFem,
+            )
+            for p in lines
+        ])
+
 @dataclass
 class FormationDocument1:
     """Représente un document 1 (populations de formation)."""

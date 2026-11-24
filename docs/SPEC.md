@@ -44,7 +44,7 @@ It is used by schools and school management software to interact programmaticall
 **Document1 (v1)**
 - `LireDocument1` → `lire_document_1(org_id)`
 - `ModifierDocument1` → `modifier_document_1(org_id, population_liste?)`
-- `ApprouverDocument1` → `approuver_document_1(org_id, population_liste?)`
+- `ApprouverDocument1` → `approuver_document_1(org_id, population_liste)` (required since 0.3.0: error 20104 without it; `Doc1PopulationListSave.from_document(doc)`)
 
 **Document1D (v1), droits d'inscription**
 - `LireDocument1D` → `lire_document_1d(org_id)`
@@ -60,7 +60,8 @@ It is used by schools and school management software to interact programmaticall
 
 **Document3 (v1)**
 - `LireDocument3` → `lire_document_3(org_id)`
-- `ModifierDocument3` → `modifier_document_3(org_id, activite_liste)`
+- `ModifierDocument3` → `modifier_document_3(org_id, activite_liste)` (replaces the teacher list of every branch sent)
+- `ajouter_attributions_document_3(org_id, activite_liste)`: reads, then writes each branch sent with its current lines followed by the new ones
 
 ### SEPS operations
 

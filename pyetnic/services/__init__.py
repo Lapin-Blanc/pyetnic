@@ -47,6 +47,7 @@ document3_service = Document3Service()
 # Exposition des méthodes du service
 lire_document_3 = document3_service.lire_document_3
 modifier_document_3 = document3_service.modifier_document_3
+ajouter_attributions_document_3 = document3_service.ajouter_attributions_document_3
 
 # instanciation du service
 document1_service = Document1Service()
@@ -106,6 +107,7 @@ __all__ = [
     'modifier_document_2',
     'lire_document_3',
     'modifier_document_3',
+    'ajouter_attributions_document_3',
     'RechercheEtudiantsService',
     'lire_etudiant',
     'rechercher_etudiants',
