@@ -25,6 +25,7 @@ import re
 from typing import Any, Dict, List, Optional, Type
 
 from ..exceptions import EtnicBusinessError, EtnicNotFoundError, EtnicValidationError, extract_error_info
+from .models import SepsMessage
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +227,40 @@ def _message_list(messages: Any, kind: str) -> List[Dict[str, Any]]:
 
 def _is_version(message: Dict[str, Any]) -> bool:
     return bool(_VERSION_CODE_RE.match(str(message.get("code") or "")))
+
+
+def seps_messages(result: Any) -> List[SepsMessage]:
+    """Every message of a SEPS answer, errors first, the service version excluded."""
+    if not (isinstance(result, dict) and isinstance(result.get("body"), dict)):
+        return []
+    messages = result["body"].get("messages")
+    found: List[SepsMessage] = []
+    for niveau in ("error", "warning", "info"):
+        for message in _message_list(messages, niveau):
+            if _is_version(message):
+                continue
+            code = message.get("code")
+            found.append(SepsMessage(niveau, str(code) if code is not None else None, message.get("description")))
+    return found
+
+
+def primary_code(messages: List[SepsMessage]) -> Optional[str]:
+    """The code that sums up an accepted write: 201 / 200 if present, else the first info, else the first code."""
+    for message in messages:
+        if message.code in _SUCCESS_CODES:
+            return message.code
+    for message in messages:
+        if message.niveau == "info" and message.code:
+            return message.code
+    return next((m.code for m in messages if m.code), None)
+
+
+def seps_response(result: Any, key: str) -> Optional[Dict[str, Any]]:
+    """``body.response.<key>`` of a SEPS answer, or ``None``."""
+    body = result.get("body") if isinstance(result, dict) else None
+    response = body.get("response") if isinstance(body, dict) else None
+    value = response.get(key) if isinstance(response, dict) else None
+    return value or None
 
 
 def seps_error(

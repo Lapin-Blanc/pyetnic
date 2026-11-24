@@ -5,9 +5,9 @@ from typing import Optional
 
 from ..soap_client import SoapClientManager
 from ._helpers import to_soap_dict
-from .models import Etudiant, EtudiantDetailsSave
+from .models import EnregistrerEtudiantResult, EtudiantDetailsSave, ModifierEtudiantResult
 from .seps import RechercheEtudiantsService
-from .seps_errors import check_seps_response
+from .seps_errors import check_seps_response, primary_code, seps_messages, seps_response
 
 logger = logging.getLogger(__name__)
 
@@ -33,27 +33,28 @@ class EnregistrerEtudiantService:
     # Parsers internes
     # ------------------------------------------------------------------
 
-    def _parse_enregistrer_response(self, result) -> Optional[Etudiant]:
+    def _parse_enregistrer_response(self, result) -> EnregistrerEtudiantResult:
         check_seps_response(result)
-        if not (
-            result
-            and result.get("body")
-            and result["body"].get("response")
-            and result["body"]["response"].get("etudiant")
-        ):
-            return None
-        return self._parse_etudiant(result["body"]["response"]["etudiant"])
+        messages = seps_messages(result)
+        etudiant = seps_response(result, "etudiant")
+        bis = etudiant.get("bisCreated") if etudiant else None
+        return EnregistrerEtudiantResult(
+            code=primary_code(messages),
+            messages=messages,
+            etudiant=self._parse_etudiant(etudiant) if etudiant else None,
+            bis_cree={"O": True, "N": False}.get(bis),
+        )
 
-    def _parse_modifier_response(self, result) -> Optional[Etudiant]:
+    def _parse_modifier_response(self, result) -> ModifierEtudiantResult:
         check_seps_response(result)
-        if not (
-            result
-            and result.get("body")
-            and result["body"].get("response")
-            and result["body"]["response"].get("etudiantDetails")
-        ):
-            return None
-        return self._parse_etudiant(result["body"]["response"]["etudiantDetails"])
+        messages = seps_messages(result)
+        # modifierEtudiant names its element etudiantDetails (type EtudiantType).
+        etudiant = seps_response(result, "etudiantDetails")
+        return ModifierEtudiantResult(
+            code=primary_code(messages),
+            messages=messages,
+            etudiant=self._parse_etudiant(etudiant) if etudiant else None,
+        )
 
     # ------------------------------------------------------------------
     # API publique
@@ -65,7 +66,7 @@ class EnregistrerEtudiantService:
         etudiant_details: Optional[EtudiantDetailsSave] = None,
         double_flag: Optional[bool] = None,
         create_bis_flag: Optional[bool] = None,
-    ) -> Optional[Etudiant]:
+    ) -> EnregistrerEtudiantResult:
         """Enregistre un nouvel étudiant dans la base CFWB.
 
         Args:
@@ -76,7 +77,9 @@ class EnregistrerEtudiantService:
             create_bis_flag: Créer un numéro BIS si l'étudiant n'a pas de NISS.
 
         Returns:
-            L'étudiant créé (ou fusionné avec une fiche existante).
+            Le résultat : ``etudiant`` tel que le serveur le renvoie, ``code``
+            (``cree`` pour 201, nouveau CF ; ``fusionne`` pour 200, rattaché à
+            une fiche existante qui garde son CF), ``bis_cree`` et ``messages``.
 
         Raises:
             SepsEtnicError: une sous-classe choisie par le code, pour tout refus
@@ -98,7 +101,7 @@ class EnregistrerEtudiantService:
         self,
         cf_num: str,
         etudiant_details: Optional[EtudiantDetailsSave] = None,
-    ) -> Optional[Etudiant]:
+    ) -> ModifierEtudiantResult:
         """Modify an existing student (the establishment's ``cfwbDetails`` version).
 
         An optional field left out is **erased** by the server, and a field
@@ -110,7 +113,7 @@ class EnregistrerEtudiantService:
             etudiant_details: Nouvelles données de l'étudiant.
 
         Returns:
-            L'étudiant mis à jour.
+            Le résultat : ``etudiant`` mis à jour, ``code`` et ``messages``.
 
         Raises:
             SepsEtnicError: une sous-classe choisie par le code, pour tout refus

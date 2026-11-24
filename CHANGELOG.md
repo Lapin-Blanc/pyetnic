@@ -11,6 +11,9 @@ that supports `bN` pre-releases).
 
 ### Added
 
+- **SEPS write results** (#21), exported from `pyetnic.seps`: `SepsMessage`,
+  `SepsEcritureResult`, `EnregistrerEtudiantResult` (`cree` for 201, `fusionne` for 200,
+  `bis_cree`), `ModifierEtudiantResult`, `InscriptionResult` (`plus_de_4_ue` for 30051).
 - **Typed SEPS refusals** (#20), exported from `pyetnic.seps`: `SepsValidationError`
   (the manual's BAD_REQUEST codes, also an `EtnicValidationError`), `SepsNotFoundError`
   (NOT_FOUND, also an `EtnicNotFoundError`) with `SepsUeInconnueError` (30100, 30101) and
@@ -24,6 +27,12 @@ that supports `bN` pre-releases).
 
 ### Changed
 
+- **The SEPS writers return the server's code and messages** (#21, construction symbols):
+  `enregistrer_etudiant` returns `EnregistrerEtudiantResult`, `modifier_etudiant`
+  `ModifierEtudiantResult`, `enregistrer_inscription` and `modifier_inscription`
+  `InscriptionResult`, instead of the bare `Etudiant` / `Inscription` (now in `.etudiant` /
+  `.inscription`). A creation (201) and a merge with an existing record (200) can be told
+  apart, and 30051 is no longer lost.
 - **`SepsEtnicError` derives from `EtnicBusinessError`** (#20): `except EtnicBusinessError`
   and `except EtnicError` now catch SEPS refusals too. Names, constructors and the existing
   subclasses are unchanged; a SEPS error carries `request_id` when the answer has one.

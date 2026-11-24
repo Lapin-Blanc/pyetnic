@@ -174,8 +174,9 @@ class TestSuccess:
                 response={"etudiantDetails": {"cfNum": "1234567-89"}},
             ),
         )
-        etudiant = service.modifier_etudiant(cf_num="1234567-89", etudiant_details=EtudiantDetailsSave(nom="DUPONT"))
-        assert etudiant.cfNum == "1234567-89"
+        result = service.modifier_etudiant(cf_num="1234567-89", etudiant_details=EtudiantDetailsSave(nom="DUPONT"))
+        assert result.etudiant.cfNum == "1234567-89"
+        assert result.code == "200"
 
     def test_version_message_alone_is_not_a_success(self):
         with pytest.raises(SepsEtnicError) as exc_info:

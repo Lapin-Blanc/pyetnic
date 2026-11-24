@@ -561,3 +561,91 @@ class InscriptionInputDataSave:
     idImplantation: int                                    # requis
     codePostalLieuCours: str                               # requis
     inscription: InscriptionInputSave                      # requis
+
+# ---------------------------------------------------------------------------
+# Résultats des écritures SEPS
+# ---------------------------------------------------------------------------
+
+# Codes of a successful write: 201 creation, 200 modification (or, for a student
+# registered by NISS, merge with an existing establishment record).
+_SEPS_SUCCESS_CODES = ("201", "200")
+
+
+@dataclass
+class SepsMessage:
+    """Un message du bloc retour SEPS (error, warning ou info).
+
+    Le message de version du service (``2.4.6``, « version ») n'est jamais repris.
+    """
+    niveau: str                                            # "error" | "warning" | "info"
+    code: Optional[str] = None
+    description: Optional[str] = None
+
+
+@dataclass
+class SepsEcritureResult:
+    """Ce que le serveur répond à une écriture SEPS acceptée.
+
+    Un refus lève une ``SepsEtnicError`` : un résultat est toujours un succès.
+
+    Attributes:
+        code: Le code principal : ``201`` (création), ``200`` (modification ou,
+            pour un étudiant enregistré par NISS, fusion avec une fiche
+            existante), sinon le premier code non bloquant reçu, ou ``None``.
+        messages: Tous les messages reçus, version du service exclue.
+    """
+    code: Optional[str]
+    messages: List[SepsMessage] = field(default_factory=list)
+
+    @property
+    def avertissements(self) -> List[SepsMessage]:
+        """Les messages autres que le code de succès (201 / 200)."""
+        return [m for m in self.messages if m.code not in _SEPS_SUCCESS_CODES]
+
+    def a_le_code(self, code: str) -> bool:
+        """Vrai si le serveur a renvoyé ce code, quel que soit son niveau."""
+        return any(m.code == code for m in self.messages)
+
+
+@dataclass
+class EnregistrerEtudiantResult(SepsEcritureResult):
+    """Résultat de ``enregistrer_etudiant``.
+
+    Attributes:
+        etudiant: L'étudiant tel que le serveur le renvoie.
+        bis_cree: ``True`` si le serveur a créé un NISS bis (``bisCreated`` à
+            ``O``), ``False`` s'il dit que non, ``None`` s'il ne dit rien.
+    """
+    etudiant: Optional[Etudiant] = None
+    bis_cree: Optional[bool] = None
+
+    @property
+    def cree(self) -> bool:
+        """Nouvel étudiant, nouveau numéro CF (code 201)."""
+        return self.code == "201"
+
+    @property
+    def fusionne(self) -> bool:
+        """Rattaché à une fiche établissement existante, qui garde son CF (code 200).
+
+        Le manuel « Enregistrer Etudiants 2.3 » décrit cette fusion en mode NISS
+        quand un seul doublon (nom, prénom, sexe, date de naissance) existe.
+        """
+        return self.code == "200"
+
+
+@dataclass
+class ModifierEtudiantResult(SepsEcritureResult):
+    """Résultat de ``modifier_etudiant``."""
+    etudiant: Optional[Etudiant] = None
+
+
+@dataclass
+class InscriptionResult(SepsEcritureResult):
+    """Résultat de ``enregistrer_inscription`` et ``modifier_inscription``."""
+    inscription: Optional[Inscription] = None
+
+    @property
+    def plus_de_4_ue(self) -> bool:
+        """Créée, mais l'étudiant est inscrit dans plus de 4 UE (code 30051)."""
+        return self.a_le_code("30051")
