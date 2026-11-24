@@ -43,6 +43,20 @@ that supports `bN` pre-releases).
 ### Changed
 
 - **`SepsSanction.codeSanction` is optional** (#22), as in the live contract.
+- **SEPS specs rebuilt from the June 2026 manuals, the live contracts and production
+  facts** (#24, docs only): specs 09 to 15 and the SEPS part of `specs/00_REGISTRE.md`
+  now follow the user manuals Enregistrer Étudiants 2.3, Enregistrer and Recherche
+  Inscriptions 2.4 and Notifications 2.3 (the 2.1.9 manual stays the only source for
+  Recherche Étudiants), the production contracts embedded in `pyetnic/resources`, and
+  dated production observations: inscriptions accepted before the Doc A is approved,
+  SEPS learning EPROM organisations with a delay, deleted organisations purging their
+  inscriptions, `dateRequete` as a point-in-time read, 30103 not telling an unknown UE
+  from an empty one, a NISS search returning a student without CF number, 30502 for a
+  name search that finds nobody. The manual's contradiction on `doubleFlag` in NISS mode
+  is documented as unresolved, with a safe practice. Each "Mapping pyetnic" section
+  describes the current API instead of the old proposals. `rechercher_inscriptions` and
+  its read dataclasses are reclassified **stable** in `docs/PUBLIC_API_SURFACE.md`: a
+  consuming application uses them in production.
 - **The SEPS writers return the server's code and messages** (#21, construction symbols):
   `enregistrer_etudiant` returns `EnregistrerEtudiantResult`, `modifier_etudiant`
   `ModifierEtudiantResult`, `enregistrer_inscription` and `modifier_inscription`

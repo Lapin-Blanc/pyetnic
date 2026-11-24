@@ -452,7 +452,7 @@ EtnicError
 | 00009 | Aucun enregistrement trouvé |
 | 20102 | Le Doc A (l'organisation) et le Doc 2 doivent être approuvés pour accéder au Doc 3 |
 | 20104 | Validation du Doc 1 refusée : renvoyer la population telle qu'elle vient d'être lue |
-| SECU-0104 | Certificat X509 non enregistré dans l'annuaire (SEPS en dev) |
+| SECU-0102 / SECU-0104 | Certificat X509 de production refusé sur TQ (SEPS en dev) |
 
 ---
 
