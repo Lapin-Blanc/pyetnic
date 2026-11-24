@@ -19,8 +19,9 @@ that supports `bN` pre-releases).
   live, the catalogue's version and endpoints when they differ from pyetnic's, a manual
   revision that the matching spec does not name, and a catalogue service pyetnic does not
   embed. Without `--check` it refreshes the files, creating a new service folder from
-  the catalogue archive. A weekly GitHub Actions workflow runs the check and opens, updates
-  or closes an issue labelled `contract-watch`.
+  the catalogue archive. A weekly GitHub Actions workflow runs the gateway part
+  (`--no-catalogue`: the catalogue closes the connection of the GitHub runners) and opens,
+  updates or closes an issue labelled `contract-watch`.
 
 ## [0.2.0b1] - 2026-11-24
 

@@ -36,6 +36,12 @@ Usage:
     python tools/refresh_contracts.py                       # refresh the contracts
     python tools/refresh_contracts.py --env tq --check      # TQ (lags production)
     python tools/refresh_contracts.py --service ORGANISATION
+    python tools/refresh_contracts.py --check --no-catalogue  # gateway only
+
+The catalogue closes the connection of cloud hosts such as the GitHub Actions
+runners, while the gateway answers them: the weekly workflow therefore runs with
+``--no-catalogue`` (live contracts and next versions), and the catalogue part is
+run from a workstation.
 
 Exit codes: 0 nothing differs, 1 drift, 2 a source could not be read.
 """
@@ -442,8 +448,9 @@ class Report:
         self.written.append(path.relative_to(ROOT).as_posix())
         print(f"  wrote  {path.relative_to(ROOT).as_posix()}")
 
-    def markdown(self, env: str) -> str:
-        lines = [f"Contract watch ({env}, `tools/refresh_contracts.py --check`).", ""]
+    def markdown(self, env: str, use_catalogue: bool = True) -> str:
+        scope = "" if use_catalogue else " --no-catalogue"
+        lines = [f"Contract watch ({env}, `tools/refresh_contracts.py --check{scope}`).", ""]
         if self.drift:
             lines += ["### Drift", ""]
             lines += [f"- **{service}**: {message}" for service, message in self.drift]
@@ -599,19 +606,20 @@ def load_services(env: str) -> dict[str, Service]:
             overrides.pop("ENV", None)
 
 
-def run(env: str, write: bool, only: set[str] | None) -> Report:
+def run(env: str, write: bool, only: set[str] | None, use_catalogue: bool = True) -> Report:
     report = Report()
     prod_services = load_services(CONFIG_ENV["prod"])
     tq_services = load_services(CONFIG_ENV["tq"])
     services = load_services(CONFIG_ENV[env])
     host = HOSTS[env]
 
-    print(f"Catalogue <- {CATALOGUE}")
-    try:
-        catalogue = read_catalogue()
-    except SourceError as exc:
-        report.error("catalogue", str(exc))
-        catalogue = []
+    catalogue: list[CatalogueEntry] = []
+    if use_catalogue:
+        print(f"Catalogue <- {CATALOGUE}")
+        try:
+            catalogue = read_catalogue()
+        except SourceError as exc:
+            report.error("catalogue", str(exc))
     by_name = {(e.product, fold(e.name)): e for e in catalogue}
 
     for watched in WATCHED:
@@ -652,10 +660,13 @@ def main() -> None:
     parser.add_argument("--check", action="store_true", help="report only, exit 1 on drift")
     parser.add_argument("--report", type=Path, help="write the report as Markdown to this file")
     parser.add_argument("--service", action="append", help="limit to these Config.SERVICES keys")
+    parser.add_argument("--no-catalogue", action="store_true",
+                        help="skip the SOA catalogue (versions, endpoints, archives, manuals)")
     args = parser.parse_args()
-    report = run(args.env, write=not args.check, only=set(args.service) if args.service else None)
+    report = run(args.env, write=not args.check, only=set(args.service) if args.service else None,
+                 use_catalogue=not args.no_catalogue)
     if args.report:
-        args.report.write_text(report.markdown(args.env), encoding="utf-8")
+        args.report.write_text(report.markdown(args.env, not args.no_catalogue), encoding="utf-8")
     print(f"{len(report.drift)} drift, {len(report.errors)} error(s), {len(report.written)} file(s) written")
     if report.errors:
         sys.exit(2)

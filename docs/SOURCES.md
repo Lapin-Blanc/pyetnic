@@ -17,7 +17,7 @@ applications that consume pyetnic.
 | `docs/ARCHITECTURE.md` | Architecture decisions, scope boundary, known limitations | Reference |
 | `specs/` | Exhaustive per-service reference (French), built from the WSDL/XSD and the ETNIC manuals; `00_REGISTRE.md` holds the shared types and the error-code table | Richest business reference |
 | `documentation/` | The official ETNIC user manuals the specs are built from. The SEPS manual is kept out of the repository (one of its examples shows an unmasked NISS): ask ETNIC for it | Primary source |
-| `pyetnic/resources/` | The embedded WSDL and XSD, one folder per service. Where the live gateway serves the schemas (SEPS, Formation Organisation) they come from the production service, ahead of the SOA catalogue; elsewhere the WSDL is compared live and the schemas come from the catalogue archive. `tools/refresh_contracts.py` refreshes them (`--check` to compare); a weekly GitHub Actions run opens a `contract-watch` issue on drift | Contract |
+| `pyetnic/resources/` | The embedded WSDL and XSD, one folder per service. Where the live gateway serves the schemas (SEPS, Formation Organisation) they come from the production service, ahead of the SOA catalogue; elsewhere the WSDL is compared live and the schemas come from the catalogue archive. `tools/refresh_contracts.py` refreshes them (`--check` to compare); a weekly GitHub Actions run compares them with the gateway and opens a `contract-watch` issue on drift (the catalogue part runs from a workstation: it refuses the GitHub runners) | Contract |
 | GitHub issues | Backlog: open defects, deferred decisions, missing services | Current |
 | `CLAUDE.md` | Conventions for Claude Code sessions | Current |
 

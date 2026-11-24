@@ -1,9 +1,12 @@
 name: Contract watch
 
-# Weekly comparison of the embedded ETNIC contracts with the live services and the
-# SOA catalogue (tools/refresh_contracts.py). A drift opens an issue labelled
-# `contract-watch`, or updates the open one; a clean run closes it. On a pull
-# request touching the tool, the check runs for its exit code only.
+# Weekly comparison of the embedded ETNIC contracts with the live services
+# (tools/refresh_contracts.py): contract drift and next major versions. The SOA
+# catalogue closes the connection of the GitHub runners, so its part (versions,
+# endpoints, archives, manual revisions) runs from a workstation, without
+# --no-catalogue. A drift opens an issue labelled `contract-watch`, or updates the
+# open one; a clean run closes it. On a pull request touching the tool, the check
+# runs for its exit code only.
 
 on:
   schedule:
@@ -46,7 +49,7 @@ jobs:
         id: check
         run: |
           set +e
-          python tools/refresh_contracts.py --check --report drift.md
+          python tools/refresh_contracts.py --check --no-catalogue --report drift.md
           echo "status=$?" >> "$GITHUB_OUTPUT"
           cat drift.md >> "$GITHUB_STEP_SUMMARY"
 
