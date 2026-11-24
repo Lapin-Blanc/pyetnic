@@ -125,6 +125,8 @@
   - `"Approuvé"` — approuvé/validé
 - **Utilisé par** : Formations Liste (OrganisationApercuCT), Formation Organisation v7
 - **Note** : structure identique entre v2 et v7, seul le namespace change
+- **`dateStatut`** date l'entrée dans le statut, pas la dernière modification ; c'est le `tsMaj` de
+  chaque document qui date la dernière écriture (observé une fois, 2026-09-18)
 
 ### OrganisationApercuCT
 - **Fichier XSD** : `FormationOrganisation_v2.xsd`
@@ -386,13 +388,16 @@
 | `30007` | `false` | Paramètre anneeScolaire incorrect (format xxxx-xxxx) | Formations Liste, Organisation |
 | `30008` | `false` | enseignementHybride disponible qu'à partir 2022-2023 | Organisation |
 | `30009` | `false` | reorientation7TP disponible qu'à partir 2025-2026 | Organisation |
-| `00011` | `false` | Enregistrement modifié par un autre utilisateur | Document 1, Document 2 |
-| `1113` | `false` | Paramètre anneeScolaire incorrect (xxxx-xxxx) | Document 1, Document 2 |
-| `1114` | `false` | Numéro d'établissement incorrect | Document 1, Document 2 |
+| `00011` | `false` | Enregistrement modifié par un autre utilisateur | Documents 1, 2, 3 |
+| `1113` | `false` | Paramètre anneeScolaire incorrect (xxxx-xxxx) | Documents 1, 2, 3 |
+| `1114` | `false` | Numéro d'établissement incorrect | Documents 1, 2, 3 |
 | `1530` | `false` | Document déjà approuvé par l'administration | Document 1 (Approuver), Document 2 (Modifier) |
 | `1545` | `false` | Doc 1 approuvé / max 5 interventions ext. (Doc 2) | Document 1 (Modifier), Document 2 (Modifier) |
 | `2106` | `false` | Code Année d'études de la population scolaire incorrect | Document 1, Document 2 |
 | `4004`-`4012` | `false` | Contrôles cohérence population (totaux, ventilations) | Document 1 |
+| `20101` | `false` | « Doc A » doit être approuvé pour accéder au document suivant (workflow ; testé sur TQ, 2026-11-10) | Document 1 (Lire) |
+| `20103` | `false` | « Doc 1 » doit être approuvé pour accéder au document suivant : population non validée (`swAppPopD1`) (workflow ; testé sur TQ, 2026-11-10) | Document 2 (Lire) |
+| `20104` | `false` | Valeurs à valider différentes de celles enregistrées (recharger avant la validation) ; population absente ou différente (observé en production, 2026-09-18) | Document 1 (Approuver) |
 | `1527`-`1528` | `false` | Données regroupement invalides | Document 2 |
 | `1598`-`1604` | `false` | Erreurs type/sous-type intervention extérieure | Document 2 |
 | `2118` | `false` | Numéro activité d'enseignement incorrect | Document 2 |

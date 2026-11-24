@@ -43,7 +43,7 @@ from pyetnic.exceptions import map_etnic_error_code_to_class
 
 SAMPLE_ORG_ID = OrganisationId(
     anneeScolaire="2024-2025",
-    etabId=3052,
+    etabId=1234,
     numAdmFormation=455,
     numOrganisation=1,
 )

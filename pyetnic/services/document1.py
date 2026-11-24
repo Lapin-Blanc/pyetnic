@@ -82,7 +82,18 @@ class Document1Service:
     # ------------------------------------------------------------------
 
     def lire_document_1(self, organisation_id: OrganisationId) -> Optional[FormationDocument1]:
-        """Lit les informations d'un document 1."""
+        """Read Doc 1 (population per year of study).
+
+        Before anything is encoded, the server already returns a population
+        line at zero (``swAppPopD1`` false; observed in production,
+        2026-09-16, confirmed on TQ, 2026-11-10): its presence does not mean
+        the Doc 1 was encoded.
+
+        Before the Doc A is approved the server refuses with error 20101
+        (tested on TQ, 2026-11-10). The code is not mapped to a specific
+        exception: ``None`` by default, a plain ``EtnicBusinessError`` under
+        :func:`strict_errors`.
+        """
         logger.info("Lecture du document 1 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
             "LireDocument1",

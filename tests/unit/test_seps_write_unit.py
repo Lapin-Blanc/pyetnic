@@ -175,8 +175,8 @@ class TestInscriptionsPayload:
 
         data = InscriptionInputDataSave(
             cfNum="123-01",
-            idEtab=3052,
-            idImplantation=6050,
+            idEtab=1234,
+            idImplantation=5678,
             codePostalLieuCours="1000",
             inscription=InscriptionInputSave(
                 dateInscription="2024-09-01",
@@ -189,7 +189,7 @@ class TestInscriptionsPayload:
         assert captured["method"] == "enregistrerInscription"
         payload = captured["kwargs"]["inscriptionInputData"]
         assert payload["cfNum"] == "123-01"
-        assert payload["idEtab"] == 3052
+        assert payload["idEtab"] == 1234
 
         inscription = payload["inscription"]
         assert inscription["dateInscription"] == "2024-09-01"
@@ -212,8 +212,8 @@ class TestInscriptionsPayload:
 
         data = InscriptionInputDataSave(
             cfNum="123-01",
-            idEtab=3052,
-            idImplantation=6050,
+            idEtab=1234,
+            idImplantation=5678,
             codePostalLieuCours="1000",
             inscription=InscriptionInputSave(
                 dateInscription="2024-09-01",
@@ -246,8 +246,8 @@ class TestInscriptionsPayload:
 
         data = InscriptionInputDataSave(
             cfNum="123-01",
-            idEtab=3052,
-            idImplantation=6050,
+            idEtab=1234,
+            idImplantation=5678,
             codePostalLieuCours="1000",
             inscription=InscriptionInputSave(
                 dateInscription="2024-09-01",

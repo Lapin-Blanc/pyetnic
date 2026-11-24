@@ -78,10 +78,10 @@ REQ_ID_FIELDS = {"anneeScolaire", "etabId", "numAdmFormation", "numOrganisation"
 def _org_id(num_org: int = 1, with_impl: bool = False) -> OrganisationId:
     return OrganisationId(
         anneeScolaire="2024-2025",
-        etabId=3052,
+        etabId=1234,
         numAdmFormation=328,
         numOrganisation=num_org,
-        implId=6050 if with_impl else None,
+        implId=5678 if with_impl else None,
     )
 
 
@@ -100,7 +100,7 @@ class TestListerFormations:
 
     def test_happy_path_returns_formations_liste_result(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_LISTER_FORMATIONS_RESPONSE
-        result = lister_formations(annee_scolaire="2024-2025", etab_id=3052, impl_id=6050)
+        result = lister_formations(annee_scolaire="2024-2025", etab_id=1234, impl_id=5678)
 
         assert isinstance(result, FormationsListeResult)
         assert result.success is True
@@ -133,15 +133,15 @@ class TestListerFormations:
 
     def test_request_shape(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_LISTER_FORMATIONS_RESPONSE
-        lister_formations(annee_scolaire="2024-2025", etab_id=3052, impl_id=6050)
+        lister_formations(annee_scolaire="2024-2025", etab_id=1234, impl_id=5678)
 
         assert mock_soap_call.call_count == 1
         call = mock_soap_call.call_args
         assert call.args[0] == "ListerFormations"
         assert call.kwargs == {
             "anneeScolaire": "2024-2025",
-            "etabId": 3052,
-            "implId": 6050,
+            "etabId": 1234,
+            "implId": 5678,
         }
 
 
@@ -153,7 +153,7 @@ class TestListerFormationsOrganisables:
 
     def test_happy_path(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_LISTER_FORMATIONS_ORGANISABLES_RESPONSE
-        result = lister_formations_organisables(annee_scolaire="2024-2025", etab_id=3052, impl_id=6050)
+        result = lister_formations_organisables(annee_scolaire="2024-2025", etab_id=1234, impl_id=5678)
 
         assert isinstance(result, FormationsListeResult)
         assert result.success is True
@@ -168,14 +168,14 @@ class TestListerFormationsOrganisables:
 
     def test_request_shape(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_LISTER_FORMATIONS_ORGANISABLES_RESPONSE
-        lister_formations_organisables(annee_scolaire="2024-2025", etab_id=3052, impl_id=6050)
+        lister_formations_organisables(annee_scolaire="2024-2025", etab_id=1234, impl_id=5678)
 
         call = mock_soap_call.call_args
         assert call.args[0] == "ListerFormationsOrganisables"
         assert call.kwargs == {
             "anneeScolaire": "2024-2025",
-            "etabId": 3052,
-            "implId": 6050,
+            "etabId": 1234,
+            "implId": 5678,
         }
 
 
@@ -231,22 +231,22 @@ class TestCreerOrganisation:
         mock_soap_call.return_value = CANONICAL_ORGANISATION_RESPONSE
         org = creer_organisation(
             annee_scolaire="2024-2025",
-            etab_id=3052,
-            impl_id=6050,
+            etab_id=1234,
+            impl_id=5678,
             num_adm_formation=328,
             date_debut=date(2024, 9, 2),
             date_fin=date(2025, 6, 27),
         )
         assert isinstance(org, Organisation)
         assert org.id.numOrganisation == 1
-        assert org.id.implId == 6050
+        assert org.id.implId == 5678
 
     def test_request_includes_impl_id(self, mock_soap_call):
         mock_soap_call.return_value = CANONICAL_ORGANISATION_RESPONSE
         creer_organisation(
             annee_scolaire="2024-2025",
-            etab_id=3052,
-            impl_id=6050,
+            etab_id=1234,
+            impl_id=5678,
             num_adm_formation=328,
             date_debut=date(2024, 9, 2),
             date_fin=date(2025, 6, 27),
@@ -256,7 +256,7 @@ class TestCreerOrganisation:
         call = mock_soap_call.call_args
         assert call.args[0] == "CreerOrganisation"
         # CreerOrganisation IS the only operation that includes implId
-        assert call.kwargs["id"]["implId"] == 6050
+        assert call.kwargs["id"]["implId"] == 5678
         assert "numOrganisation" not in call.kwargs["id"]
         assert call.kwargs["dateDebutOrganisation"] == date(2024, 9, 2)
         assert call.kwargs["valorisationAcquis"] is True

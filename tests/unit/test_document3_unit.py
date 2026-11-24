@@ -56,7 +56,7 @@ def _mock_doc3_response(num_adm: int = 328, num_org: int = 1, activites: list | 
                 "document3": {
                     "id": {
                         "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": Config.ETAB_ID or 3052,
+                        "etabId": Config.ETAB_ID or 1234,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },
@@ -75,7 +75,7 @@ def service():
 def test_lire_document3_mock(service, monkeypatch):
     """Vérifie le parsing de la réponse LireDocument3."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -107,7 +107,7 @@ def test_lire_document3_mock(service, monkeypatch):
 def test_lire_document3_mock_reponse_vide(service, monkeypatch):
     """Vérifie que lire_document_3 retourne None si la réponse est vide."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     monkeypatch.setattr(
@@ -121,7 +121,7 @@ def test_lire_document3_mock_reponse_vide(service, monkeypatch):
 def test_lire_document3_activite_sans_enseignants(service, monkeypatch):
     """Vérifie que lire_document_3 gère correctement une activité sans enseignants."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     activite_sans_ens = {
@@ -142,7 +142,7 @@ def test_lire_document3_activite_sans_enseignants(service, monkeypatch):
 def test_modifier_document3_mock(service, monkeypatch):
     """Vérifie que modifier_document_3 retourne le document mis à jour."""
     org_id = OrganisationId(
-        anneeScolaire="2023-2024", etabId=3052,
+        anneeScolaire="2023-2024", etabId=1234,
         numAdmFormation=328, numOrganisation=1,
     )
     activite_modifiee = [

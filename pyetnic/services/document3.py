@@ -92,6 +92,12 @@ class Document3Service:
         Not reachable until "Doc A" (the organisation) and Doc 2 are approved:
         error 20102, ``None`` by default, ``EtnicDocumentNotAccessibleError``
         under :func:`strict_errors`.
+
+        A Doc 3 that is reachable but was never written reads as a skeleton:
+        one line per branch, ``coNumAttribution`` 1, empty staff number and
+        status, 0 period. ``statutDocumentAttributions`` stays absent until
+        the first write, then reads "Encodé école" (observed in production,
+        2025-2026): the document's existence does not mean it was encoded.
         """
         logger.info("Lecture du document 3 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
@@ -117,8 +123,16 @@ class Document3Service:
            cannot see what was deleted.
 
         ``activite_liste`` is required by the XSD. ``coNumAttribution`` is a
-        server-side counter; freed numbers are not reused. The total attributed
-        is capped by the real periods of Doc 2 (error 1574).
+        server-side counter; freed numbers are not reused. It does not target an
+        existing attribution: lines sent without it are accepted and numbered by
+        the server. A branch may carry several lines with the same ``noMatEns``
+        (different ``teStatut`` or ``coDispo``, even identical triples): the
+        server keeps them apart, so a read-back cannot match on the staff number
+        alone (observed in production, 2026-09).
+
+        The total of the lines without ``coDispo`` is capped by the real periods
+        of Doc 2 (error 1574); a line carrying a ``coDispo`` does not count
+        toward it (observed in production, 2026-09).
         """
         logger.info("Modification du document 3 pour l'organisation : %s", organisation_id)
         result = self.client_manager.call_service(
