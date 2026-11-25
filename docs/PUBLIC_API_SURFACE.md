@@ -1,7 +1,7 @@
 # Public API Surface
 
 > **Status**: Authoritative reference for `BACKWARDS_COMPAT.md`
-> **Last reviewed**: 2026-11-24 for 0.3.0b1 (EPROM: #32 to #36; SEPS read functions: #24); first classification at Sprint 0
+> **Last reviewed**: 2026-11-25 for 0.3.0b3 (#50 to #53; SEPS writers called in production); 2026-11-24 for 0.3.0b1 (EPROM: #32 to #36; SEPS read functions: #24); first classification at Sprint 0
 
 This document enumerates every symbol exported from `pyetnic` and classifies it as either **stable** (subject to the backwards compatibility rules) or **construction** (free to evolve).
 

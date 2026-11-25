@@ -29,7 +29,7 @@ from .exceptions import (
 )
 from ._deprecated import deprecated_name
 
-__version__ = "0.3.0b2"
+__version__ = "0.3.0b3"
 __author__ = "Fabien Toune"
 __all__ = [
     "eprom",

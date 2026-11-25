@@ -9,6 +9,16 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+## [0.3.0b3] - 2026-11-25
+
+Enum members go on the wire as their codes, a response value that breaks its type raises,
+the identifier the server returns is read, and the 1.0 preparation (#50 to #53).
+
+**Upgrading from 0.3.0b2** (one behaviour change): the `id` that a reader or writer returns now
+carries the server's `implId`, so an `OrganisationId` built without it no longer compares
+equal to that `id`; compare the four key fields where it matters. Importing `SoapError` or
+`TYPES_INTERVENTION_EXTERIEURE` from a public namespace now warns.
+
 ### Added
 
 - **`Sexe` and `ModeEnregistrement`** (#50), exported from `pyetnic.seps`: the SEPS student
@@ -469,7 +479,8 @@ auto-upgraded, so the refactored library can be beta-tested without disruption.
 - **The flat top-level namespace** (`pyetnic.lire_organisation`, …) — no longer
   documented. Import from `pyetnic.eprom` / `pyetnic.seps` instead.
 
-[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b2...HEAD
+[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b3...HEAD
+[0.3.0b3]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b2...v0.3.0b3
 [0.3.0b2]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b1...v0.3.0b2
 [0.3.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.2.0b1...v0.3.0b1
 [0.2.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b2...v0.2.0b1
