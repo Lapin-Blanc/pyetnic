@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from pyetnic.nomenclatures import _TYPES_INTERVENTION_EXTERIEURE as TYPES_INTERVENTION_EXTERIEURE
 from pyetnic.nomenclatures import (
     CodeAdmission,
     CodeNiveau,
@@ -21,7 +22,6 @@ from pyetnic.nomenclatures import (
     SituationMenage,
     StatutFinFormation,
     TitreDelivre,
-    TYPES_INTERVENTION_EXTERIEURE,
     TypeEnseignement,
     TypeInterventionExterieure,
     ValorisationAcquis,
@@ -200,9 +200,15 @@ class TestLegacyConstant:
         assert isinstance(TYPES_INTERVENTION_EXTERIEURE, list)
         assert all(isinstance(v, str) for v in TYPES_INTERVENTION_EXTERIEURE)
 
-    def test_importable_from_eprom_namespace(self):
-        from pyetnic.eprom import TYPES_INTERVENTION_EXTERIEURE as exported
-        assert exported == TYPES_INTERVENTION_EXTERIEURE
+    @pytest.mark.parametrize("module", ["pyetnic.eprom", "pyetnic.nomenclatures", "pyetnic.services"])
+    def test_public_name_warns_until_1_0(self, module):
+        import importlib
+
+        namespace = importlib.import_module(module)
+        with pytest.deprecated_call(match="TypeInterventionExterieure"):
+            exported = namespace.TYPES_INTERVENTION_EXTERIEURE
+        assert exported is TYPES_INTERVENTION_EXTERIEURE
+        assert "TYPES_INTERVENTION_EXTERIEURE" not in getattr(namespace, "__all__", [])
 
 
 # ---------------------------------------------------------------------------

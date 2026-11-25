@@ -10,6 +10,8 @@ Usage :
     from pyetnic.seps import lire_etudiant
 """
 
+from typing import Any
+
 from . import eprom
 from . import seps
 from .config import Config
@@ -25,7 +27,7 @@ from .exceptions import (
     EtnicAlreadyApprovedError,
     EtnicConcurrencyError,
 )
-from .soap_client import SoapError  # legacy alias for EtnicTransportError
+from ._deprecated import deprecated_name
 
 __version__ = "0.3.0b2"
 __author__ = "Fabien Toune"
@@ -44,8 +46,14 @@ __all__ = [
     "EtnicValidationError",
     "EtnicAlreadyApprovedError",
     "EtnicConcurrencyError",
-    "SoapError",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    """The deprecated names, served with a ``DeprecationWarning`` until 1.0."""
+    if name in ("SoapError",):
+        return deprecated_name(name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def run_cli() -> None:

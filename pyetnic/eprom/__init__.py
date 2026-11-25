@@ -1,5 +1,7 @@
 """Namespace public pour les services EPROM (Enseignement de Promotion Sociale)."""
 
+from typing import Any
+
 # Exceptions — hiérarchie typée (voir pyetnic.exceptions)
 from ..exceptions import (
     EtnicError,
@@ -13,7 +15,7 @@ from ..exceptions import (
     EtnicConcurrencyError,
 )
 from ..error_mode import permissive_errors, strict_errors
-from ..soap_client import SoapError  # legacy alias for EtnicTransportError
+from .._deprecated import deprecated_name
 
 # Fonctions de service — singletons gérés dans services/
 from ..services import (
@@ -34,7 +36,6 @@ from ..services import (
     lire_document_3,
     modifier_document_3,
     ajouter_attributions_document_3,
-    TYPES_INTERVENTION_EXTERIEURE,
 )
 
 # Nomenclatures — typed Enums (H9)
@@ -119,7 +120,6 @@ __all__ = [
     "EtnicValidationError",
     "EtnicAlreadyApprovedError",
     "EtnicConcurrencyError",
-    "SoapError",
     "strict_errors",
     "permissive_errors",
     # Fonctions
@@ -140,7 +140,6 @@ __all__ = [
     "lire_document_3",
     "modifier_document_3",
     "ajouter_attributions_document_3",
-    "TYPES_INTERVENTION_EXTERIEURE",
     # Nomenclatures
     "TypeInterventionExterieure",
     "CodeAdmission",
@@ -195,3 +194,10 @@ __all__ = [
     "Doc3ActiviteListeSave",
     "FormationDocument3",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    """The deprecated names, served with a ``DeprecationWarning`` until 1.0."""
+    if name in ("SoapError", "TYPES_INTERVENTION_EXTERIEURE",):
+        return deprecated_name(name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

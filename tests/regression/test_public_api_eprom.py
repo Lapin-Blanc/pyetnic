@@ -642,8 +642,8 @@ def test_stable_dataclasses_importable_from_eprom():
 
 
 def test_types_intervention_exterieure_constant():
-    """The TYPES_INTERVENTION_EXTERIEURE constant is part of the stable surface."""
-    assert hasattr(pyetnic.eprom, "TYPES_INTERVENTION_EXTERIEURE")
-    types = pyetnic.eprom.TYPES_INTERVENTION_EXTERIEURE
+    """The TYPES_INTERVENTION_EXTERIEURE constant stays until 1.0, with a warning."""
+    with pytest.deprecated_call(match="TypeInterventionExterieure"):
+        types = pyetnic.eprom.TYPES_INTERVENTION_EXTERIEURE
     # Used in form dropdowns — must remain non-empty and iterable
     assert len(types) > 0
