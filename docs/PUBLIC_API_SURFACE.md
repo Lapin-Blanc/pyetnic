@@ -209,14 +209,14 @@ Adding optional fields to these read models (as the live SEPS contracts do) is a
 
 ### Construction — Functions (write)
 
-The following functions are **exported but not in production use**. They may be refactored, renamed, have their signatures changed, or be rewritten without notice until 1.0.0.
+The following functions are **exported and tested against production, but no consumer calls them from its code yet**. They may be refactored, renamed, have their signatures changed, or be rewritten without notice until 1.0.0 (#53 proposes to promote them).
 
 | Symbol | Notes |
 |---|---|
-| `enregistrer_etudiant` | Never used in production. Signature and behavior may change. |
-| `modifier_etudiant` | Never used in production. |
-| `enregistrer_inscription` | Never used in production. |
-| `modifier_inscription` | Never used in production. |
+| `enregistrer_etudiant` | Called in production (2026-11-24, NISS mode, a creation); no consumer code yet |
+| `modifier_etudiant` | Called in production (2026-11-25); no consumer code yet |
+| `enregistrer_inscription` | Called in production (2026-11-10, 2026-11-25: two creations); no consumer code yet |
+| `modifier_inscription` | Called in production (2026-11-25); no consumer code yet |
 | `mettre_a_jour_etudiant`, `mettre_a_jour_inscription` | Read, merge the changes given, write the complete record (#47); `EtudiantDetailsSave.from_details`, `InscriptionInputDataSave.from_inscription` |
 
 ### Construction — Notifications (#23)

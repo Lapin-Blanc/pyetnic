@@ -181,6 +181,8 @@ DroitInscriptionSpecifiqueType
 | `C07` | Réfugié ou candidat réfugié reconnu (loi du 15/12/1980) | **`C50`** | **Séjour limité aux études** (contrat de production, manuel 2.4) |
 
 > **Observé en production (2026, fréquence non relevée)** : un `droitInscriptionSpecifique` à indicateur **`O`** a été accepté pour des étudiants **ressortissants de l'UE**. Le contrôle `30023` n'est donc pas appliqué comme le manuel le décrit, et l'indicateur `O` ne garantit pas que l'étudiant relève du DIS.
+>
+> **Pour un ressortissant de l'UE, omettre le bloc** (le contrat le rend facultatif) : SEPS l'enregistre alors à `N` (observé une fois, 2026-11-25, voir « Comportements observés en production »).
 
 ### DureeInoccupationType (FSE)
 | Code | Durée |
@@ -373,7 +375,10 @@ SanctionType   (tous les champs [0..1] au contrat de production)
 
 ## Comportements observés en production
 
-- **SEPS apprend les organisations EPROM avec un délai.** Le 2026-11-10, un `enregistrerInscription` envoyé **18 minutes** après la déclaration de l'organisation dans EPROM a reçu `success=false` avec **pour seul message le warning `30101`** « The information doesn't match with an existing UE ». Un warning seul est donc un refus (rien n'a été créé). Délai de propagation exact : inconnu.
+- **Création réussie** (observé en production, 2026-11-10, une inscription) : `success=true`, l'inscription renvoyée au statut `DE`, sans `fse` envoyé (relue `ue.fse = N`, UE non FSE).
+- **SEPS apprend les organisations EPROM avec un délai.** Le 2026-11-10, un `enregistrerInscription` envoyé **18 minutes** après la déclaration de l'organisation dans EPROM a reçu `success=false` avec **pour seul message le warning `30101`** « The information doesn't match with an existing UE ». Un warning seul est donc un refus (rien n'a été créé). Délai de propagation exact : inconnu. Quinze jours plus tard, la même organisation acceptait l'inscription (2026-11-25).
+- **Inscription créée après la fin de l'UE** (observé une fois, 2026-11-25) : acceptée pour une UE terminée cinq jours plus tôt, avec sa date d'inscription réelle (septembre), `regulier1` et `regulier5` à `O`. Le succès ne portait **aucun message** (ni code, ni version du service).
+- **Bloc DIS omis** (observé une fois, 2026-11-25, ressortissant belge) : accepté ; l'inscription se relit avec `droitInscriptionSpecifique.indicateurDroitInscriptionSpecifique = N`, sans `exempte` ni `montant`. Le serveur pose donc `N` par défaut : un `O` envoyé est une déclaration positive (« droit à percevoir »), pas une valeur neutre.
 - **En sens inverse**, des organisations **supprimées d'EPROM vers midi le 2026-09-30** acceptaient encore des inscriptions **l'après-midi même**.
 - **Le Doc A n'a pas besoin d'être approuvé.** Des inscriptions ont été acceptées sur des organisations dont le Doc A n'était pas encore approuvé : `audit.dateCreation` du 2026-09-30 côté SEPS pour des organisations approuvées le 2026-10-23 (confirmé par `rechercherInscriptions`, `dateRequete` 2026-09-29 : aucune inscription ; 2026-09-30 : toutes ; spec 12).
 - **La suppression d'une organisation purge ses inscriptions SEPS** : elles n'apparaissent plus à aucune `dateRequete` (vérifié le 2026-11-24 ; spec 12).
