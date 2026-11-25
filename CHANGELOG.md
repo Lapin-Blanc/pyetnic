@@ -9,6 +9,10 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+## [0.3.0b2] - 2026-11-25
+
+Two SEPS writers that keep the fields a modification would otherwise erase. No breaking change.
+
 ### Added
 
 - **SEPS writers that keep the fields left out** (#47): `mettre_a_jour_etudiant(cf_num,
@@ -423,7 +427,8 @@ auto-upgraded, so the refactored library can be beta-tested without disruption.
 - **The flat top-level namespace** (`pyetnic.lire_organisation`, …) — no longer
   documented. Import from `pyetnic.eprom` / `pyetnic.seps` instead.
 
-[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b1...HEAD
+[Unreleased]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b2...HEAD
+[0.3.0b2]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.3.0b1...v0.3.0b2
 [0.3.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.2.0b1...v0.3.0b1
 [0.2.0b1]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b2...v0.2.0b1
 [0.1.0b2]: https://github.com/Lapin-Blanc/pyetnic/compare/v0.1.0b1...v0.1.0b2
