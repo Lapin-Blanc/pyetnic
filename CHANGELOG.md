@@ -35,6 +35,14 @@ that supports `bN` pre-releases).
   equal to the `id` read back; requests are unchanged (`implId` is never sent but to
   `creer_organisation`).
 
+### Deprecated
+
+- **`SoapError` and `TYPES_INTERVENTION_EXTERIEURE` now warn** (#53). Both were documented as
+  deprecated since 0.1.0 without a warning; importing or reading them from `pyetnic`,
+  `pyetnic.eprom` or `pyetnic.nomenclatures` now emits a `DeprecationWarning` naming the
+  replacement (`EtnicTransportError`, the `TypeInterventionExterieure` enum), and they left
+  `__all__`. They still work and go in 1.0, with the permissive mode.
+
 ### Fixed
 
 - **An enum member goes on the wire as its code** (#50). zeep writes a simple value with

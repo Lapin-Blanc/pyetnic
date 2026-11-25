@@ -102,9 +102,14 @@ Trajectory:
   to stable functions, each with its migration path in the CHANGELOG: refusals raise by
   default (the old mode stays, deprecated, until 1.0) and `approuver_document_1` requires
   the population (a call without it never succeeded).
+- **Before 1.0.0**: every deprecated name warns (`SoapError` and
+  `TYPES_INTERVENTION_EXTERIEURE` through their namespace's `__getattr__`, the permissive mode
+  since 0.3.0); D6 (one `OrganisationId`) and H7 (no I/O at import) are settled without a
+  breaking change (`docs/ARCHITECTURE.md`, Key Decisions).
 - **1.0.0**: the deprecated behaviours go (permissive mode, `SoapError`,
-  `TYPES_INTERVENTION_EXTERIEURE`), D6 and H7 are settled, construction APIs are promoted
-  or removed, and the stable API freezes.
+  `TYPES_INTERVENTION_EXTERIEURE`), construction APIs are promoted or removed, and the stable
+  API freezes. It waits for every known consumer to run on the latest 0.3 without a
+  deprecation warning.
 
 ---
 

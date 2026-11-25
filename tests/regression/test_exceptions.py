@@ -15,8 +15,8 @@ from pyetnic import (
     EtnicNotFoundError,
     EtnicTransportError,
     EtnicValidationError,
-    SoapError,
 )
+from pyetnic.soap_client import SoapError  # the class the services raise, without the warning
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ def test_concurrency_inherits_from_business_error():
 
 
 # ---------------------------------------------------------------------------
-# Backwards compatibility: SoapError is still catchable
+# Backwards compatibility: SoapError is still catchable, and warns when imported
 # ---------------------------------------------------------------------------
 
 
@@ -190,3 +190,15 @@ def test_extract_error_info_header_request_id_takes_precedence():
     }
     _, _, request_id = extract_error_info(result)
     assert request_id == "header-rid"
+
+
+@pytest.mark.parametrize("module", ["pyetnic", "pyetnic.eprom"])
+def test_public_soap_error_warns_and_is_the_raised_class(module):
+    """Removed in 1.0: importing it from a public namespace warns until then."""
+    import importlib
+
+    namespace = importlib.import_module(module)
+    with pytest.deprecated_call(match="EtnicTransportError"):
+        public = namespace.SoapError
+    assert public is SoapError
+    assert "SoapError" not in namespace.__all__

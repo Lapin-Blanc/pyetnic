@@ -16,6 +16,7 @@ import warnings
 import pytest
 
 from pyetnic import Config, permissive_errors, strict_errors
+from pyetnic.soap_client import SoapError
 from pyetnic.eprom import (
     EtnicAlreadyApprovedError,
     EtnicBusinessError,
@@ -24,7 +25,6 @@ from pyetnic.eprom import (
     EtnicNotFoundError,
     EtnicValidationError,
     OrganisationId,
-    SoapError,
     lire_document_1,
     lire_document_2,
     lire_document_3,

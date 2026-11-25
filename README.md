@@ -474,7 +474,7 @@ asyncio voit le sien.
 
 ```
 EtnicError
-├── EtnicTransportError          # erreurs réseau/SOAP (alias historique : SoapError)
+├── EtnicTransportError          # erreurs réseau/SOAP (alias déprécié, retiré en 1.0 : SoapError)
 ├── EtnicResponseError           # valeur de réponse hors de son type (.values, .response)
 └── EtnicBusinessError           # refus serveur (success=False)
     ├── EtnicDocumentNotAccessibleError  # 20101, 20102, 20103, 20112 : document pas encore accessible
@@ -514,7 +514,7 @@ EtnicError
 |---|---|---|
 | `EtnicDocumentNotAccessibleError` à la lecture | Document pas encore accessible : Doc A, Doc 1 ou Doc 2 non approuvé (20101, 20103, 20102) | Lire les statuts via `eprom.lister_formations()` |
 | Les `statutDocument*` d'une organisation valent `None` | `lire_organisation()` ne les reçoit pas du serveur | Les lire via `eprom.lister_formations()` |
-| `SoapError` au démarrage | Identifiants erronés ou `.env` absent | Vérifier le `.env`, au besoin `pyetnic init-config` |
+| `EtnicTransportError` au démarrage | Identifiants erronés ou `.env` absent | Vérifier le `.env`, au besoin `pyetnic init-config` |
 | `SECU-0104` (SEPS) | Appel SEPS en `ENV=dev` | SEPS n'existe qu'en production : `ENV=prod` |
 | `ImportError` sur `xmlsec` | Extra SEPS non installé | `pip install "pyetnic[seps]"` |
 | `TropDeResultatsError` | Critères de recherche trop larges | Ajouter `prenom`, `date_naissance`, `sexe` |

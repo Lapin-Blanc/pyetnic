@@ -94,7 +94,7 @@ A symbol is **construction** otherwise. Construction symbols are still exported 
 
 | Symbol | Notes |
 |---|---|
-| `TYPES_INTERVENTION_EXTERIEURE` | Used in form dropdowns. **Legacy** list constant, deprecated in favor of the `TypeInterventionExterieure` Enum. Will be removed in 1.0.0. |
+| `TYPES_INTERVENTION_EXTERIEURE` | **Deprecated**, removed in 1.0.0: reading it warns (`DeprecationWarning`) and it left `__all__`; use the `TypeInterventionExterieure` Enum |
 
 ### Stable — Nomenclatures (Enums)
 
@@ -141,7 +141,7 @@ XSD. A member may be passed wherever its code is expected: it goes on the wire a
 | `EtnicValidationError` | Input rejected by validation (most `20xxx`/`30xxx` codes, `4004`-`4012`, …) |
 | `EtnicAlreadyApprovedError` | Document already approved: by the administration (1530) or, for Documents 1 and 1D, by the school (1545) |
 | `EtnicConcurrencyError` | Record modified since read (00011), or an approval sent with values that differ from the stored ones (20104): re-read and retry |
-| `SoapError` | **Deprecated** alias for `EtnicTransportError`. Will be removed in 1.0.0 |
+| `SoapError` | **Deprecated** subclass of `EtnicTransportError`, removed in 1.0.0: importing it from `pyetnic` or `pyetnic.eprom` warns (`DeprecationWarning`) and it left `__all__`; the services still raise it until then |
 
 ---
 

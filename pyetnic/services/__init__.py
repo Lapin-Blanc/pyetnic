@@ -5,6 +5,8 @@ Ce package contient les classes et fonctions pour interagir avec les
 différents services SOAP d'ETNIC.
 """
 import logging
+from typing import Any
+
 logger = logging.getLogger(__name__)
 logger.debug("Initialisation du package services")
 
@@ -19,7 +21,7 @@ from .seps import RechercheEtudiantsService
 from .enregistrer_etudiant import EnregistrerEtudiantService
 from .inscriptions import InscriptionsService
 from .notifications import NotificationsService
-from ..nomenclatures import TYPES_INTERVENTION_EXTERIEURE
+from .._deprecated import deprecated_name
 
 # Importation et exposition des fonctions pour la liste des formations
 # Instanciation du service
@@ -123,5 +125,11 @@ __all__ = [
     'modifier_inscription',
     'mettre_a_jour_inscription',
     'lire_notifications',
-    'TYPES_INTERVENTION_EXTERIEURE',
 ]
+
+
+def __getattr__(name: str) -> Any:
+    """The deprecated names, served with a ``DeprecationWarning`` until 1.0."""
+    if name in ("TYPES_INTERVENTION_EXTERIEURE",):
+        return deprecated_name(name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

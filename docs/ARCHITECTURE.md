@@ -88,8 +88,35 @@ the service taken into account (`1545` differs between Documents 1 and 2).
 `services/_helpers.py` holds `to_soap_dict()` (recursive, `exclude_none=True` — strips `None`
 so partial updates don't send empty XML tags, audit D2) and `organisation_request_id()` (builds
 the 4-field request id without `implId`, audit D5). Free functions, not methods, and private
-(underscore) rather than public — to avoid locking in an API that the D6 `OrganisationKey` split
-will obsolete at 1.0.0.
+(underscore) rather than public, so they stay free to change. `response_organisation_id()` (#51)
+reads the identifier an answer returns, `implId` included.
+
+### One `OrganisationId`, no key/identifier split (D6, settled for 1.0)
+The audit (D6) proposed a request key without `implId` (`OrganisationReqIdCT`) beside the
+response identifier (`OrganisationResIdCT`), so that the types would enforce "never send
+`implId`". Since #51 every reader returns the answer's identifier, `implId` included, and the
+usual call passes it back (`lire_document_3(lire_organisation(org_id).id)`): a request type
+that refused `implId` would break that, and one that accepted it would enforce nothing. The rule
+lives where it is cheap and certain: `organisation_request_id()` builds every request id
+without `implId`, and the regression suite asserts it for each reader and writer. A single
+`OrganisationId` (`implId` optional) stays both the key the caller builds and the identifier
+pyetnic returns; only `creer_organisation` sends `implId`, its contract requiring it.
+
+### Service singletons built at import, doing nothing until the first call (H7, settled for 1.0)
+`pyetnic.services` instantiates one service per ETNIC service at import, and the namespaces
+re-export their bound methods. The audit (H7) found this loaded the SEPS certificate at import;
+it no longer does: a service only stores its name, and `SoapClientManager` builds the zeep
+client, the WS-Security token and the X509 signature on the first call. Lazy module attributes
+(PEP 562) would add nothing at run time and would hide the functions' signatures from type
+checkers (pyetnic ships `py.typed`). `tests/regression/test_import_side_effects.py` pins that
+`import pyetnic` reads no `.env`, certificate or WSDL and builds no client.
+
+### Deprecated names through module `__getattr__` (PEP 562, 1.0 preparation)
+`SoapError` and `TYPES_INTERVENTION_EXTERIEURE` stay importable from their public namespaces
+until 1.0 but are no longer module attributes: each namespace's `__getattr__` serves them
+through `pyetnic._deprecated` with a `DeprecationWarning` that names the caller's line. They
+left the namespaces' `__all__`. Internal code raises `pyetnic.soap_client.SoapError` without a
+warning, so that `except SoapError` keeps working until the removal.
 
 ### Dataclasses over Pydantic (Sprint 0 decision)
 Models stay on stdlib dataclasses through 0.1.0. A Pydantic migration is a separate decision
@@ -112,8 +139,6 @@ deferred to post-0.1.0.
 
 ## Not Yet Decided
 
-- **`OrganisationKey` split (D6)** — separate key/full types to make the `implId` rule
-  type-enforced. Breaking change, deferred to 1.0.0.
 - **Pydantic migration** — deferred to post-0.1.0.
 - **Removal of the permissive mode** - `permissive_errors()` and `Config.RAISE_ON_ERROR = False`
   are deprecated since 0.3.0 and go in 1.0.

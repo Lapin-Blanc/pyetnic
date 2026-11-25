@@ -36,6 +36,7 @@ replaces it before zeep, which would otherwise write ``str(member)``
 from __future__ import annotations
 
 from enum import Enum
+from typing import Any
 
 
 class TypeInterventionExterieure(str, Enum):
@@ -405,12 +406,12 @@ class CodeNiveau(str, Enum):
 
 
 # ---------------------------------------------------------------------------
-# Backwards compatibility: preserve the legacy list constant.
-# Derived from TypeInterventionExterieure so the two never drift.
-# Will be deprecated in 0.2.0 and removed in 1.0.0.
+# Backwards compatibility: the legacy list constant, derived from
+# TypeInterventionExterieure so the two never drift. Read as
+# TYPES_INTERVENTION_EXTERIEURE it warns (module __getattr__); removed in 1.0.
 # ---------------------------------------------------------------------------
 
-TYPES_INTERVENTION_EXTERIEURE: list = [member.value for member in TypeInterventionExterieure]
+_TYPES_INTERVENTION_EXTERIEURE: list = [member.value for member in TypeInterventionExterieure]
 
 
 class CodeNotification(str, Enum):
@@ -427,3 +428,12 @@ class CodeNotification(str, Enum):
     NATIONALITE = "06"
     NISS = "07"
     STATUT = "08"
+
+
+def __getattr__(name: str) -> Any:
+    """The deprecated names, served with a ``DeprecationWarning`` until 1.0."""
+    if name in ("TYPES_INTERVENTION_EXTERIEURE",):
+        from ._deprecated import deprecated_name
+
+        return deprecated_name(name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
