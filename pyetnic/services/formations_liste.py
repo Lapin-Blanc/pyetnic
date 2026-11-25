@@ -118,12 +118,15 @@ class FormationsListeService:
                     for org_data in _as_list(f.get('organisation')):
                         if logger.isEnabledFor(logging.DEBUG):
                             logger.debug("Organisation : %s", pformat(org_data))
+                        # The answer names the implantation only when the request does not
+                        # (#51): a request filtered on impl_id lists that implantation alone.
+                        returned_impl = org_data.get('implId')
                         org_id = OrganisationId(
                             anneeScolaire=annee_scolaire,
                             etabId=etab_id,
                             numAdmFormation=f['numAdmFormation'],
                             numOrganisation=org_data['numOrganisation'],
-                            implId=org_data.get('implId'),
+                            implId=returned_impl if returned_impl is not None else impl_id,
                         )
                         organisation = OrganisationApercu(
                             id=org_id,

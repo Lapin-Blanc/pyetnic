@@ -22,7 +22,7 @@ from typing import Optional
 
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
-from ._helpers import _as_list, organisation_request_id, to_soap_dict
+from ._helpers import _as_list, organisation_request_id, response_organisation_id, to_soap_dict
 from .models import (
     Doc1DDroitInscriptionLine,
     Doc1DDroitInscriptionList,
@@ -76,7 +76,10 @@ class Document1DService:
                 ]
             )
 
-        return FormationDocument1D(id=organisation_id, droitInscriptionListe=droit_inscription_liste)
+        return FormationDocument1D(
+            id=response_organisation_id(doc_data.get('id'), organisation_id),
+            droitInscriptionListe=droit_inscription_liste,
+        )
 
     def lire_document_1d(self, organisation_id: OrganisationId) -> Optional[FormationDocument1D]:
         """Read the Document 1D: one line per year of study."""

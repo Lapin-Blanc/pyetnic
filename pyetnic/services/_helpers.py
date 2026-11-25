@@ -6,6 +6,7 @@ Do not import from outside pyetnic.services.
 Contents:
 - to_soap_dict: None-stripping serialization for SOAP payloads (D2)
 - organisation_request_id: OrganisationReqIdCT dict builder (D5)
+- response_organisation_id: the OrganisationResIdCT an answer returns (#51)
 - _as_list: normalize zeep's single-dict | list collection results (Q8)
 """
 
@@ -120,6 +121,31 @@ def organisation_request_id(org_id: OrganisationId) -> dict:
         'numAdmFormation': org_id.numAdmFormation,
         'numOrganisation': org_id.numOrganisation,
     }
+
+
+def response_organisation_id(id_data: Any, fallback: OrganisationId) -> OrganisationId:
+    """The identifier an answer returns (``OrganisationResIdCT``), else ``fallback``.
+
+    Organisation and document answers carry the full identifier, ``implId``
+    included (observed on TQ and in production, 2026-11-25, every reader of the
+    Organisation and Document 1, 1D, 2 and 3 services), while a request never
+    sends ``implId`` (``organisation_request_id``). A part the answer lacks,
+    or a missing ``id``, is taken from ``fallback``, the caller's identifier.
+    """
+    if not isinstance(id_data, dict):
+        return fallback
+
+    def pick(name: str) -> Any:
+        value = id_data.get(name)
+        return getattr(fallback, name) if value is None else value
+
+    return OrganisationId(
+        anneeScolaire=pick("anneeScolaire"),
+        etabId=pick("etabId"),
+        numAdmFormation=pick("numAdmFormation"),
+        numOrganisation=pick("numOrganisation"),
+        implId=pick("implId"),
+    )
 
 
 def _as_list(value: Any) -> list:

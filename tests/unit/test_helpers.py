@@ -9,6 +9,7 @@ from pyetnic.services._helpers import (
     _as_list,
     _flatten_messages,
     organisation_request_id,
+    response_organisation_id,
     to_soap_dict,
 )
 from pyetnic.services.models import OrganisationId
@@ -249,3 +250,28 @@ class TestFlattenMessages:
     def test_returns_only_strings(self):
         block = {"error": [{"code": "1", "description": "x"}]}
         assert all(isinstance(m, str) for m in _flatten_messages(block))
+
+
+# ---------------------------------------------------------------------------
+# response_organisation_id (#51)
+# ---------------------------------------------------------------------------
+
+
+class TestResponseOrganisationId:
+    CALLER = OrganisationId(anneeScolaire="2025-2026", etabId=1234, numAdmFormation=312, numOrganisation=1)
+
+    def test_the_answer_fills_impl_id(self):
+        answer = {"anneeScolaire": "2025-2026", "etabId": 1234, "implId": 5678,
+                  "numAdmFormation": 312, "numOrganisation": 1}
+        assert response_organisation_id(answer, self.CALLER) == OrganisationId(
+            anneeScolaire="2025-2026", etabId=1234, numAdmFormation=312, numOrganisation=1, implId=5678,
+        )
+
+    def test_no_id_in_the_answer_keeps_the_caller_s(self):
+        assert response_organisation_id(None, self.CALLER) is self.CALLER
+
+    def test_a_part_the_answer_lacks_comes_from_the_caller(self):
+        caller = OrganisationId("2025-2026", 1234, 312, 1, implId=5678)
+        answer = {"anneeScolaire": "2025-2026", "etabId": 1234, "numAdmFormation": 312,
+                  "numOrganisation": 1, "implId": None}
+        assert response_organisation_id(answer, caller).implId == 5678

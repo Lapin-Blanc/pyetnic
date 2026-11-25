@@ -194,7 +194,7 @@ aussi `formation` « de 0 à plusieurs », §3.1.4.2)
 
 | Champ | Type | Obligatoire | Description |
 |---|---|---|---|
-| `implId` | ImplIdST | non | Le manuel le dit renvoyé « si la recherche porte sur l'ensemble des implantations de l'établissement » (§3.1.4.2). Absent quand la requête porte `implId` (testé sur TQ, 2026-11-10), ce que le manuel laisse attendre ; absent aussi lors d'une lecture en production le 2026-06-11, sans que l'on sache si la requête portait `implId`. Requête sans `implId` : non vérifié (à confirmer) |
+| `implId` | ImplIdST | non | Le manuel le dit renvoyé « si la recherche porte sur l'ensemble des implantations de l'établissement » (§3.1.4.2). Renvoyé sur **chaque** organisation quand la requête omet `implId`, **jamais** quand elle le porte (84 organisations sur TQ, 101 en production, année 2025-2026, observé sur TQ et en production, 2026-11-25 ; absent avec `implId` aussi sur TQ le 2026-11-10), comme le manuel le laisse attendre |
 | `numOrganisation` | int | oui | Numéro de l'organisation |
 | `dateDebutOrganisation` | date | oui | Date début |
 | `dateFinOrganisation` | date | oui | Date fin |
@@ -366,9 +366,11 @@ contrats embarqués)
   ne porte `implId` que si l'argument ou `Config.IMPL_ID` est renseigné.
 - **`organisations`** : toujours vide pour `lister_formations_organisables`. Pour `lister_formations`,
   chaque `OrganisationApercu.id` est un `OrganisationId` reconstruit (année et établissement de la
-  requête, `numAdmFormation` de la formation, `numOrganisation` et `implId` de la réponse, ce dernier
-  `None` en pratique) qui se passe tel quel à `lire_organisation` et aux `lire_document_*`. Un statut
-  absent vaut `None`.
+  requête, `numAdmFormation` de la formation, `numOrganisation` de la réponse) qui se passe tel quel
+  à `lire_organisation` et aux `lire_document_*`. Son `implId` est celui de la réponse, ou, quand la
+  requête le porte (et que la réponse le tait), celui de la requête : la liste ne contient alors que
+  cette implantation (#51). Il n'est `None` que si ni l'un ni l'autre ne le donne. Un statut absent
+  vaut `None`.
 - **Erreurs** : depuis 0.3.0, un refus lève la sous-classe d'`EtnicBusinessError` de son code
   (`pyetnic.exceptions`) : `00009` -> `EtnicNotFoundError` ; `30001`, `30002`, `30007` ->
   `EtnicValidationError` ; `00025`, `00999` -> `EtnicBusinessError`. Un échec de transport lève

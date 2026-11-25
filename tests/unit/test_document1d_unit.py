@@ -5,6 +5,8 @@ The responses mirror what TQ answered on 2026-11-24 (see spec 06).
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 from zeep import Client
 
@@ -102,7 +104,7 @@ def test_lire_parses_every_field(service):
     doc = service.lire_document_1d(ORG_ID)
 
     assert isinstance(doc, FormationDocument1D)
-    assert doc.id == ORG_ID
+    assert doc.id == replace(ORG_ID, implId=5678)  # the answer's id, implId included (#51)
     [line] = doc.droitInscriptionListe.droitInscription
     assert (line.coAnnEtude, line.nbEleves5ieme, line.mtDroitsInscription) == ("1", 3, 12.5)
     assert (line.swAppPopD1D, line.swAppD1D) == (True, False)

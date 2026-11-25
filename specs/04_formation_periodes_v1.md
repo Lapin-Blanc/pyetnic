@@ -719,7 +719,7 @@ authentification `UsernameToken`).
 | `LireDocument2` | `lire_document_2(organisation_id: OrganisationId) -> Optional[FormationDocument2]` | `None` seulement en mode permissif (déprécié) |
 | `ModifierDocument2` | `modifier_document_2(organisation_id: OrganisationId, activite_enseignement_liste: Optional[Doc2ActiviteEnseignementListSave] = None, intervention_exterieure_liste: Optional[Doc2InterventionExtListSave] = None) -> Optional[FormationDocument2]` | n'envoie que les listes fournies et, dans chaque ligne, les champs non `None` (`to_soap_dict`) ; rend le document de la réponse |
 | `OrganisationReqIdCT` | `OrganisationId` | `implId` n'est jamais envoyé (`organisation_request_id`) |
-| `FormationDocument2CT` | `FormationDocument2` | `id` est l'`OrganisationId` passé en argument, pas l'`id` de la réponse : l'`implId` rendu par le serveur n'est pas lu |
+| `FormationDocument2CT` | `FormationDocument2` | `id` est l'`id` de la réponse, `implId` compris (observé sur TQ et en production, 2026-11-25), complété par celui de l'appelant pour ce qui y manquerait (#51) |
 | `Doc2ActiviteEnseignementDetailCT` | `Doc2ActiviteEnseignementDetail` | |
 | `Doc2ActiviteEnseignementLstCT` / `Doc2ActiviteEnseignementLineCT` | `Doc2ActiviteEnseignementList` / `Doc2ActiviteEnseignementLine` | 14 champs, dans l'ordre du XSD |
 | `Doc2InterventionExtLstCT` / `Doc2InterventionExtLineCT` | `Doc2InterventionExtList` / `Doc2InterventionExtLine` | `periodeListe` à `None` si la réponse n'en porte pas |

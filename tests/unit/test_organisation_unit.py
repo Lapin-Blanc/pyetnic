@@ -321,3 +321,20 @@ def test_modifier_organisation_sends_besaesi(service, monkeypatch):
 
     assert calls[0]["BESAeSI"] is False
     assert "eLearning" not in calls[0] and "partiellementDistance" not in calls[0]
+
+
+def test_lire_organisation_returns_the_answer_s_id(service, monkeypatch):
+    """The answer carries implId, never sent in a request (#51)."""
+    org_id = OrganisationId(anneeScolaire="2025-2026", etabId=1234, numAdmFormation=312, numOrganisation=1)
+    response = _mock_org_response("2025-2026", 1234, 312, 1)
+    response["body"]["response"]["organisation"]["id"]["implId"] = 5678
+    sent = {}
+
+    def fake_call(method, **kwargs):
+        sent.update(kwargs)
+        return response
+
+    monkeypatch.setattr(service.client_manager, "call_service", fake_call)
+    org = service.lire_organisation(org_id)
+    assert "implId" not in sent["id"]
+    assert org.id == OrganisationId("2025-2026", 1234, 312, 1, implId=5678)

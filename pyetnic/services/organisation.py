@@ -1,7 +1,7 @@
 from datetime import date
 from pprint import pformat
 from typing import Optional
-from ._helpers import organisation_request_id, _strip_none_recursive
+from ._helpers import organisation_request_id, response_organisation_id, _strip_none_recursive
 from .models import Organisation, OrganisationId, StatutDocument
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
@@ -29,9 +29,9 @@ class OrganisationService:
     ) -> Optional[Organisation]:
         """Parse la réponse SOAP et retourne un objet Organisation.
 
-        Si organisation_id est fourni, il est utilisé directement.
-        Sinon, l'id est reconstruit depuis les données de la réponse
-        (utile après CreerOrganisation dont le numOrganisation est attribué par le serveur).
+        L'id est celui de la réponse, ``implId`` compris (#51) ; ``organisation_id``,
+        l'id de l'appelant, complète ce qui y manquerait. Sans lui (CreerOrganisation,
+        dont le numOrganisation est attribué par le serveur), l'id de la réponse est requis.
         """
         if (
             result
@@ -52,6 +52,8 @@ class OrganisationService:
                     numOrganisation=id_data['numOrganisation'],
                     implId=id_data.get('implId'),
                 )
+            else:
+                organisation_id = response_organisation_id(org_data.get('id'), organisation_id)
 
             return Organisation(
                 id=organisation_id,

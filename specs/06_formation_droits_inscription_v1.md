@@ -690,6 +690,7 @@ Boundary » dans `docs/ARCHITECTURE.md`).
 | `Doc1DDroitInscriptionSaveLstCT` / `SaveLineCT` | `Doc1DDroitInscriptionListSave` / `Doc1DDroitInscriptionLineSave` (`coAnnEtude` + `nbEleves5ieme` ou `mtDroitsInscription`) |
 | `Doc1DDroitInscriptionApprLstCT` / `ApprLineCT` | `Doc1DDroitInscriptionListAppr` / `Doc1DDroitInscriptionLineAppr` ; `Doc1DDroitInscriptionListAppr.from_document(doc)` reprend la population lue |
 | `OrganisationReqIdCT` | `OrganisationId`, `implId` jamais envoyé |
+| `OrganisationResIdCT` | `FormationDocument1D.id` : l'`id` de la réponse, `implId` compris (observé sur TQ et en production, 2026-11-25), complété par celui de l'appelant pour ce qui y manquerait (#51) |
 
 - **Types** : `coAnnEtude` est un `str` (le contrat), `tsMaj`/`teUserMaj` des `str`.
   `mtDroitsInscriptionOccupationnel` est lu, « n'est plus utilisé ».

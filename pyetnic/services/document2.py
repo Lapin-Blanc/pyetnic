@@ -1,5 +1,5 @@
 from typing import Optional
-from ._helpers import _as_list, organisation_request_id, to_soap_dict
+from ._helpers import _as_list, organisation_request_id, response_organisation_id, to_soap_dict
 from ..exceptions import signal_business_error
 from ..soap_client import SoapClientManager
 from .models import (
@@ -106,7 +106,7 @@ class Document2Service:
             )
 
         return FormationDocument2(
-            id=organisation_id,
+            id=response_organisation_id(doc_data.get('id'), organisation_id),
             activiteEnseignementDetail=activite_enseignement_detail,
             interventionExterieureListe=intervention_exterieure_liste,
             swAppD2=doc_data.get('swAppD2', False),

@@ -1,5 +1,6 @@
 # test_document3_unit.py — mock-only unit tests for Document3Service.
 
+from dataclasses import replace
 import logging
 
 import pytest
@@ -57,8 +58,9 @@ def _mock_doc3_response(num_adm: int = 328, num_org: int = 1, activites: list | 
             "response": {
                 "document3": {
                     "id": {
-                        "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": Config.ETAB_ID or 1234,
+                        "anneeScolaire": "2023-2024",
+                        "etabId": 1234,
+                        "implId": 5678,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },
@@ -88,7 +90,7 @@ def test_lire_document3_mock(service, monkeypatch):
     doc = service.lire_document_3(org_id)
 
     assert isinstance(doc, FormationDocument3)
-    assert doc.id == org_id
+    assert doc.id == replace(org_id, implId=5678)  # the answer's id, implId included (#51)
     assert doc.activiteListe is not None
     activites = doc.activiteListe.activite
     assert len(activites) == 1
@@ -196,7 +198,7 @@ def test_modifier_document3_mock(service, monkeypatch):
     doc = service.modifier_document_3(org_id, liste_save)
 
     assert isinstance(doc, FormationDocument3)
-    assert doc.id == org_id
+    assert doc.id == replace(org_id, implId=5678)  # the answer's id, implId included (#51)
     ens = doc.activiteListe.activite[0].enseignantListe.enseignant[0]
     assert ens.nbPeriodesAttribuees == 6.0
     assert ens.coNumAttribution == 1
