@@ -83,7 +83,7 @@ It is used by schools and school management software to interact programmaticall
 - `modifierEtudiant` → `modifier_etudiant(cf_num, etudiant_details?)` (the complete record: an optional field left out is erased)
 - `mettre_a_jour_etudiant(cf_num, changements)`: reads `cfwbDetails`, applies the fields given, sends the complete record (#47)
 
-> `mode_enregistrement`: `"NISS"` or `"DETAILS"`.
+> `mode_enregistrement`: `"NISS"` or `"DETAILS"` (`ModeEnregistrement`); `sexe`: `M`, `F` or `X` (`Sexe`).
 > Save types: `EtudiantDetailsSave`, `SepsNaissanceSave`, `SepsAdresseSave`.
 > Returns `EnregistrerEtudiantResult` / `ModifierEtudiantResult`: the student as the server sends it
 > back, `code` and `messages` (service version excluded). `cree` is code 201, a new CF number

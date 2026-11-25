@@ -9,6 +9,20 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+### Added
+
+- **`Sexe` and `ModeEnregistrement`** (#50), exported from `pyetnic.seps`: the SEPS student
+  value sets (`M` / `F` / `X`; `NISS` / `DETAILS`), pinned against the embedded XSD like the
+  other SEPS enums. Strings keep working.
+
+### Fixed
+
+- **An enum member goes on the wire as its code** (#50). zeep writes a simple value with
+  `str()`, and `str()` of a `(str, Enum)` member is its name: `CodeStatut.DEFINITIVE` was
+  sent as `"CodeStatut.DEFINITIVE"` instead of `"DE"`. `SoapClientManager.call_service` now
+  replaces every member by its value, at any depth of the request. Code that passed
+  `.value` is unaffected.
+
 ## [0.3.0b2] - 2026-11-25
 
 Two SEPS writers that keep the fields a modification would otherwise erase. No breaking change.

@@ -9,7 +9,9 @@ import os
 import uuid
 import logging
 import urllib3
+from enum import Enum
 from importlib.resources import files, as_file
+from typing import Any
 
 from zeep import Client, Settings
 from zeep.helpers import serialize_object
@@ -69,6 +71,22 @@ def get_wsdl_path(package, resource):
         ref = ref / part
     with as_file(ref) as wsdl_path:
         return str(wsdl_path)
+
+def _wire_value(value: Any) -> Any:
+    """``value`` with every Enum member replaced by its value, at any depth.
+
+    zeep writes a simple value with ``str()``, and ``str()`` of a ``(str, Enum)``
+    member is ``"Sexe.FEMININ"``, not ``"F"``: without this, a nomenclature
+    member given in place of its code would go on the wire under its name.
+    """
+    if isinstance(value, Enum):
+        return value.value
+    if isinstance(value, dict):
+        return {k: _wire_value(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_wire_value(v) for v in value]
+    return value
+
 
 def generate_request_id():
     """Génère un identifiant unique pour les requêtes SOAP."""
@@ -232,7 +250,8 @@ class SoapClientManager:
         try:
             request_id = generate_request_id()
             method = getattr(service, method_name)
-            result = method(_soapheaders={"requestId": request_id}, **kwargs)
+            wire_kwargs = {name: _wire_value(value) for name, value in kwargs.items()}
+            result = method(_soapheaders={"requestId": request_id}, **wire_kwargs)
 
             logger.debug(
                 "SOAP call succeeded: service=%s method=%s request_id=%s",

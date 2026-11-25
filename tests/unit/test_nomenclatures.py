@@ -16,6 +16,8 @@ from pyetnic.nomenclatures import (
     MotifAbandon,
     MotifExemption,
     MotifExemptionSpec,
+    ModeEnregistrement,
+    Sexe,
     SituationMenage,
     StatutFinFormation,
     TitreDelivre,
@@ -228,12 +230,14 @@ _XSD_TYPE_OF_ENUM = [
 ]
 
 
-def _xsd_enumerations() -> dict:
+def _xsd_enumerations(
+    xsd: str = "SEPS_Enregistrer_Inscription_2.1/xsd/inscription_v1.xsd",
+) -> dict:
     from xml.etree import ElementTree as ET
 
     from pyetnic.soap_client import get_wsdl_path
 
-    path = get_wsdl_path("pyetnic.resources", "SEPS_Enregistrer_Inscription_2.1/xsd/inscription_v1.xsd")
+    path = get_wsdl_path("pyetnic.resources", xsd)
     xs = "{http://www.w3.org/2001/XMLSchema}"
     return {
         st.get("name"): {e.get("value") for e in st.iter(xs + "enumeration")}
@@ -245,3 +249,42 @@ def _xsd_enumerations() -> dict:
 def test_enum_matches_embedded_xsd(enum_cls, xsd_type):
     """A contract refresh that adds or removes a code fails here (#22)."""
     assert {m.value for m in enum_cls} == _xsd_enumerations()[xsd_type]
+
+
+# ---------------------------------------------------------------------------
+# Student enums (#50), pinned against the EnregistrerEtudiant and
+# RechercheEtudiants contracts
+# ---------------------------------------------------------------------------
+
+_STUDENT_ENUM_XSD = [
+    (Sexe, "SexeType", "SEPS_Enregistrer_Etudiant_2.1/xsd/etudiantDetails_v1.xsd"),
+    (Sexe, "SexeType", "SEPS_Recherche_Etudiants_2.1/xsd/etudiantDetails_v1.xsd"),
+    (
+        ModeEnregistrement,
+        "ModeEnregistrement",
+        "SEPS_Enregistrer_Etudiant_2.1/xsd/SEPSEnregistrerEtudiantMessages_external_v1.xsd",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "enum_cls, xsd_type, xsd",
+    _STUDENT_ENUM_XSD,
+    ids=[f"{e.__name__}-{x.split('/')[0]}" for e, _, x in _STUDENT_ENUM_XSD],
+)
+def test_student_enum_matches_embedded_xsd(enum_cls, xsd_type, xsd):
+    assert {m.value for m in enum_cls} == _xsd_enumerations(xsd)[xsd_type]
+
+
+def test_student_enums_compare_to_raw_strings():
+    assert Sexe.FEMININ == "F"
+    assert ModeEnregistrement.DETAILS == "DETAILS"
+
+
+def test_student_enums_exported_from_seps_namespace():
+    import pyetnic.seps as seps
+
+    for name in ("Sexe", "ModeEnregistrement"):
+        assert getattr(seps, name) is not None
+        assert name in seps.__all__
+

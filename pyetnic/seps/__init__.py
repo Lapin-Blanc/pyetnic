@@ -56,6 +56,9 @@ from ..nomenclatures import (
     StatutFinFormation,
     CodeNiveau,
     CodeNotification,
+    # Énumérations étudiant (EnregistrerEtudiant)
+    Sexe,
+    ModeEnregistrement,
 )
 
 # Modèles
@@ -179,4 +182,7 @@ __all__ = [
     "ValorisationAcquisSanction",
     "StatutFinFormation",
     "CodeNiveau",
+    # Nomenclatures étudiant (EnregistrerEtudiant)
+    "Sexe",
+    "ModeEnregistrement",
 ]
