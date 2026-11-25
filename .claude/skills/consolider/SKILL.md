@@ -55,12 +55,13 @@ de `tools/`, avec ses tests.
 Sur les fichiers touchés :
 
     git diff | grep '^+' | grep -nE '\b[0-9]{11}\b|\b[0-9]{2}\.[0-9]{2}\.[0-9]{2}-[0-9]{3}\.[0-9]{2}\b'
-    git diff | grep '^+' | grep -n '—'
+    git diff | grep '^+' | grep -n $'\xe2\x80\x94'
     .venv/Scripts/python.exe -m pytest tests/regression tests/unit -q
 
 et `python tools/refresh_contracts.py --check` si un contrat, un manuel ou une spec a bougé.
 Tout résultat des deux premières commandes s'examine (un NISS ou un matricule à retirer, un
-tiret cadratin à remplacer par un tiret court).
+tiret cadratin à remplacer par un tiret court ; la seconde cherche ses octets UTF-8, la
+locale de Git Bash refusant `grep -P '\x{2014}'`).
 
 Puis commiter selon `CLAUDE.md` (Conventional Commits, branche et PR pour ce qui est
 structurel), et commiter la mémoire, qui est un dépôt git local :
