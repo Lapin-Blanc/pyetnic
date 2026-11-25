@@ -10,9 +10,11 @@ from ..services import (
     rechercher_etudiants,
     enregistrer_etudiant,
     modifier_etudiant,
+    mettre_a_jour_etudiant,
     rechercher_inscriptions,
     enregistrer_inscription,
     modifier_inscription,
+    mettre_a_jour_inscription,
     lire_notifications,
 )
 
@@ -100,6 +102,7 @@ __all__ = [
     "rechercher_etudiants",
     "enregistrer_etudiant",
     "modifier_etudiant",
+    "mettre_a_jour_etudiant",
     # Exceptions (base → spécialisées)
     "SepsEtnicError",
     "SepsAuthError",
@@ -135,6 +138,7 @@ __all__ = [
     "rechercher_inscriptions",
     "enregistrer_inscription",
     "modifier_inscription",
+    "mettre_a_jour_inscription",
     # Notifications
     "lire_notifications",
     "SepsNotification",

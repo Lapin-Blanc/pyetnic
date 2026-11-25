@@ -243,6 +243,14 @@ Ceux d'`enregistrerEtudiant` (manuel 2.3, §3.3.2.3.2 renvoie au §3.3.1.3.2). C
 
 > **Exemples du manuel** (§3.3.2.4) : le succès est montré avec `success=false` **et** un `info 200` ; le cas « aucun changement » avec `success=false` et un `info 30443`. Se fier au **code**, pas au seul flag `success`.
 
+> **Observé en production (2026-11-25, une fiche, avec l'accord de l'établissement)** : la fiche
+> `cfwbDetails` renvoyée telle que lue (huit champs : `niss`, `nom`, `prenom`, `autrePrenom`, `sexe`,
+> `naissance`, `adresse`, `codeNationalite`) a d'abord été **acceptée en `200`**, sans qu'aucun champ
+> lisible ne change ; renvoyée une deuxième et une troisième fois, elle a reçu **`30443`** « Aucun
+> changement détecté. ». La première écriture modifie donc quelque chose que la lecture ne montre pas
+> (inconnu). Aucune notification n'a été émise ce jour-là pour l'établissement (`lireNotifications`,
+> `30105`).
+
 ---
 
 ## Règles métier clés
@@ -283,7 +291,14 @@ def enregistrer_etudiant(mode_enregistrement: str,               # "NISS" | "DET
                          create_bis_flag: bool | None = None) -> EnregistrerEtudiantResult: ...
 def modifier_etudiant(cf_num: str,
                       etudiant_details: EtudiantDetailsSave | None = None) -> ModifierEtudiantResult: ...
+def mettre_a_jour_etudiant(cf_num: str, changements: EtudiantDetailsSave) -> ModifierEtudiantResult: ...
 ```
+
+- **`mettre_a_jour_etudiant`** (#47) : relit la version établissement (`lire_etudiant`, `cfwbDetails`),
+  remplace les champs non `None` de `changements` (une `adresse` ou une `naissance` donnée remplace
+  celle lue en entier) et envoie la fiche complète. Sans fiche : `SepsEtudiantInconnuError` ; sans
+  `cfwbDetails` : `ValueError`. Pour effacer un champ, `modifier_etudiant` avec
+  `EtudiantDetailsSave.from_details(details)`, qui reprend la fiche lue telle quelle.
 
 - Un paramètre laissé à `None` n'est pas envoyé : le serveur applique alors ses défauts (`doubleFlag=false`, `createBisFlag=true`).
 - Types d'envoi : `EtudiantDetailsSave`, `SepsNaissanceSave`, `SepsAdresseSave` (`rue`, `codePostal`, `codePays` y restent requis, comme dans le manuel), `SepsLocalite`, `SepsDeces`.

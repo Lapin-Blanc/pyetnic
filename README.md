@@ -319,11 +319,15 @@ details = EtudiantDetailsSave(
 resultat = enregistrer_etudiant("DETAILS", etudiant_details=details)
 print(resultat.etudiant.cfNum, resultat.code)  # 201 : créé (resultat.cree) ; 200 : fusionné (resultat.fusionne)
 
-# Modification d'un étudiant existant : envoyer la fiche complète telle que relue,
-# un champ facultatif absent est effacé par le serveur
-resultat = modifier_etudiant("12345678-01", etudiant_details=EtudiantDetailsSave(
+# Modification d'un étudiant existant : le serveur EFFACE tout champ facultatif absent.
+# mettre_a_jour_etudiant relit la fiche (version établissement), n'y change que ce qui
+# est donné, et renvoie la fiche complète.
+from pyetnic.seps import mettre_a_jour_etudiant
+resultat = mettre_a_jour_etudiant("12345678-01", EtudiantDetailsSave(
     adresse=SepsAdresseSave(rue="Rue de la Paix", codePostal="1000", codePays="00150"),
 ))
+# modifier_etudiant envoie la fiche telle quelle : à réserver à une fiche complète,
+# par exemple EtudiantDetailsSave.from_details(lire_etudiant(cf).cfwbDetails).
 ```
 
 ### SEPS — Inscriptions
@@ -354,8 +358,17 @@ data = InscriptionInputDataSave(
 resultat = enregistrer_inscription(inscription_input_data=data)
 print(resultat.inscription.ue.label, resultat.code, resultat.plus_de_4_ue)
 
-# Modification d'une inscription existante
-resultat = modifier_inscription(inscription_input_data=data)
+# Modification d'une inscription existante : le serveur EFFACE tout champ facultatif
+# absent (vérifié en production). mettre_a_jour_inscription relit l'inscription, n'y
+# change que ce qui est donné, et la renvoie complète.
+from pyetnic.seps import mettre_a_jour_inscription, SepsSpecificiteSave, SepsDroitInscription
+resultat = mettre_a_jour_inscription(
+    "12345678-01", 2024, 1234, 455, 1,
+    specificite=SepsSpecificiteSave(
+        droitInscription=SepsDroitInscription(indicateurDroitInscription="O", montant="125"),
+    ),
+)
+# regulier3 et ajournement1Session ne se relisent pas : les redonner s'ils sont posés.
 ```
 
 ### SEPS - Notifications

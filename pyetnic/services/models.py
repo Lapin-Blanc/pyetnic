@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import List, Optional
 from datetime import date
 
@@ -508,6 +508,32 @@ class EtudiantDetailsSave:
     adresse: Optional[SepsAdresseSave] = None
     codeNationalite: Optional[str] = None
 
+    @classmethod
+    def from_details(cls, details: EtudiantDetails) -> "EtudiantDetailsSave":
+        """A student record as read, as ``modifier_etudiant`` must send it back.
+
+        ``modifierEtudiant`` erases every optional field left out: this keeps
+        them all. A part the record lacks stays ``None`` and is not sent.
+        """
+        naissance, adresse = details.naissance, details.adresse
+        return cls(
+            niss=details.niss,
+            nom=details.nom,
+            prenom=details.prenom,
+            autrePrenom=list(details.autrePrenom) if details.autrePrenom else None,
+            sexe=details.sexe,
+            naissance=SepsNaissanceSave(
+                date=naissance.date, codePays=naissance.codePays, localite=naissance.localite,
+            ) if naissance else None,
+            deces=details.deces,
+            adresse=SepsAdresseSave(
+                rue=adresse.rue, codePostal=adresse.codePostal, codePays=adresse.codePays,
+                numero=adresse.numero, boite=adresse.boite, extension=adresse.extension,
+                localite=adresse.localite, localiteExtension=adresse.localiteExtension,
+            ) if adresse else None,
+            codeNationalite=details.codeNationalite,
+        )
+
 # ---------------------------------------------------------------------------
 # Modèles Inscription (lecture)
 # ---------------------------------------------------------------------------
@@ -665,6 +691,15 @@ class SepsSpecificiteSave:
     sanction: Optional[SepsSanction] = None
     regulier3: Optional[str] = None                       # "O" | "N", enregistrerInscription seulement
 
+    @classmethod
+    def from_specificite(cls, specificite: SepsSpecificite) -> "SepsSpecificiteSave":
+        """The specificities as read, every field kept (both types share their fields).
+
+        ``regulier3`` and ``sanction.ajournement1Session`` come back ``None``:
+        ``rechercherInscriptions`` never returns them (production, 2026-11-25).
+        """
+        return cls(**{f.name: getattr(specificite, f.name) for f in fields(cls)})
+
 @dataclass
 class InscriptionInputSave:
     """Données d'inscription à envoyer (InscriptionInputType)."""
@@ -685,6 +720,31 @@ class InscriptionInputDataSave:
     idImplantation: int                                    # requis
     codePostalLieuCours: str                               # requis
     inscription: InscriptionInputSave                      # requis
+
+    @classmethod
+    def from_inscription(cls, inscription: Inscription) -> "InscriptionInputDataSave":
+        """An inscription as read, as ``modifier_inscription`` must send it back.
+
+        ``modifierInscription`` erases every optional field left out: this
+        keeps every field ``rechercher_inscriptions`` returns. It cannot keep
+        ``regulier3`` nor ``sanction.ajournement1Session``, which the search
+        never returns: set them before writing if the inscription has them.
+        """
+        ue = inscription.ue
+        return cls(
+            cfNum=inscription.cfNum,
+            idEtab=inscription.idEtab,
+            idImplantation=inscription.idImplantation,
+            codePostalLieuCours=inscription.lieuCours.codePostal if inscription.lieuCours else None,
+            inscription=InscriptionInputSave(
+                dateInscription=inscription.dateInscription,
+                statut=inscription.statut,
+                anneeScolaire=inscription.anneeScolaire,
+                ue=SepsUESave(ue.noAdministratif, ue.noOrganisation) if ue else None,
+                specificite=SepsSpecificiteSave.from_specificite(inscription.specificite)
+                if inscription.specificite else None,
+            ),
+        )
 
 # ---------------------------------------------------------------------------
 # Résultats des écritures SEPS

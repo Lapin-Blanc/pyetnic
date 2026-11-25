@@ -4,7 +4,7 @@ import logging
 from typing import List, Optional
 
 from ..soap_client import SoapClientManager
-from ._helpers import _as_list, to_soap_dict
+from ._helpers import _as_list, merge_given, to_soap_dict
 from .models import (
     Inscription, SepsUE, SepsLieuCours, SepsSpecificite,
     SepsDroitInscription, SepsExempteDroitInscription,
@@ -12,8 +12,9 @@ from .models import (
     SepsAdmission, SepsSanction, SepsAudit,
     InscriptionInputDataSave,
     InscriptionResult,
+    SepsSpecificiteSave,
 )
-from .seps_errors import check_seps_response, primary_code, seps_messages, seps_response
+from .seps_errors import SepsNotFoundError, check_seps_response, primary_code, seps_messages, seps_response
 
 logger = logging.getLogger(__name__)
 
@@ -274,7 +275,8 @@ class InscriptionsService:
 
         An optional field left out is **erased** by the server, and a field
         required at creation stays required: send the complete inscription, as
-        read, with the changes applied.
+        read, with the changes applied (``InscriptionInputDataSave.from_inscription``),
+        or use :func:`mettre_a_jour_inscription`, which does it.
 
         Args:
             inscription_input_data: Données de l'inscription à modifier.
@@ -293,3 +295,72 @@ class InscriptionsService:
 
         result = self._enregistrer.call_service("modifierInscription", **kwargs)
         return self._parse_inscription_response(result)
+
+    def mettre_a_jour_inscription(
+        self,
+        cf_num: str,
+        annee_scolaire: int,
+        etab_id: int,
+        no_administratif: int,
+        no_organisation: int,
+        *,
+        specificite: Optional[SepsSpecificiteSave] = None,
+        date_inscription: Optional[str] = None,
+        statut: Optional[str] = None,
+        code_postal_lieu_cours: Optional[str] = None,
+        id_implantation: Optional[int] = None,
+        fse: Optional[bool] = None,
+    ) -> InscriptionResult:
+        """Modify an inscription, keeping every field not given.
+
+        Finds the inscription of the student in the UE with
+        :func:`rechercher_inscriptions`, applies the changes given (in
+        ``specificite``, the fields that are not ``None``; a nested
+        ``droitInscription``, ``admission`` or ``sanction`` given replaces the
+        one read as a whole), and sends the complete inscription with
+        :func:`modifier_inscription`.
+
+        .. warning::
+           ``rechercherInscriptions`` never returns ``regulier3`` nor
+           ``sanction.ajournement1Session`` (production, 2026-11-25): the merge
+           cannot keep them. Give them in ``specificite`` when the inscription
+           has them, or the server erases them.
+
+        The server accepts an unchanged inscription without any message (no
+        30443, production, 2026-11-25): an empty change still writes.
+
+        Raises:
+            SepsNotFoundError: no inscription of this student in this UE.
+            ValueError: several inscriptions match.
+        """
+        found = [
+            inscription
+            for inscription in self.rechercher_inscriptions(
+                annee_scolaire=annee_scolaire, etab_id=etab_id, cf_num=cf_num,
+                no_administratif=no_administratif, no_organisation=no_organisation,
+            )
+            if inscription.cfNum == cf_num and inscription.ue is not None
+            and (inscription.ue.noAdministratif, inscription.ue.noOrganisation) == (no_administratif, no_organisation)
+        ]
+        if not found:
+            raise SepsNotFoundError(
+                None, f"no inscription of {cf_num} in UE {no_administratif}/{no_organisation} ({annee_scolaire})"
+            )
+        if len(found) > 1:
+            raise ValueError(f"{len(found)} inscriptions of {cf_num} match UE {no_administratif}/{no_organisation}")
+
+        data = InscriptionInputDataSave.from_inscription(found[0])
+        inscription = data.inscription
+        if specificite is not None:
+            inscription.specificite = merge_given(inscription.specificite or SepsSpecificiteSave(), specificite)
+        if date_inscription is not None:
+            inscription.dateInscription = date_inscription
+        if statut is not None:
+            inscription.statut = statut
+        if fse is not None:
+            inscription.fse = fse
+        if code_postal_lieu_cours is not None:
+            data.codePostalLieuCours = code_postal_lieu_cours
+        if id_implantation is not None:
+            data.idImplantation = id_implantation
+        return self.modifier_inscription(data)

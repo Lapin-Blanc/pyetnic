@@ -11,8 +11,8 @@ Contents:
 
 from __future__ import annotations
 
-from dataclasses import asdict, is_dataclass
-from typing import Any
+from dataclasses import asdict, fields, is_dataclass, replace
+from typing import Any, TypeVar
 
 from .models import OrganisationId
 
@@ -78,6 +78,20 @@ def to_soap_dict(obj: Any, *, exclude_none: bool = True) -> dict:
     if exclude_none:
         return _strip_none_recursive(d)
     return d
+
+
+_D = TypeVar("_D")
+
+
+def merge_given(base: _D, changes: Any) -> _D:
+    """``base`` with every field of ``changes`` that is not ``None``.
+
+    The read-merge-write of the SEPS modifiers: a field left at ``None`` in
+    ``changes`` keeps the value read. A nested object given replaces the one
+    read as a whole.
+    """
+    given = {f.name: getattr(changes, f.name) for f in fields(changes) if getattr(changes, f.name) is not None}
+    return replace(base, **given)
 
 
 def organisation_request_id(org_id: OrganisationId) -> dict:

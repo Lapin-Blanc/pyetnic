@@ -4,10 +4,16 @@ import logging
 from typing import Optional
 
 from ..soap_client import SoapClientManager
-from ._helpers import to_soap_dict
+from ._helpers import merge_given, to_soap_dict
 from .models import EnregistrerEtudiantResult, EtudiantDetailsSave, ModifierEtudiantResult
 from .seps import RechercheEtudiantsService
-from .seps_errors import check_seps_response, primary_code, seps_messages, seps_response
+from .seps_errors import (
+    SepsEtudiantInconnuError,
+    check_seps_response,
+    primary_code,
+    seps_messages,
+    seps_response,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +34,7 @@ class EnregistrerEtudiantService:
     def __init__(self):
         self.client_manager = SoapClientManager("SEPS_ENREGISTRER_ETUDIANT")
         self._parse_etudiant = RechercheEtudiantsService._parse_etudiant
+        self._recherche = RechercheEtudiantsService()
 
     # ------------------------------------------------------------------
     # Parsers internes
@@ -106,7 +113,8 @@ class EnregistrerEtudiantService:
 
         An optional field left out is **erased** by the server, and a field
         required at creation stays required: send the complete record, as
-        read, with the changes applied.
+        read, with the changes applied (``EtudiantDetailsSave.from_details``),
+        or use :func:`mettre_a_jour_etudiant`, which does it.
 
         Args:
             cf_num: Numéro CF de l'étudiant (format : [0-9]{1,10}-[0-9]{2}).
@@ -126,3 +134,35 @@ class EnregistrerEtudiantService:
 
         result = self.client_manager.call_service("modifierEtudiant", **kwargs)
         return self._parse_modifier_response(result)
+
+    def mettre_a_jour_etudiant(
+        self,
+        cf_num: str,
+        changements: EtudiantDetailsSave,
+    ) -> ModifierEtudiantResult:
+        """Modify a student, keeping every field not given.
+
+        Reads the establishment's version (``cfwbDetails``) with
+        :func:`lire_etudiant`, replaces the fields of ``changements`` that are
+        not ``None`` (a nested ``adresse`` or ``naissance`` given replaces the
+        one read as a whole), and sends the complete record with
+        :func:`modifier_etudiant`. To erase a field, use
+        :func:`modifier_etudiant` with ``EtudiantDetailsSave.from_details``.
+
+        Raises:
+            SepsEtudiantInconnuError: ``lire_etudiant`` finds no student.
+            ValueError: the student has no establishment version to merge into.
+            SepsAucuneModificationError: nothing changed (30443). The first
+                write of an unchanged record was accepted (200), the next ones
+                refused with 30443 (production, 2026-11-25).
+        """
+        etudiant = self._recherche.lire_etudiant(cf_num)
+        if etudiant is None:
+            raise SepsEtudiantInconnuError(None, f"lireEtudiant found no student {cf_num}")
+        if etudiant.cfwbDetails is None:
+            raise ValueError(
+                f"student {cf_num} has no establishment version (cfwbDetails) to merge into: "
+                "send the complete record with modifier_etudiant"
+            )
+        merged = merge_given(EtudiantDetailsSave.from_details(etudiant.cfwbDetails), changements)
+        return self.modifier_etudiant(cf_num, merged)

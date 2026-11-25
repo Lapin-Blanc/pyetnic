@@ -80,7 +80,8 @@ It is used by schools and school management software to interact programmaticall
 
 **EnregistrerEtudiant (v1)**
 - `enregistrerEtudiant` → `enregistrer_etudiant(mode_enregistrement, etudiant_details?, double_flag?, create_bis_flag?)`
-- `modifierEtudiant` → `modifier_etudiant(cf_num, etudiant_details?)`
+- `modifierEtudiant` → `modifier_etudiant(cf_num, etudiant_details?)` (the complete record: an optional field left out is erased)
+- `mettre_a_jour_etudiant(cf_num, changements)`: reads `cfwbDetails`, applies the fields given, sends the complete record (#47)
 
 > `mode_enregistrement`: `"NISS"` or `"DETAILS"`.
 > Save types: `EtudiantDetailsSave`, `SepsNaissanceSave`, `SepsAdresseSave`.
@@ -106,7 +107,8 @@ It is used by schools and school management software to interact programmaticall
 
 **EnregistrerInscription (v1)**
 - `enregistrerInscription` → `enregistrer_inscription(inscription_input_data?)`
-- `modifierInscription` → `modifier_inscription(inscription_input_data?)`
+- `modifierInscription` → `modifier_inscription(inscription_input_data?)` (the complete inscription: an optional field left out is erased, checked in production on 2026-11-25)
+- `mettre_a_jour_inscription(cf_num, annee_scolaire, etab_id, no_administratif, no_organisation, ...)`: finds the inscription, applies the changes given, sends it complete (#47); it cannot keep `regulier3` nor `ajournement1Session`, which no read returns
 
 > Both return `InscriptionResult`: the inscription as the server sends it back, `code` and `messages`.
 > `plus_de_4_ue` reports 30051 ("Ok création mais inscrit dans plus de 4 UEs", a success). The

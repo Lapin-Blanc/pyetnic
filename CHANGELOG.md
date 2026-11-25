@@ -9,6 +9,17 @@ that supports `bN` pre-releases).
 
 ## [Unreleased]
 
+### Added
+
+- **SEPS writers that keep the fields left out** (#47): `mettre_a_jour_etudiant(cf_num,
+  changements)` and `mettre_a_jour_inscription(cf_num, annee_scolaire, etab_id,
+  no_administratif, no_organisation, ...)` read the record, apply only the changes given and
+  send it complete, since `modifierEtudiant` and `modifierInscription` erase every optional
+  field left out; `EtudiantDetailsSave.from_details` and
+  `InscriptionInputDataSave.from_inscription` give a record as read, ready to send back.
+  Tested in production (2026-11-25): a merge changed only the field given, and a write without
+  a field erased it. `regulier3` and `ajournement1Session` cannot be kept: no read returns them.
+
 ## [0.3.0b1] - 2026-11-24
 
 The EPROM side catches up with SEPS: Formation Organisation v8, the Document 1D
