@@ -581,7 +581,7 @@ ApprouverDocument1RequeteCT
 | `PopDocument1AnneeEtudeLstCT` / `LineCT` | `Doc1PopulationList` / `Doc1PopulationLine` (20 champs) |
 | `PopDocument1AnneeEtudeLstSaveCT` / `LineSaveCT` | `Doc1PopulationListSave` / `Doc1PopulationLineSave` (`coAnnEtude` + 9 champs facultatifs) ; `Doc1PopulationListSave.from_document(doc)` reprend la population lue |
 | `OrganisationReqIdCT` | `OrganisationId`, `implId` jamais envoyé |
-| `OrganisationResIdCT` | non lu : `FormationDocument1.id` est l'`OrganisationId` passé en argument |
+| `OrganisationResIdCT` | `FormationDocument1.id` : l'`id` de la réponse, `implId` compris (observé sur TQ et en production, 2026-11-25), complété par celui de l'appelant pour ce qui y manquerait (#51) |
 
 - **Approbation** : `approuver_document_1` exige `population_liste`, que le contrat rend facultative,
   et lève `TypeError` sans elle avant tout appel : le serveur refusait tout appel sans elle en

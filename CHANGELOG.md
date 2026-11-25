@@ -23,6 +23,18 @@ that supports `bN` pre-releases).
   has been observed; detection relies on zeep's error log, and a warning is logged once when
   that log is silenced.
 
+### Changed
+
+- **The identifier returned is read** (#51). `lire_organisation`, `modifier_organisation`, the
+  readers and writers of Documents 1, 1D, 2 and 3 now return the `id` of the answer, whose
+  `implId` the server fills (observed on TQ and in production, 2026-11-25, every reader),
+  instead of the caller's `OrganisationId`; a part the answer lacks comes from the caller's.
+  `lister_formations` fills `implId` from the request when the answer omits it: the server
+  names the implantation only when the request does not, and a request filtered on it lists
+  that implantation alone. An `OrganisationId` built without `implId` no longer compares
+  equal to the `id` read back; requests are unchanged (`implId` is never sent but to
+  `creer_organisation`).
+
 ### Fixed
 
 - **An enum member goes on the wire as its code** (#50). zeep writes a simple value with

@@ -163,3 +163,46 @@ def test_success_without_response_is_an_empty_list(monkeypatch, method):
     result = getattr(svc, method)()
     assert result.success is True
     assert result.formations == []
+
+
+def _liste_with(*organisations: dict) -> dict:
+    org = {"dateDebutOrganisation": "2025-09-01", "dateFinOrganisation": "2026-06-30"}
+    return {
+        "body": {
+            "success": True,
+            "response": {
+                "formation": [{
+                    "numAdmFormation": 312, "libelleFormation": "Formation", "codeFormation": "X",
+                    "organisation": [{**org, **o} for o in organisations],
+                }]
+            },
+        }
+    }
+
+
+@pytest.mark.parametrize(
+    "impl_id, returned, expected",
+    [
+        (5678, None, 5678),   # filtered on the implantation: the answer omits it (#51)
+        (None, 5678, 5678),   # not filtered: the answer names it on every organisation
+        (None, None, None),
+    ],
+)
+def test_lister_formations_fills_impl_id(monkeypatch, impl_id, returned, expected):
+    from pyetnic.config import Config
+
+    svc = FormationsListeService()
+    sent = {}
+
+    def fake_call(method, **kwargs):
+        sent.update(kwargs)
+        return _liste_with({"numOrganisation": 1, "implId": returned})
+
+    monkeypatch.setattr(svc.client_manager, "call_service", fake_call)
+    Config.IMPL_ID = None  # no default implantation from a developer's .env
+    try:
+        result = svc.lister_formations(annee_scolaire="2025-2026", etab_id=1234, impl_id=impl_id)
+    finally:
+        Config._reset()
+    assert sent["implId"] == impl_id
+    assert result.formations[0].organisations[0].id.implId == expected

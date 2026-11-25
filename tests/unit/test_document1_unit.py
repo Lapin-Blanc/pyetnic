@@ -1,5 +1,6 @@
 # test_document1_unit.py — mock-only unit tests for Document1Service.
 
+from dataclasses import replace
 import logging
 
 import pytest
@@ -51,8 +52,9 @@ def _mock_doc1_response(num_adm: int = 328, num_org: int = 1, populations: list 
             "response": {
                 "document1": {
                     "id": {
-                        "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": Config.ETAB_ID or 1234,
+                        "anneeScolaire": "2023-2024",
+                        "etabId": 1234,
+                        "implId": 5678,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },
@@ -84,7 +86,7 @@ def test_lire_document1_mock(service, monkeypatch):
     doc = service.lire_document_1(org_id)
 
     assert isinstance(doc, FormationDocument1)
-    assert doc.id == org_id
+    assert doc.id == replace(org_id, implId=5678)  # the answer's id, implId included (#51)
     assert doc.populationListe is not None
     lignes = doc.populationListe.population
     assert len(lignes) == 1
@@ -152,7 +154,7 @@ def test_modifier_document1_mock(service, monkeypatch):
     doc = service.modifier_document_1(org_id, population_liste=liste_save)
 
     assert isinstance(doc, FormationDocument1)
-    assert doc.id == org_id
+    assert doc.id == replace(org_id, implId=5678)  # the answer's id, implId included (#51)
     assert doc.populationListe.population[0].nbEleveA == 15
 
 

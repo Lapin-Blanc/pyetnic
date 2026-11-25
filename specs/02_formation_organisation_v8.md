@@ -381,8 +381,11 @@ Structure identique à CreerOrganisationReponseCT : retourne l'organisation modi
 (contrat ; manuel v8 rev 6.0, §3.1.4.2).
 
 > Le manuel décrit ici un `OrganisationIdCT` sans `implId` (§3.1.4.2) et son exemple de réponse
-> (§3.1.4.4) n'en porte pas ; le contrat déclare `implId` facultatif. Ce que renvoie le serveur :
-> (inconnu). pyetnic garde l'`OrganisationId` passé à `modifier_organisation`.
+> (§3.1.4.4) n'en porte pas ; le contrat déclare `implId` facultatif. Ce que renvoie le serveur à
+> Modifier : non vérifié. À Lire, l'`id` de la réponse porte `implId` (observé sur TQ et en
+> production, 2026-11-25, deux organisations par environnement). `lire_organisation` et
+> `modifier_organisation` rendent l'`id` de la réponse, complété par celui de l'appelant pour ce qui
+> y manquerait (#51).
 
 ### Exemple de requête XML (manuel v8 rev 6.0, §3.1.4.3)
 
@@ -764,7 +767,7 @@ autres.
 | `ModifierOrganisation` | `pyetnic.eprom.modifier_organisation()` | envoie les champs non `None` de l'`Organisation` |
 | `SupprimerOrganisation` | `pyetnic.eprom.supprimer_organisation()` | |
 | `FormationOrganisationCT` | dataclass `Organisation` | tous les champs, `BESAeSI` compris (en dernier) |
-| `OrganisationIdCT` | dataclass `OrganisationId` | |
+| `OrganisationIdCT` | dataclass `OrganisationId` | en réponse, l'`id` rendu (avec `implId`), complété par celui de l'appelant (#51) |
 | `StatutCT` | dataclass `StatutDocument` | partagé avec Formations Liste ; le `statut` lu va dans `Organisation.statutDocumentOrganisation` |
 | `typeInterventionExterieure` | enum `TypeInterventionExterieure` | 14 codes, `G` compris ; pas de R ni de S |
 | Codes d'erreur | exceptions typées (`pyetnic.exceptions`) | 20042 et 30010 -> `EtnicValidationError` |

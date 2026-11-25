@@ -1,5 +1,6 @@
 # test_document2_unit.py — mock-only unit tests for Document2Service.
 
+from dataclasses import replace
 import logging
 from dataclasses import MISSING, fields
 
@@ -63,8 +64,9 @@ def _mock_doc2_response(num_adm: int = 328, num_org: int = 1, activites: list | 
             "response": {
                 "document2": {
                     "id": {
-                        "anneeScolaire": Config.ANNEE_SCOLAIRE or "2023-2024",
-                        "etabId": Config.ETAB_ID or 1234,
+                        "anneeScolaire": "2023-2024",
+                        "etabId": 1234,
+                        "implId": 5678,
                         "numAdmFormation": num_adm,
                         "numOrganisation": num_org,
                     },
@@ -106,7 +108,7 @@ def test_lire_document2_mock(service, monkeypatch):
     doc = service.lire_document_2(org_id)
 
     assert isinstance(doc, FormationDocument2)
-    assert doc.id == org_id
+    assert doc.id == replace(org_id, implId=5678)  # the answer's id, implId included (#51)
     assert doc.swAppD2 is True
     assert doc.activiteEnseignementDetail is not None
     lignes = doc.activiteEnseignementDetail.activiteEnseignementListe.activiteEnseignement
@@ -191,6 +193,6 @@ def test_modifier_document2_mock(service, monkeypatch):
     doc = service.modifier_document_2(org_id, activite_enseignement_liste=liste_save)
 
     assert isinstance(doc, FormationDocument2)
-    assert doc.id == org_id
+    assert doc.id == replace(org_id, implId=5678)  # the answer's id, implId included (#51)
     lignes = doc.activiteEnseignementDetail.activiteEnseignementListe.activiteEnseignement
     assert lignes[0].nbEleveC1 == 20

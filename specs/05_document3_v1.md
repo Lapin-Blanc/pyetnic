@@ -788,7 +788,7 @@ Colonne « pyetnic » : ce que fait le code (voir « Mapping pyetnic »).
 
 | # | Élément | PDF | XSD | pyetnic |
 |---|---|---|---|---|
-| 1 | `OrganisationResIdCT.implId` | obligatoire (diagramme : `[0..1]`) | `minOccurs="0"` | non repris de la réponse : `FormationDocument3.id` est l'`OrganisationId` de l'appelant |
+| 1 | `OrganisationResIdCT.implId` | obligatoire (diagramme : `[0..1]`) | `minOccurs="0"` | lu : `FormationDocument3.id` est l'`id` de la réponse, `implId` compris (observé sur TQ et en production, 2026-11-25) |
 | 2 | `nbPeriodesPrevuesDoc2` | float, obligatoire (diagramme : int `[0..1]`) | `int`, `[0..1]` | `Optional[int]` ; le flux relevé ne porte pas de décimale (voir plus haut) |
 | 3 | `nbPeriodesReellesDoc2` | float, obligatoire (diagramme : int `[0..1]`) | `int`, `[0..1]` | idem |
 | 4 | `nbPeriodesDoc8` | int, facultatif ; « 24.0 » dans l'exemple | `int`, `[0..1]` | `Optional[int]` |
@@ -829,8 +829,9 @@ Colonne « pyetnic » : ce que fait le code (voir « Mapping pyetnic »).
   EPROM, sans WS-Addressing, avec un `UsernameToken` WS-Security (login / mot de passe de la
   configuration). Chaque appel envoie un `requestId` UUID neuf dans l'en-tête, repris par les exceptions
   (`request_id`).
-- **Identifiant** : la réponse porte un `OrganisationResIdCT` avec `implId` ; `FormationDocument3.id`
-  est l'`OrganisationId` passé par l'appelant, l'`implId` de la réponse n'est pas repris.
+- **Identifiant** : la réponse porte un `OrganisationResIdCT` avec `implId` (observé sur TQ et en
+  production, 2026-11-25) ; `FormationDocument3.id` est cet `id`, complété par celui de l'appelant
+  pour ce qui y manquerait (#51).
 - **Éléments vides** : zeep lit un élément vide (`<coDispo/>`, le `noMatEns` ou le `teStatut` d'un
   squelette) comme `None`, pas comme une chaîne vide. À l'écriture, un champ `None` n'est pas envoyé
   (`to_soap_dict`) : un `coDispo` omis se relit vide (voir la table `coDispo`) ; `coDispo=""` envoie un
