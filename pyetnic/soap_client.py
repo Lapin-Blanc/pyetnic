@@ -9,9 +9,12 @@ import os
 import uuid
 import logging
 import urllib3
+from contextvars import ContextVar
 from enum import Enum
 from importlib.resources import files, as_file
-from typing import Any
+from typing import Any, List, Optional, Tuple
+
+from lxml import etree
 
 from zeep import Client, Settings
 from zeep.helpers import serialize_object
@@ -23,7 +26,7 @@ from requests import Session
 from requests.exceptions import RequestException
 
 from .config import Config
-from .exceptions import EtnicTransportError, EtnicValidationError
+from .exceptions import EtnicResponseError, EtnicTransportError, EtnicValidationError
 
 # Support optionnel de la signature X509 (nécessite xmlsec + cryptography)
 try:
@@ -59,6 +62,59 @@ except ImportError:
 
 # Configuration du logging
 logger = logging.getLogger(__name__)
+
+# zeep swallows a value it cannot convert to its simple type: it logs
+# "Error during xml -> python translation" with the exception and returns None.
+# These are the two loggers that do it (zeep 4.3).
+_ZEEP_CONVERSION_LOGGERS = ("zeep.xsd.types.simple", "zeep.xsd.elements.attribute")
+
+# The conversion failures of the response being parsed, None outside a call.
+_conversion_failures: ContextVar[Optional[List[Tuple[Optional[str], Optional[str]]]]] = ContextVar(
+    "pyetnic_conversion_failures", default=None
+)
+
+
+def _failed_value(record: logging.LogRecord) -> Tuple[Optional[str], Optional[str]]:
+    """``(element, raw text)`` of the value a zeep conversion record is about.
+
+    zeep's message names neither: they are read from the frame that caught the
+    error (``parse_xmlelement(xmlelement)`` for an element,
+    ``Attribute.parse(value)`` for an attribute). Unknown parts stay ``None``.
+    """
+    tb = record.exc_info[2] if record.exc_info else None
+    if tb is None:
+        return None, None
+    frame_locals = tb.tb_frame.f_locals
+    element = frame_locals.get("xmlelement")
+    if isinstance(element, etree._Element):
+        return etree.QName(element).localname, element.text
+    name = getattr(frame_locals.get("self"), "name", None)
+    value = frame_locals.get("value")
+    return (f"@{name}" if name else None), (value if isinstance(value, str) else None)
+
+
+class _ConversionFailureFilter(logging.Filter):
+    """Collects zeep's conversion failures while pyetnic parses a response.
+
+    Never drops a record: zeep's log stays as it was.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        failures = _conversion_failures.get()
+        if failures is not None and record.exc_info:
+            failures.append(_failed_value(record))
+        return True
+
+
+_CONVERSION_FILTER = _ConversionFailureFilter()
+for _logger_name in _ZEEP_CONVERSION_LOGGERS:
+    logging.getLogger(_logger_name).addFilter(_CONVERSION_FILTER)
+del _logger_name
+
+
+def _conversion_detection_enabled() -> bool:
+    """Whether zeep will log, hence report, a conversion failure."""
+    return all(logging.getLogger(name).isEnabledFor(logging.ERROR) for name in _ZEEP_CONVERSION_LOGGERS)
 
 
 def get_wsdl_path(package, resource):
@@ -156,6 +212,7 @@ class SoapClientManager:
     # Process-wide flag: urllib3 warning filters are global, so per-thread
     # isolation (ContextVar) would be wrong here. Reset via reset_cache().
     _ssl_warnings_suppressed: bool = False
+    _conversion_warning_logged: bool = False
 
     def __init__(self, service_name):
         """
@@ -187,13 +244,14 @@ class SoapClientManager:
 
     @classmethod
     def reset_cache(cls) -> None:
-        """Clear the SOAP client cache and reset the SSL-warning state.
+        """Clear the SOAP client cache and reset the one-time warning flags.
 
         Useful for tests, credential rotations, or when integration code needs
         to force re-initialization of all clients.
         """
         cls._client_cache.clear()
         cls._ssl_warnings_suppressed = False
+        cls._conversion_warning_logged = False
 
     def _initialize_client(self):
         key = self._cache_key()
@@ -245,19 +303,26 @@ class SoapClientManager:
             SoapError: Si l'appel au service échoue (transport, SOAP Fault).
             EtnicValidationError: Si la requête ne respecte pas le contrat
                 embarqué (zeep la refuse avant tout envoi).
+            EtnicResponseError: Si une valeur de la réponse ne respecte pas son
+                type (zeep l'aurait rendue ``None``).
         """
         service = self._initialize_client()
         try:
             request_id = generate_request_id()
             method = getattr(service, method_name)
             wire_kwargs = {name: _wire_value(value) for name, value in kwargs.items()}
-            result = method(_soapheaders={"requestId": request_id}, **wire_kwargs)
+            failures: List[Tuple[Optional[str], Optional[str]]] = []
+            token = _conversion_failures.set(failures)
+            try:
+                result = method(_soapheaders={"requestId": request_id}, **wire_kwargs)
+            finally:
+                _conversion_failures.reset(token)
 
             logger.debug(
                 "SOAP call succeeded: service=%s method=%s request_id=%s",
                 self.service_name, method_name, request_id,
             )
-            return serialize_object(result, dict)
+            response = serialize_object(result, dict)
 
         except ZeepValidationError as e:
             # The request does not match the embedded contract (a required element
@@ -278,6 +343,27 @@ class SoapClientManager:
                 self.service_name, method_name, request_id, str(e),
             )
             raise SoapError(error_msg, soap_fault=e, request_id=request_id)
+
+        if failures:
+            shown = ", ".join(f"{name or '?'}={text!r}" for name, text in failures)
+            logger.error(
+                "SOAP response breaks its contract: service=%s method=%s request_id=%s values=%s",
+                self.service_name, method_name, request_id, shown,
+            )
+            raise EtnicResponseError(
+                f"{method_name} on {self.service_name}: the response carries values that do not "
+                f"match their type in the contract: {shown}",
+                values=failures,
+                response=response,
+                request_id=request_id,
+            )
+        if not SoapClientManager._conversion_warning_logged and not _conversion_detection_enabled():
+            logger.warning(
+                "zeep's conversion errors are silenced (a zeep logger is disabled or above ERROR): "
+                "a response value that breaks its type will reach the models as None"
+            )
+            SoapClientManager._conversion_warning_logged = True
+        return response
 
     def get_service(self):
         """Retourne le service SOAP configuré."""

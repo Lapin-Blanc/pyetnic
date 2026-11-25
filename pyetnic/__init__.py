@@ -17,6 +17,7 @@ from .error_mode import permissive_errors, strict_errors
 from .exceptions import (
     EtnicError,
     EtnicTransportError,
+    EtnicResponseError,
     EtnicBusinessError,
     EtnicDocumentNotAccessibleError,
     EtnicNotFoundError,
@@ -36,6 +37,7 @@ __all__ = [
     "permissive_errors",
     "EtnicError",
     "EtnicTransportError",
+    "EtnicResponseError",
     "EtnicBusinessError",
     "EtnicDocumentNotAccessibleError",
     "EtnicNotFoundError",

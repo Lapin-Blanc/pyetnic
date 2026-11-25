@@ -475,6 +475,7 @@ asyncio voit le sien.
 ```
 EtnicError
 ├── EtnicTransportError          # erreurs réseau/SOAP (alias historique : SoapError)
+├── EtnicResponseError           # valeur de réponse hors de son type (.values, .response)
 └── EtnicBusinessError           # refus serveur (success=False)
     ├── EtnicDocumentNotAccessibleError  # 20101, 20102, 20103, 20112 : document pas encore accessible
     ├── EtnicNotFoundError               # code 00009

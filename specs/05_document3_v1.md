@@ -216,8 +216,9 @@ FormationDocument3CT
 > n'a trouvé **aucune décimale** sur ces trois champs, alors que `nbPeriodesAttribuees` (`xs:float`)
 > arrive sous la forme `20.0` (relevé sur TQ, année 2024-2025, rapport du 2026-06-11). Le « 24.0 » ne
 > vient que de l'exemple du manuel. Si une décimale arrivait malgré tout, zeep (4.3.2) ne lèverait pas
-> d'erreur : il journalise l'échec de conversion et rend `None` pour le champ, qui serait perdu sans
-> bruit (vérifié hors ligne sur le contrat embarqué, 2026-11-24).
+> d'erreur : il journalise l'échec de conversion et rend `None` pour le champ (vérifié hors ligne sur
+> le contrat embarqué, 2026-11-24). pyetnic lève alors `EtnicResponseError` (#52), qui nomme le champ
+> et sa valeur brute (`values`) et garde le reste de la réponse (`response`).
 >
 > Exemple (observé une fois, année scolaire 2024-2025, environnement non consigné) : une branche
 > dont les lignes sans `coDispo` totalisaient 4,5 périodes, pour un `nbPeriodesReellesDoc2` de 4, a
@@ -833,8 +834,9 @@ Colonne « pyetnic » : ce que fait le code (voir « Mapping pyetnic »).
 - **Éléments vides** : zeep lit un élément vide (`<coDispo/>`, le `noMatEns` ou le `teStatut` d'un
   squelette) comme `None`, pas comme une chaîne vide. À l'écriture, un champ `None` n'est pas envoyé
   (`to_soap_dict`) : un `coDispo` omis se relit vide (voir la table `coDispo`) ; `coDispo=""` envoie un
-  élément vide, comme l'exemple du manuel. Une décimale sur un champ `xs:int` serait lue `None` (voir la
-  divergence de type). Vérifié hors ligne sur le contrat embarqué avec zeep 4.3.2, 2026-11-24.
+  élément vide, comme l'exemple du manuel. Une décimale sur un champ `xs:int` lève
+  `EtnicResponseError` au lieu d'être lue `None` (voir la divergence de type). Vérifié hors ligne sur
+  le contrat embarqué avec zeep 4.3.2, 2026-11-24.
 - **Forme de la requête** : zeep valide la requête contre le contrat avant l'envoi. Une liste
   d'activités ou d'enseignants vide, ou un `noAnneeEtude` manquant, lève
   `zeep.exceptions.ValidationError` sans appel au serveur (vérifié hors ligne, 2026-11-24) ; cette
@@ -860,7 +862,8 @@ Colonne « pyetnic » : ce que fait le code (voir « Mapping pyetnic »).
   | `EtnicValidationError` | `1113`, `1114`, `1538`, `1574`, `1575`, `1576`, `20108`, `20109`, `20110` |
   | `EtnicBusinessError` (classe de base) | `00025`, `00999`, `99999` |
 
-  Une erreur de transport (SOAP Fault, HTTP, réseau) lève `EtnicTransportError` (alias `SoapError`).
+  Une erreur de transport (SOAP Fault, HTTP, réseau) lève `EtnicTransportError` (alias `SoapError`) ;
+  une réponse dont une valeur viole son type, `EtnicResponseError`.
 - **Pas de validation côté client** des plafonds (`1538`, `1574`-`1576`), des tables `coDispo` /
   `teStatut` ni des prérequis du workflow (`20102`) : le serveur décide et son refus arrive typé (voir
   « Scope Boundary » dans `docs/ARCHITECTURE.md`). Les statuts des documents se lisent par

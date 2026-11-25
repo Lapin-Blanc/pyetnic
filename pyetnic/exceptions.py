@@ -8,6 +8,8 @@ The hierarchy is designed so that:
 - ``except EtnicError`` catches everything pyetnic can raise.
 - ``except EtnicBusinessError`` catches only server-side refusals
   (``success=False``), letting transport errors propagate.
+- ``EtnicResponseError`` is an answer that breaks its own contract (a value
+  zeep cannot convert to its declared type).
 - The legacy ``SoapError`` is an alias for ``EtnicTransportError``, so
   existing ``except SoapError`` code keeps working.
 
@@ -19,7 +21,7 @@ SEPS services always raise on a refusal: ``Config.RAISE_ON_ERROR`` does not
 apply to them.
 """
 
-from typing import Any, Optional, Tuple, Type
+from typing import Any, List, Optional, Tuple, Type
 
 
 class EtnicError(Exception):
@@ -52,6 +54,40 @@ class EtnicTransportError(EtnicError):
     ):
         self.message = message
         self.soap_fault = soap_fault
+        self.request_id = request_id
+        super().__init__(message)
+
+
+class EtnicResponseError(EtnicError):
+    """A value of the response does not match its type in the contract.
+
+    zeep cannot convert it (a decimal in an ``xs:int``, a date that is not
+    one...): it logs the failure and would hand ``None`` to the model, as if
+    the element were absent, and a read-merge-write would then erase the
+    stored value. pyetnic raises instead (#52). The server did answer: this is
+    neither a transport error nor a refusal.
+
+    Detection reads zeep's own error log: a zeep logger disabled or set above
+    ``ERROR`` turns it off (pyetnic then logs a warning).
+
+    Attributes:
+        message: Human-readable error description.
+        values: ``(element, raw text)`` of each value that failed, in the
+            order zeep met them; an attribute is named ``@name``.
+        response: The whole response as a dict, each failed value at ``None``.
+        request_id: The pyetnic-generated request ID for this call.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        values: Optional[List[Tuple[Optional[str], Optional[str]]]] = None,
+        response: Optional[dict] = None,
+        request_id: Optional[str] = None,
+    ):
+        self.message = message
+        self.values = values or []
+        self.response = response
         self.request_id = request_id
         super().__init__(message)
 
