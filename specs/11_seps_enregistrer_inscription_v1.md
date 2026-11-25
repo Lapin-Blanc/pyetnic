@@ -265,6 +265,15 @@ SanctionType   (tous les champs [0..1] au contrat de production)
 
 `modifierInscription` (manuel 2.4, §3.3.2.1) : un champ obligatoire reste obligatoire ; un champ facultatif **absent est effacé** après la sauvegarde. Il faut renvoyer l'inscription complète, telle que lue, avec les changements.
 
+> **Vérifié en production (2026-11-25, une inscription d'une UE à 26 % de sa durée, sans validation au
+> 1/10, avec l'accord de l'établissement)** : l'inscription renvoyée telle que lue avec un
+> `droitInscription.montant` en plus s'est relue avec ce seul champ changé ; renvoyée ensuite telle que
+> lue au départ, donc **sans** `montant`, elle s'est relue **sans** montant : le champ omis a été effacé,
+> et l'inscription est revenue à l'identique. Une inscription renvoyée **inchangée** a été acceptée
+> trois fois, sans aucun message ni `30443` (que le manuel montre pour ce cas, §3.3.2.4.2) :
+> `dateModification` avance, rien d'autre ne change à la relecture. La réponse portait `regulier3`
+> vide.
+
 ### Réponse
 `{enregistrer|modifier}InscriptionReponse` -> extends `AbstractExternalResponseType` -> `response/inscription : InscriptionType [0..1]` (type complet de **sortie**, avec `audit` au contrat de production : spec 12).
 
@@ -395,7 +404,23 @@ Fonctions publiques de `pyetnic.seps` (construction, `docs/PUBLIC_API_SURFACE.md
 ```python
 def enregistrer_inscription(inscription_input_data: InscriptionInputDataSave | None = None) -> InscriptionResult: ...
 def modifier_inscription(inscription_input_data: InscriptionInputDataSave | None = None) -> InscriptionResult: ...
+def mettre_a_jour_inscription(cf_num: str, annee_scolaire: int, etab_id: int,
+                              no_administratif: int, no_organisation: int, *,
+                              specificite: SepsSpecificiteSave | None = None,
+                              date_inscription: str | None = None, statut: str | None = None,
+                              code_postal_lieu_cours: str | None = None,
+                              id_implantation: int | None = None,
+                              fse: bool | None = None) -> InscriptionResult: ...
 ```
+
+- **`mettre_a_jour_inscription`** (#47) : retrouve l'inscription de l'étudiant dans l'UE
+  (`rechercher_inscriptions`), applique les changements donnés (dans `specificite`, les champs non
+  `None` ; un `droitInscription`, une `admission` ou une `sanction` donnés remplacent ceux lus en
+  entier) et envoie l'inscription complète. Introuvable : `SepsNotFoundError` ; plusieurs : `ValueError`.
+  `InscriptionInputDataSave.from_inscription(inscription)` donne l'inscription lue, prête à renvoyer.
+- **Limite** : `rechercherInscriptions` ne renvoie jamais `regulier3` ni `sanction.ajournement1Session`
+  (spec 12) : la fusion ne peut pas les garder. Les donner dans `specificite` quand l'inscription les
+  porte, sinon le serveur les efface.
 
 Types d'envoi (dataclasses, noms des champs = noms XSD) :
 
@@ -410,7 +435,7 @@ Types d'envoi (dataclasses, noms des champs = noms XSD) :
 | `SepsSanction` | `codeSanction`, `valorisationAcquisSanction`, `motifAbandon`, `statutFinFormation`, `pourcentageAttribue`, `codeSectionFlag`, `codeSection`, `point`, `ajournement1Session` |
 
 - Énumérations (`(str, Enum)`, comparables à leur valeur brute) : `CodeStatut`, `Indicateur`, `IndicateurX`, `MotifExemption`, `MotifExemptionSpec` (avec `C50`), `DureeInoccupation`, `SituationMenage`, `CodeAdmission` (avec `AUCUN`), `TypeEnseignement`, `TitreDelivre`, `Equivalence`, `ValorisationAcquis` (avec `C50`), `CodeSanction`, `ValorisationAcquisSanction`, `MotifAbandon`, `StatutFinFormation`, `CodeNiveau`.
-- `regulier3` et `ajournement1Session` n'existent qu'au contrat d'`enregistrerInscription` : les envoyer est valide ; leur effet n'est pas observé.
+- `regulier3` et `ajournement1Session` n'existent qu'au contrat d'`enregistrerInscription` : les envoyer est valide ; leur effet n'est pas observé. Aucune lecture ne les rend (spec 12).
 - pyetnic ne contrôle pas les règles métier (FSE, admission, sanction, exclusivité DI) avant l'envoi : le serveur tranche.
 - **Résultat** (toujours un succès) : `InscriptionResult` avec `inscription` (telle que renvoyée), `code` (`201`, `200`, sinon le premier code non bloquant ; `None` quand le serveur n'envoie aucun message, comme dans l'exemple de création du manuel), `messages`, et `plus_de_4_ue` (le serveur a renvoyé `30051`).
 - **Refus** : tout `success=false`, que le code arrive en `error` ou en `warning`, lève une sous-classe de `SepsEtnicError` : `SepsUeInconnueError` pour `30100` / `30101` (cas du délai EPROM -> SEPS), `SepsEtudiantInconnuError` pour `30011`, `SepsNotFoundError` pour `30102`, `SepsInscriptionExisteError` pour `30200`, `SepsAucuneModificationError` pour `30443`, `SepsValidationError` pour les autres codes BAD_REQUEST du tableau (`30010`, `30012` à `30035`, `30041`, `30070`, `30079`, `30080`), `SepsAuthError` pour `30550`.

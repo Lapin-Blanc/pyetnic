@@ -72,6 +72,7 @@ enregistrer_etudiant_service = EnregistrerEtudiantService()
 # Exposition des méthodes du service
 enregistrer_etudiant = enregistrer_etudiant_service.enregistrer_etudiant
 modifier_etudiant = enregistrer_etudiant_service.modifier_etudiant
+mettre_a_jour_etudiant = enregistrer_etudiant_service.mettre_a_jour_etudiant
 
 # instanciation des services SEPS Inscriptions
 inscriptions_service = InscriptionsService()
@@ -79,6 +80,7 @@ inscriptions_service = InscriptionsService()
 rechercher_inscriptions = inscriptions_service.rechercher_inscriptions
 enregistrer_inscription = inscriptions_service.enregistrer_inscription
 modifier_inscription = inscriptions_service.modifier_inscription
+mettre_a_jour_inscription = inscriptions_service.mettre_a_jour_inscription
 
 notifications_service = NotificationsService()
 lire_notifications = notifications_service.lire_notifications
@@ -114,10 +116,12 @@ __all__ = [
     'EnregistrerEtudiantService',
     'enregistrer_etudiant',
     'modifier_etudiant',
+    'mettre_a_jour_etudiant',
     'InscriptionsService',
     'rechercher_inscriptions',
     'enregistrer_inscription',
     'modifier_inscription',
+    'mettre_a_jour_inscription',
     'lire_notifications',
     'TYPES_INTERVENTION_EXTERIEURE',
 ]

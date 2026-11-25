@@ -211,6 +211,7 @@ The following functions are **exported but not in production use**. They may be 
 | `modifier_etudiant` | Never used in production. |
 | `enregistrer_inscription` | Never used in production. |
 | `modifier_inscription` | Never used in production. |
+| `mettre_a_jour_etudiant`, `mettre_a_jour_inscription` | Read, merge the changes given, write the complete record (#47); `EtudiantDetailsSave.from_details`, `InscriptionInputDataSave.from_inscription` |
 
 ### Construction — Notifications (#23)
 

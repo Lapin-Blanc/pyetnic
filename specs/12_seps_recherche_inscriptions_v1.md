@@ -102,7 +102,7 @@ AuditType
 ```
 - Les manuels n'en parlent pas. **Observé en production** : les inscriptions renvoyées par `rechercherInscriptions` portent ce bloc ; `dateCreation` y donne le jour de l'enregistrement côté SEPS. Format exact des dates et contenu des champs utilisateur : non documentés.
 
-**`SpecificiteDataType` ici** : le contrat de production de **ce** service ne porte **ni `regulier3` ni `SanctionType.ajournement1Session`**, que le manuel Recherche Inscriptions 2.4 liste pourtant en sortie (§3.1.4.3) et que le contrat d'`enregistrerInscription` porte (spec 11). Que les réponses de production les contiennent quand même : non observé.
+**`SpecificiteDataType` ici** : le contrat de production de **ce** service ne porte **ni `regulier3` ni `SanctionType.ajournement1Session`**, que le manuel Recherche Inscriptions 2.4 liste pourtant en sortie (§3.1.4.3) et que le contrat d'`enregistrerInscription` porte (spec 11). Les réponses de production ne les contiennent pas, même hors contrat : XML brut de 10 recherches couvrant 115 inscriptions, relevé du 2026-11-25. Une lecture ne peut donc pas les rendre à une écriture qui la renvoie (spec 11, `mettre_a_jour_inscription`).
 
 **LieuCoursType** : `codePostal` [0..1] + `ville` [0..1]. Le manuel montre aussi des éléments vides (`<codePostal/>`, `<ville/>`).
 
