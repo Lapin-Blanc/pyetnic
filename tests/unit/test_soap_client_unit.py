@@ -93,3 +93,41 @@ def test_request_breaking_the_contract_raises_an_etnic_validation_error(monkeypa
         )
     assert isinstance(raised.value, EtnicError)
     assert raised.value.request_id
+
+
+def test_enum_members_go_on_the_wire_as_their_value(monkeypatch):
+    """zeep writes ``str(member)``, ``"ModeEnregistrement.NISS"``: call_service sends the code (#50)."""
+    import re
+
+    from lxml import etree
+    from zeep import Client
+
+    from pyetnic.nomenclatures import ModeEnregistrement, Sexe
+    from pyetnic.soap_client import get_wsdl_path
+
+    config = Config.SERVICES["SEPS_ENREGISTRER_ETUDIANT"]
+    client = Client(get_wsdl_path("pyetnic.resources", config.wsdl_path))
+    sent: dict = {}
+
+    class _Offline:
+        def enregistrerEtudiant(self, _soapheaders=None, **kwargs):
+            sent.update(kwargs)
+            sent["xml"] = etree.tostring(
+                client.create_message(client.service, "enregistrerEtudiant", **kwargs)
+            ).decode()
+            return {}
+
+    manager = SoapClientManager("SEPS_ENREGISTRER_ETUDIANT")
+    monkeypatch.setattr(manager, "_initialize_client", lambda: _Offline())
+    manager.call_service(
+        "enregistrerEtudiant",
+        modeEnregistrement=ModeEnregistrement.NISS,
+        etudiantDetails={"nom": "DUPONT", "sexe": Sexe.FEMININ, "autrePrenom": [Sexe.AUTRE]},
+    )
+
+    assert type(sent["modeEnregistrement"]) is str
+    assert type(sent["etudiantDetails"]["sexe"]) is str
+    assert sent["etudiantDetails"]["autrePrenom"] == ["X"]
+    assert re.search(r"modeEnregistrement[^>]*>NISS<", sent["xml"])
+    assert re.search(r"sexe[^>]*>F<", sent["xml"])
+    assert "ModeEnregistrement." not in sent["xml"] and "Sexe." not in sent["xml"]

@@ -78,7 +78,8 @@ class EnregistrerEtudiantService:
 
         Args:
             mode_enregistrement: ``"NISS"`` (recherche par NISS) ou ``"DETAILS"``
-                (recherche par données d'identité).
+                (recherche par données d'identité), voir
+                :class:`~pyetnic.nomenclatures.ModeEnregistrement`.
             etudiant_details: Données de l'étudiant à enregistrer.
             double_flag: Autoriser l'enregistrement en cas de doublon potentiel.
             create_bis_flag: Créer un numéro BIS si l'étudiant n'a pas de NISS.

@@ -120,8 +120,13 @@ All use `(str, Enum)` base — members compare equal to their raw string value.
 | `ValorisationAcquisSanction` | Prior-learning valorisation at sanction. Exported from `pyetnic.seps`. |
 | `StatutFinFormation` | End-of-training status (C01-C06, FSE). Exported from `pyetnic.seps`. |
 | `CodeNiveau` | UE level code (SI/SS/SC/SL). Exported from `pyetnic.seps`. |
+| `Sexe` | Student sex (M/F/X), `SexeType`. Exported from `pyetnic.seps` (#50). |
+| `ModeEnregistrement` | `enregistrer_etudiant` mode (NISS/DETAILS). Exported from `pyetnic.seps` (#50). |
 
-All SEPS inscription enums are pinned against `inscription_v1.xsd`.
+All SEPS inscription enums are pinned against `inscription_v1.xsd`; `Sexe` against
+`etudiantDetails_v1.xsd` and `ModeEnregistrement` against the EnregistrerEtudiant messages
+XSD. A member may be passed wherever its code is expected: it goes on the wire as its value
+(up to 0.3.0b2, zeep wrote `str(member)`, the member's name).
 
 ### Stable — Exceptions
 

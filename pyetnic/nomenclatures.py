@@ -10,7 +10,10 @@ Every Enum uses ``(str, Enum)`` so members compare equal to raw strings:
     True
 
 Values for SEPS enums are pinned against the XSD enumerations in
-``pyetnic/resources/SEPS_Enregistrer_Inscription_2.1/xsd/inscription_v1.xsd``.
+``pyetnic/resources/SEPS_Enregistrer_Inscription_2.1/xsd/inscription_v1.xsd``,
+except ``Sexe`` (``etudiantDetails_v1.xsd``) and ``ModeEnregistrement``
+(``SEPSEnregistrerEtudiantMessages_external_v1.xsd``), both from the
+EnregistrerEtudiant contract.
 Values for ``TypeInterventionExterieure`` are the single-letter codes from
 the Organisation v8 manual (list dated 2026-04-27); the XSD type is a
 free-form ``xs:string`` so they are not contract-validated, but they are the
@@ -20,10 +23,14 @@ Usage:
     from pyetnic.nomenclatures import TypeInterventionExterieure, CodeSanction
 
     # Using the Enum (recommended for new code):
-    org.typeInterventionExterieure = TypeInterventionExterieure.CONVENTION.value
+    org.typeInterventionExterieure = TypeInterventionExterieure.CONVENTION
 
     # Using the raw string (still works, always will):
     org.typeInterventionExterieure = "C"
+
+A member goes on the wire as its value: ``SoapClientManager.call_service``
+replaces it before zeep, which would otherwise write ``str(member)``
+(``"TypeInterventionExterieure.CONVENTION"``).
 """
 
 from __future__ import annotations
@@ -356,6 +363,32 @@ class StatutFinFormation(str, Enum):
     C04 = "C04"
     C05 = "C05"
     C06 = "C06"
+
+
+class Sexe(str, Enum):
+    """Sexe d'un étudiant (SexeType).
+
+    Used in ``EtudiantDetails.sexe``, ``EtudiantDetailsSave.sexe`` and the
+    ``sexe`` filter of ``rechercher_etudiants``. Pinned against XSD
+    ``SexeType`` (``etudiantDetails_v1.xsd``, EnregistrerEtudiant and
+    RechercheEtudiants).
+    """
+
+    MASCULIN = "M"
+    FEMININ = "F"
+    AUTRE = "X"
+
+
+class ModeEnregistrement(str, Enum):
+    """Mode d'enregistrement d'un étudiant (ModeEnregistrement).
+
+    The ``mode_enregistrement`` parameter of ``enregistrer_etudiant``: ``NISS``
+    looks the student up by NISS, ``DETAILS`` by identity. Pinned against XSD
+    ``ModeEnregistrement`` (``SEPSEnregistrerEtudiantMessages_external_v1.xsd``).
+    """
+
+    NISS = "NISS"
+    DETAILS = "DETAILS"
 
 
 class CodeNiveau(str, Enum):

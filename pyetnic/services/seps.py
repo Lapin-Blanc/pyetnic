@@ -171,7 +171,7 @@ class RechercheEtudiantsService:
             nom: Nom de famille (obligatoire si pas de niss)
             prenom: Prénom (optionnel)
             date_naissance: Date ou année de naissance (format YYYY ou YYYY-MM-DD)
-            sexe: Sexe (M, F ou X)
+            sexe: Sexe (M, F ou X), voir :class:`~pyetnic.nomenclatures.Sexe`
             force_rn_flag: Forcer la recherche dans le registre national (optionnel)
 
         Returns:

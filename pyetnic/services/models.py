@@ -460,7 +460,7 @@ class EtudiantDetails:
     nom: Optional[str] = None
     prenom: Optional[str] = None
     autrePrenom: Optional[List[str]] = None
-    sexe: Optional[str] = None
+    sexe: Optional[str] = None                        # Sexe : M | F | X
     naissance: Optional[SepsNaissance] = None
     deces: Optional[SepsDeces] = None
     adresse: Optional[SepsAdresse] = None
@@ -502,7 +502,7 @@ class EtudiantDetailsSave:
     nom: Optional[str] = None
     prenom: Optional[str] = None
     autrePrenom: Optional[List[str]] = None
-    sexe: Optional[str] = None
+    sexe: Optional[str] = None                        # Sexe : M | F | X
     naissance: Optional[SepsNaissanceSave] = None
     deces: Optional[SepsDeces] = None
     adresse: Optional[SepsAdresseSave] = None
