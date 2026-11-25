@@ -134,6 +134,7 @@ XSD. A member may be passed wherever its code is expected: it goes on the wire a
 |---|---|
 | `EtnicError` | Base class, catch to handle any pyetnic error |
 | `EtnicTransportError` | Network/SOAP-level failures |
+| `EtnicResponseError` | New (#52): a response value that does not match its type in the contract (`values`, `response`, `request_id`); zeep would have read it `None` |
 | `EtnicBusinessError` | Server-side refusals (`success=False`) |
 | `EtnicDocumentNotAccessibleError` | Document not yet reachable in the workflow (e.g. error 20102) |
 | `EtnicNotFoundError` | Resource not found (e.g. error 00009) |

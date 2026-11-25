@@ -4,6 +4,7 @@
 from ..exceptions import (
     EtnicError,
     EtnicTransportError,
+    EtnicResponseError,
     EtnicBusinessError,
     EtnicDocumentNotAccessibleError,
     EtnicNotFoundError,
@@ -111,6 +112,7 @@ __all__ = [
     # Exceptions
     "EtnicError",
     "EtnicTransportError",
+    "EtnicResponseError",
     "EtnicBusinessError",
     "EtnicDocumentNotAccessibleError",
     "EtnicNotFoundError",

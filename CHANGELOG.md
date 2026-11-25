@@ -14,6 +14,14 @@ that supports `bN` pre-releases).
 - **`Sexe` and `ModeEnregistrement`** (#50), exported from `pyetnic.seps`: the SEPS student
   value sets (`M` / `F` / `X`; `NISS` / `DETAILS`), pinned against the embedded XSD like the
   other SEPS enums. Strings keep working.
+- **`EtnicResponseError`** (#52), exported from `pyetnic` and `pyetnic.eprom`: raised when a
+  response value does not match its type in the contract (a decimal in an `xs:int`). zeep
+  logged such a value and handed `None` on, as if the element were absent, so a
+  read-merge-write could erase it. The error carries `values` (each failed element and its
+  raw text), `response` (the whole answer, failed values at `None`) and `request_id`. It is
+  not a refusal: the deprecated permissive mode does not turn it into `None`. No such value
+  has been observed; detection relies on zeep's error log, and a warning is logged once when
+  that log is silenced.
 
 ### Fixed
 

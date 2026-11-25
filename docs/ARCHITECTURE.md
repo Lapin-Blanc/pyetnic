@@ -103,8 +103,12 @@ deferred to post-0.1.0.
   `lire_organisation()` — they are only populated on the `lister_formations()` aperçu.
 - `ENV=dev` reaches TQ, the ETNIC test environment: never deploy with it.
 - A value that does not match its simple type in a response (a decimal in an `xs:int`)
-  reaches the models as `None`: zeep logs the conversion error and goes on. A request that
-  breaks the contract is refused before sending, as `EtnicValidationError`.
+  raises `EtnicResponseError` (#52): zeep logs the conversion error and would hand `None` on,
+  so `call_service` collects these log records during the call (a filter on zeep's two
+  conversion loggers) and raises after parsing, with the failed values and the whole
+  response. Detection depends on zeep's log: a zeep logger disabled or set above `ERROR`
+  turns it off, and pyetnic then logs a warning once. A request that breaks the contract is
+  refused before sending, as `EtnicValidationError`.
 
 ## Not Yet Decided
 
